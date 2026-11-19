@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- RingoMusic app icon: a flat apple that wears headphones. One color. 128x128 GNOME grid. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" fill="#e01b24">
+  <!-- Apple and leaf, scaled down to leave a gap to the headphones -->
+  <g transform="translate(64 76) scale(0.7) translate(-64 -76)">
+    <path d="M64 44 C52 34 24 34 22 66 C20 92 40 116 56 114 C60 113 62 111 64 111
+             C66 111 68 113 72 114 C88 116 108 92 106 66 C104 34 76 34 64 44 Z"/>
+    <path transform="translate(65 36) rotate(-20) scale(1.5) translate(-68 -34)" d="M68 34 C72 24 84 22 90 26 C86 34 76 38 68 34 Z"/>
+  </g>
+
+  <!-- Headband -->
+  <path d="M17 72 C17 4 111 4 111 72" stroke="#e01b24" stroke-width="8" stroke-linecap="round" fill="none"/>
+
+  <!-- Ear cups -->
+  <rect x="7" y="58" width="20" height="36" rx="10"/>
+  <rect x="101" y="58" width="20" height="36" rx="10"/>
+</svg>
