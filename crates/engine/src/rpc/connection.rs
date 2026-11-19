@@ -8,7 +8,7 @@ use serde_json::Value;
 use tokio::io::{AsyncBufReadExt, AsyncWriteExt, BufReader, Lines};
 use tokio::net::UnixStream;
 use tokio::net::unix::{OwnedReadHalf, OwnedWriteHalf};
-use tokio::sync::{broadcast, mpsc};
+use tokio::sync::{broadcast, mpsc, watch};
 use tokio::task::JoinHandle;
 use tokio::time;
 use tracing::{debug, warn};
@@ -37,6 +37,7 @@ pub struct RpcConnection {
     pending: PendingCalls,
     writer: mpsc::Sender<String>,
     notifications: broadcast::Sender<FromEngine>,
+    closed: watch::Receiver<bool>,
     reader_task: JoinHandle<()>,
 }
 
@@ -50,6 +51,22 @@ impl RpcConnection {
     /// [`Error::InvalidMessage`] if the first message is not `engine.hello`, and
     /// [`Error::ConnectionClosed`] or [`Error::Io`] if the socket fails.
     pub async fn handshake(stream: UnixStream) -> Result<Self> {
+        let (connection, _events) = Self::handshake_with_events(stream).await?;
+        Ok(connection)
+    }
+
+    /// Does the same as [`RpcConnection::handshake`] and also returns a receiver
+    /// that already sees every notification after `engine.hello`.
+    ///
+    /// A receiver from [`RpcConnection::notifications`] can miss a notification that
+    /// the engine sends right after `engine.hello`, for example `engine.ready`.
+    ///
+    /// # Errors
+    ///
+    /// Returns the same errors as [`RpcConnection::handshake`].
+    pub(crate) async fn handshake_with_events(
+        stream: UnixStream,
+    ) -> Result<(Self, broadcast::Receiver<FromEngine>)> {
         let (read_half, write_half) = stream.into_split();
         let mut lines = BufReader::new(read_half).lines();
         time::timeout(HANDSHAKE_TIMEOUT, read_hello(&mut lines))
@@ -57,18 +74,33 @@ impl RpcConnection {
             .map_err(|_| Error::HandshakeTimeout)??;
 
         let pending = PendingCalls::new();
-        let (notifications, _) = broadcast::channel(NOTIFICATION_CAPACITY);
+        let (notifications, events) = broadcast::channel(NOTIFICATION_CAPACITY);
         let (writer, queue) = mpsc::channel(WRITE_QUEUE_CAPACITY);
+        let (closed_sender, closed) = watch::channel(false);
         tokio::spawn(write_loop(write_half, queue));
-        let reader_task = tokio::spawn(read_loop(lines, pending.clone(), notifications.clone()));
+        let reader_task = tokio::spawn(read_loop(
+            lines,
+            pending.clone(),
+            notifications.clone(),
+            closed_sender,
+        ));
 
-        Ok(Self {
+        let connection = Self {
             next_id: AtomicU64::new(1),
             pending,
             writer,
             notifications,
+            closed,
             reader_task,
-        })
+        };
+        Ok((connection, events))
+    }
+
+    /// Resolves when the socket is closed.
+    pub async fn closed(&self) {
+        let mut closed = self.closed.clone();
+        // An error means that the reader task is gone, which also means closed.
+        let _ = closed.wait_for(|is_closed| *is_closed).await;
     }
 
     /// Sends a request and waits for its answer.
@@ -163,6 +195,7 @@ async fn read_loop(
     mut lines: SocketLines,
     pending: PendingCalls,
     notifications: broadcast::Sender<FromEngine>,
+    closed: watch::Sender<bool>,
 ) {
     loop {
         match lines.next_line().await {
@@ -175,6 +208,8 @@ async fn read_loop(
         }
     }
     pending.close();
+    // Nobody waits for the signal when the connection is already dropped.
+    let _ = closed.send(true);
 }
 
 fn route(line: &str, pending: &PendingCalls, notifications: &broadcast::Sender<FromEngine>) {

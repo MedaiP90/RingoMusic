@@ -10,7 +10,19 @@ use protocol::ErrorCode;
 pub mod protocol;
 pub mod rpc;
 
+mod config;
+mod event;
+mod item_id;
+mod playback_engine;
+mod sidecar;
+mod supervisor;
+
+pub use config::EngineConfig;
+pub use event::EngineEvent;
+pub use item_id::ItemId;
+pub use playback_engine::PlaybackEngine;
 pub use rpc::RpcConnection;
+pub use sidecar::SidecarEngine;
 
 /// Error of the engine client.
 #[derive(Debug, thiserror::Error)]
@@ -52,6 +64,21 @@ pub enum Error {
     /// The engine did not answer a request in time.
     #[error("engine did not answer in time")]
     RequestTimeout,
+
+    /// The engine is not running or not ready, for example during a restart.
+    #[error("engine is not ready")]
+    NotReady,
+
+    /// The engine did not send `engine.ready` or `engine.incompatible` in time.
+    #[error("engine did not become ready in time")]
+    ReadyTimeout,
+
+    /// The engine configuration is not valid.
+    #[error("invalid engine configuration: {detail}")]
+    Config {
+        /// What is wrong with the configuration.
+        detail: String,
+    },
 
     /// The socket closed.
     #[error("connection to the engine is closed")]
