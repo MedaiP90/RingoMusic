@@ -38,7 +38,23 @@ interface MusicKitInstance {
   isAuthorized: boolean;
   nowPlayingItem?: MusicKitMediaItem | null;
   nowPlayingItemIndex: number;
-  api: { music: (path: string, query?: object) => Promise<unknown> };
+  storefrontId: string;
+  // Volume from 0.0 to 1.0.
+  volume: number;
+  // MusicKit `PlaybackRepeatMode` code.
+  repeatMode: number;
+  // MusicKit `PlayerShuffleMode` code. 0 is off.
+  shuffleMode: number;
+  api: { music: (path: string, query?: object) => Promise<{ data: unknown }> };
+  unauthorize(): Promise<unknown>;
+  setQueue(options: { songs: string[]; startWith?: number }): Promise<unknown>;
+  play(): Promise<unknown>;
+  pause(): unknown;
+  stop(): unknown;
+  skipToNextItem(): Promise<unknown>;
+  skipToPreviousItem(): Promise<unknown>;
+  // Position in seconds.
+  seekToTime(seconds: number): Promise<unknown>;
   addEventListener<K extends keyof MusicKitEventMap>(
     name: K,
     listener: (event: MusicKitEventMap[K]) => void,

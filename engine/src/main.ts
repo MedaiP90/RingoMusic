@@ -11,11 +11,19 @@ import type { Session } from 'electron';
 import pkg from '../package.json' with { type: 'json' };
 import { forwardLogs, log } from './log.ts';
 import { PageBridge } from './page-bridge.ts';
+import { PAGE_METHODS } from './page-methods.ts';
 import { RpcClient } from './rpc.ts';
+import { decidePopup, SignIn } from './sign-in.ts';
 
 const START_URL = 'https://music.apple.com';
 const SESSION_PARTITION = 'persist:ringomusic';
 const EXIT_CODE_BAD_CONFIGURATION = 2;
+
+// Set when the app quits, so that the window can close.
+let quitting = false;
+app.on('before-quit', () => {
+  quitting = true;
+});
 
 // The Chrome major version comes from the running Electron build.
 function chromeMajorVersion(): string {
@@ -69,29 +77,25 @@ async function connectToRust(): Promise<RpcClient> {
   return client;
 }
 
-// Methods that the page handles (prompt 09 adds the handlers in the hook).
-const PAGE_METHODS = [
-  'auth.status',
-  'auth.signIn',
-  'auth.signOut',
-  'player.setQueue',
-  'player.play',
-  'player.pause',
-  'player.stop',
-  'player.next',
-  'player.previous',
-  'player.seek',
-  'player.setVolume',
-  'player.setRepeat',
-  'api.get',
-];
-
-// Sends page notifications to Rust and page methods to the page.
+// Sends page notifications to Rust and requests to the page. Sign-in runs in main because it drives the window.
 function connectPageBridge(client: RpcClient, window: BrowserWindow): void {
-  const bridge = new PageBridge(window.webContents, (notification) => client.notify(notification));
+  const bridge = new PageBridge(window.webContents, (notification) => {
+    client.notify(notification);
+    signIn.handleNotification(notification);
+  });
+  const signIn = new SignIn(window, bridge);
   for (const method of PAGE_METHODS) {
     client.register(method, (params) => bridge.call(method, params));
   }
+  client.register('auth.signIn', () => signIn.run());
+  // The login window hides, never closes. A close during sign-in cancels it.
+  window.on('close', (event) => {
+    if (!quitting) {
+      event.preventDefault();
+      signIn.cancel();
+      window.hide();
+    }
+  });
   bridge.start();
 }
 
@@ -125,6 +129,7 @@ function createWindow(userAgent: string): BrowserWindow {
     },
   });
   window.webContents.setUserAgent(userAgent);
+  window.webContents.setWindowOpenHandler(({ url }) => decidePopup(url, SESSION_PARTITION));
   window.webContents.on('did-finish-load', () => {
     log.info({ url: window.webContents.getURL() }, 'did-finish-load');
     void logPageBrands(window);

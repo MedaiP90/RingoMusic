@@ -35,6 +35,7 @@ interface PendingCall {
 
 export class PageBridge {
   private nextId = 1;
+  private ready = false;
   private readonly pending = new Map<number, PendingCall>();
 
   constructor(
@@ -48,9 +49,14 @@ export class PageBridge {
     this.webContents.on('did-finish-load', () => void this.injectHook());
   }
 
-  // Calls a method in the page. The promise rejects with `RpcError` if the page returns an error.
+  // Calls a method in the page. The promise rejects with `RpcError` if the page returns an error,
+  // or with `not_ready` if the hook did not send `engine.ready` yet.
   call(method: string, params: unknown): Promise<unknown> {
     return new Promise((resolve, reject) => {
+      if (!this.ready) {
+        reject(new RpcError(ErrorCode.NotReady, 'engine is not ready'));
+        return;
+      }
       const id = this.nextId++;
       this.pending.set(id, { resolve, reject });
       this.webContents.send(CHANNEL_REQUEST, { jsonrpc: '2.0', id, method, params });
@@ -58,7 +64,8 @@ export class PageBridge {
   }
 
   private async injectHook(): Promise<void> {
-    // A page reload loses all calls that wait for an answer.
+    // A page reload loses the hook and all calls that wait for an answer.
+    this.ready = false;
     this.rejectPending();
     if (new URL(this.webContents.getURL()).origin !== PAGE_ORIGIN) {
       return;
@@ -93,6 +100,9 @@ export class PageBridge {
 
   private relayNotification(message: BridgeMessage, method: string): void {
     if (PAGE_NOTIFICATIONS.has(method)) {
+      if (method === 'engine.ready') {
+        this.ready = true;
+      }
       // The schema check is in Rust. Here only the method name is checked.
       this.notify(message as Notification);
     } else {

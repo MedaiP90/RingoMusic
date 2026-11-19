@@ -4,7 +4,14 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { mapNowPlaying, mapPlaybackState, RateLimiter } from './musickit-mapping.ts';
+import { ErrorCode } from './error-code.ts';
+import {
+  mapError,
+  mapNowPlaying,
+  mapPlaybackState,
+  mapRepeatMode,
+  RateLimiter,
+} from './musickit-mapping.ts';
 
 void test('mapPlaybackState / known codes / should return the protocol string', () => {
   assert.equal(mapPlaybackState(2), 'playing');
@@ -46,4 +53,27 @@ void test('mapNowPlaying / no item or negative index / should return undefined',
 void test('rateLimiter / four calls in 1 s / should pass only calls 250 ms apart', () => {
   const limiter = new RateLimiter(250);
   assert.deepEqual([0, 100, 250, 300].map((now) => limiter.tryPass(now)), [true, false, true, false]);
+});
+
+void test('mapRepeatMode / each mode / should return the MusicKit code', () => {
+  assert.equal(mapRepeatMode('none'), 0);
+  assert.equal(mapRepeatMode('one'), 1);
+  assert.equal(mapRepeatMode('all'), 2);
+});
+
+void test('mapError / HTTP 401 / should return not_authorized', () => {
+  assert.deepEqual(mapError({ status: 401, message: 'no token' }), {
+    code: ErrorCode.NotAuthorized,
+    message: 'no token',
+  });
+});
+
+void test('mapError / HTTP 403 in response / should return no_subscription', () => {
+  assert.equal(mapError({ response: { status: 403 } }).code, ErrorCode.NoSubscription);
+});
+
+void test('mapError / other failure / should return musickit_error with the message', () => {
+  assert.deepEqual(mapError(new Error('boom')), { code: ErrorCode.MusicKitError, message: 'boom' });
+  assert.deepEqual(mapError({ status: 500 }).code, ErrorCode.MusicKitError);
+  assert.equal(mapError('text').message, 'text');
 });

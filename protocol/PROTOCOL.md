@@ -53,7 +53,7 @@ A notification has no `id` and gets no response.
 | Method | Params | Result |
 |---|---|---|
 | `auth.status` | none | `{ authorized, storefront }` |
-| `auth.signIn` | none | `null`. Shows the login window. Returns when the login completes, or fails with `cancelled`. |
+| `auth.signIn` | none | `null`. Shows the window. The user signs in with the site's own Sign In button. Returns when `auth.changed` reports `authorized: true`, or fails with `cancelled` if the user closes the window. Returns at once if already authorized. |
 | `auth.signOut` | none | `null` |
 | `player.setQueue` | `{ items, start_index, kind }` | `null`. `kind` is `songs`. IDs can be catalog IDs or library IDs (`i.…`). |
 | `player.play`, `player.pause`, `player.stop` | none | `null` |
@@ -63,6 +63,10 @@ A notification has no `id` and gets no response.
 | `player.setRepeat` | `{ mode }` (`none`, `one`, `all`) | `null` |
 | `api.get` | `{ path, query }` | Raw JSON from `api.music()` |
 | `engine.shutdown` | none | `null`. The engine answers, then quits. |
+
+**Sign-in note:** MusicKit `authorize()` does not work on music.apple.com. The site resets the token from its own storage right after the pop-up closes (status 3, then 0). Sign-in through the site's own button stays authorized. Checked with a real account.
+
+**Unverified:** library song IDs (`i.…`) in `setQueue({ songs })` need a test with a real account. Result: pending.
 
 Rust owns the queue order, including shuffle. The engine never shuffles. `player.setQueue` always gets the full ordered list.
 

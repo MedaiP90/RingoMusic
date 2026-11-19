@@ -5,25 +5,14 @@
 
 import net from 'node:net';
 
+import { ErrorCode } from './error-code.ts';
 import { LineFramer } from './framer.ts';
 import { log } from './log.ts';
 import type { ErrorResponse, Notification, SuccessResponse } from './protocol.ts';
 
 export const PROTOCOL_VERSION = 1;
 
-// Error codes from protocol/PROTOCOL.md.
-export const ErrorCode = {
-  ParseError: -32700,
-  InvalidRequest: -32600,
-  MethodNotFound: -32601,
-  InvalidParams: -32602,
-  InternalError: -32603,
-  NotAuthorized: -32001,
-  NoSubscription: -32002,
-  NotReady: -32003,
-  Cancelled: -32004,
-  MusicKitError: -32005,
-} as const;
+export { ErrorCode };
 
 // A handler throws this error to send a specific error code to Rust.
 export class RpcError extends Error {

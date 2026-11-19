@@ -4,6 +4,9 @@
 // Hook script injected into the page: controls MusicKit.
 // All page-specific code is in this file.
 
+import { ErrorCode } from './error-code.ts';
+import { createHandlers, dispatchRequest } from './hook-handlers.ts';
+import type { PageRequest } from './hook-handlers.ts';
 import { mapNowPlaying, mapPlaybackState, RateLimiter } from './musickit-mapping.ts';
 import type { Notification } from './protocol.ts';
 
@@ -11,9 +14,6 @@ const POLL_INTERVAL_MS = 250;
 const POLL_TIMEOUT_MS = 30_000;
 // Protocol limit: 4 `player.position` notifications each second.
 const POSITION_INTERVAL_MS = 250;
-// Error code `musickit_error` from protocol/PROTOCOL.md.
-const MUSICKIT_ERROR_CODE = -32005;
-const METHOD_NOT_FOUND_CODE = -32601;
 
 interface SelfCheck {
   name: string;
@@ -115,24 +115,25 @@ function subscribe(music: MusicKitInstance): void {
     notify({
       jsonrpc: '2.0',
       method: 'error',
-      params: { code: MUSICKIT_ERROR_CODE, message: message ?? 'playback error', fatal: false },
+      params: { code: ErrorCode.MusicKitError, message: message ?? 'playback error', fatal: false },
     });
   });
 }
 
-// Prompt 09 adds the real handlers. Until then, each request gets "method not found".
-function answerRequestsWithNotFound(): void {
+// Answers each request from main. A request without a numeric `id` is dropped.
+function answerRequests(music: MusicKitInstance): void {
+  const handlers = createHandlers(music);
   getBridge().onRequest((request) => {
-    const { id, method } = request as { id?: unknown; method?: unknown };
+    const { id } = request as { id?: unknown };
     if (typeof id === 'number') {
-      const message = `method not found: ${String(method)}`;
-      getBridge().send({ jsonrpc: '2.0', id, error: { code: METHOD_NOT_FOUND_CODE, message } });
+      void dispatchRequest(handlers, request as PageRequest).then((response) =>
+        getBridge().send(response),
+      );
     }
   });
 }
 
 async function main(): Promise<void> {
-  answerRequestsWithNotFound();
   const music = await waitForInstance();
   if (!music) {
     reportIncompatible('musickit.instance', 'MusicKit.getInstance() gave no instance in 30 s');
@@ -142,6 +143,7 @@ async function main(): Promise<void> {
     return;
   }
   subscribe(music);
+  answerRequests(music);
   notify({ jsonrpc: '2.0', method: 'engine.ready' });
 }
 
