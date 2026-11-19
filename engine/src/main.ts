@@ -8,7 +8,9 @@ import path from 'node:path';
 import { app, BrowserWindow, components } from 'electron';
 import type { Session } from 'electron';
 
-import { log } from './log.ts';
+import pkg from '../package.json' with { type: 'json' };
+import { forwardLogs, log } from './log.ts';
+import { RpcClient } from './rpc.ts';
 
 const START_URL = 'https://music.apple.com';
 const SESSION_PARTITION = 'persist:ringomusic';
@@ -39,6 +41,31 @@ function readDataDirectory(): string {
     process.exit(EXIT_CODE_BAD_CONFIGURATION);
   }
   return dataDirectory;
+}
+
+function readSocketPath(): string {
+  const socketPath = process.env['RINGO_ENGINE_SOCKET'];
+  if (!socketPath) {
+    process.stderr.write('RINGO_ENGINE_SOCKET is not set\n');
+    process.exit(EXIT_CODE_BAD_CONFIGURATION);
+  }
+  return socketPath;
+}
+
+// Connects to Rust, forwards logs, and quits the app when the socket closes.
+async function connectToRust(): Promise<RpcClient> {
+  const client = await RpcClient.connect(
+    readSocketPath(),
+    { engineVersion: pkg.version, electron: process.versions.electron },
+    () => app.quit(),
+  );
+  forwardLogs((notification) => client.notify(notification));
+  client.register('engine.shutdown', () => {
+    // Reply first, then quit on the next tick.
+    setImmediate(() => app.quit());
+    return Promise.resolve(null);
+  });
+  return client;
 }
 
 // Replaces client hint brands that contain "Electron" on every request.
@@ -90,7 +117,9 @@ async function logPageBrands(window: BrowserWindow): Promise<void> {
 }
 
 async function start(): Promise<void> {
-  app.setPath('userData', readDataDirectory());
+  const dataDirectory = readDataDirectory();
+  await connectToRust();
+  app.setPath('userData', dataDirectory);
   app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
   const userAgent = buildUserAgent();
   app.userAgentFallback = userAgent;
