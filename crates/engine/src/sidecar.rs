@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
+use std::collections::BTreeMap;
 use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Duration;
 
@@ -68,6 +69,19 @@ impl SidecarEngine {
             stop: Mutex::new(Some(stop_sender)),
             task: Mutex::new(Some(task)),
         })
+    }
+
+    /// Runs a GET request on the Apple Music API. Returns the raw JSON response.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the engine is not ready, does not answer, or the API call fails.
+    pub async fn api_get(&self, path: &str, query: BTreeMap<String, String>) -> Result<Value> {
+        let request = ToEngine::ApiGet {
+            path: path.to_owned(),
+            query,
+        };
+        self.call(request, CALL_TIMEOUT).await
     }
 
     async fn call(&self, request: ToEngine, timeout: Duration) -> Result<Value> {

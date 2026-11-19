@@ -10,6 +10,7 @@ repository = "https://github.com/MedaiP90/RingoMusic"
 rust-version = "1.85"
 
 [workspace.dependencies]
+anyhow = "1"
 async-trait = "0.1"
 clap = { version = "4", features = ["derive"] }
 schemars = "1.2"

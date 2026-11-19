@@ -69,7 +69,11 @@ impl<L: Launcher> Supervisor<L> {
                 .await
             }
             Err(error) => {
-                warn!(%error, "cannot start the engine process");
+                warn!(
+                    %error,
+                    command = %self.config.command.display(),
+                    "cannot start the engine process"
+                );
                 SessionEnd::Failed {
                     reached_ready: false,
                 }

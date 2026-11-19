@@ -66,6 +66,17 @@ Build the engine:
 cd engine && npm ci && npm run build
 ```
 
+Run the developer CLI against the engine. Build the engine first, then set the engine command:
+
+```sh
+export RINGO_ENGINE_CMD="$PWD/engine/node_modules/.bin/electron"
+export RINGO_ENGINE_ARGS="$PWD/engine/"
+cargo run -p ringo-cli -- signin
+cargo run -p ringo-cli -- search radiohead
+```
+
+Run `ringo-cli --help` for all commands.
+
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before you open a pull request.

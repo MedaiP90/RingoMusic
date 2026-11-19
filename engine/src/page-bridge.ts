@@ -59,6 +59,7 @@ export class PageBridge {
       }
       const id = this.nextId++;
       this.pending.set(id, { resolve, reject });
+      log.debug({ id, method }, 'page request');
       this.webContents.send(CHANNEL_REQUEST, { jsonrpc: '2.0', id, method, params });
     });
   }
@@ -104,6 +105,7 @@ export class PageBridge {
         this.ready = true;
       }
       // The schema check is in Rust. Here only the method name is checked.
+      log.debug({ method, params: message['params'] }, 'page notification');
       this.notify(message as Notification);
     } else {
       log.warn({ method }, 'dropped page notification with unknown method');
@@ -117,6 +119,7 @@ export class PageBridge {
       return;
     }
     this.pending.delete(id);
+    log.debug({ id, failed: 'error' in response }, 'page response');
     const error = response['error'] as { code?: unknown; message?: unknown } | undefined;
     if (error) {
       const code = typeof error.code === 'number' ? error.code : ErrorCode.InternalError;

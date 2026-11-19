@@ -49,6 +49,9 @@ impl Launcher for SystemLauncher {
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .kill_on_drop(true)
+            // Own process group: Ctrl+C in a terminal must not kill the engine
+            // before the graceful shutdown ran.
+            .process_group(0)
             .spawn()?;
         if let Some(stdout) = child.stdout.take() {
             tokio::spawn(forward_output("stdout", stdout));
