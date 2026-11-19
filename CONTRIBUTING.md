@@ -60,7 +60,9 @@ RingoMusic uses `GPL-3.0-or-later`. Put this header at the start of each source 
 
 Rules for reused code:
 
+<!-- REUSE-IgnoreStart -->
 - You can reuse code from AGPL-3.0 projects. The reused parts stay under AGPL-3.0. Mark these files with `SPDX-License-Identifier: AGPL-3.0-or-later` and the original copyright.
+<!-- REUSE-IgnoreEnd -->
 - Before you reuse code from any other project, check that its license is compatible with GPL-3.0.
 
 ## Checks before a pull request
