@@ -10,6 +10,7 @@ import type { Session } from 'electron';
 
 import pkg from '../package.json' with { type: 'json' };
 import { forwardLogs, log } from './log.ts';
+import { PageBridge } from './page-bridge.ts';
 import { RpcClient } from './rpc.ts';
 
 const START_URL = 'https://music.apple.com';
@@ -68,6 +69,32 @@ async function connectToRust(): Promise<RpcClient> {
   return client;
 }
 
+// Methods that the page handles (prompt 09 adds the handlers in the hook).
+const PAGE_METHODS = [
+  'auth.status',
+  'auth.signIn',
+  'auth.signOut',
+  'player.setQueue',
+  'player.play',
+  'player.pause',
+  'player.stop',
+  'player.next',
+  'player.previous',
+  'player.seek',
+  'player.setVolume',
+  'player.setRepeat',
+  'api.get',
+];
+
+// Sends page notifications to Rust and page methods to the page.
+function connectPageBridge(client: RpcClient, window: BrowserWindow): void {
+  const bridge = new PageBridge(window.webContents, (notification) => client.notify(notification));
+  for (const method of PAGE_METHODS) {
+    client.register(method, (params) => bridge.call(method, params));
+  }
+  bridge.start();
+}
+
 // Replaces client hint brands that contain "Electron" on every request.
 function hideElectronBrand(windowSession: Session): void {
   const brands = buildClientHintBrands();
@@ -118,7 +145,7 @@ async function logPageBrands(window: BrowserWindow): Promise<void> {
 
 async function start(): Promise<void> {
   const dataDirectory = readDataDirectory();
-  await connectToRust();
+  const client = await connectToRust();
   app.setPath('userData', dataDirectory);
   app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
   const userAgent = buildUserAgent();
@@ -128,6 +155,7 @@ async function start(): Promise<void> {
   await waitForWidevine();
 
   const window = createWindow(userAgent);
+  connectPageBridge(client, window);
   const windowSession = window.webContents.session;
   windowSession.setUserAgent(userAgent);
   hideElectronBrand(windowSession);
