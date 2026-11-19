@@ -1,0 +1,1425 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "ProtocolSchema",
+  "description": "Root type that only exists to put all protocol definitions in one schema.\nIt is never sent on the wire.",
+  "type": "object",
+  "properties": {
+    "auth_status": {
+      "description": "Result of `auth.status`.",
+      "$ref": "#/$defs/AuthStatus"
+    },
+    "error_response": {
+      "description": "Error answer envelope.",
+      "$ref": "#/$defs/ErrorResponse"
+    },
+    "from_engine": {
+      "description": "All notifications from the engine to Rust.",
+      "$ref": "#/$defs/FromEngine"
+    },
+    "notification": {
+      "description": "Notification envelope.",
+      "$ref": "#/$defs/Notification"
+    },
+    "request": {
+      "description": "Request envelope.",
+      "$ref": "#/$defs/Request"
+    },
+    "success_response": {
+      "description": "Success answer envelope.",
+      "$ref": "#/$defs/SuccessResponse"
+    },
+    "to_engine": {
+      "description": "All methods from Rust to the engine.",
+      "$ref": "#/$defs/ToEngine"
+    }
+  },
+  "required": [
+    "request",
+    "notification",
+    "success_response",
+    "error_response",
+    "to_engine",
+    "from_engine",
+    "auth_status"
+  ],
+  "$defs": {
+    "AuthStatus": {
+      "description": "Result of `auth.status`.",
+      "type": "object",
+      "properties": {
+        "authorized": {
+          "description": "The user authorized the app.",
+          "type": "boolean"
+        },
+        "storefront": {
+          "description": "Storefront ID, for example `us`.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "authorized",
+        "storefront"
+      ]
+    },
+    "ErrorCode": {
+      "description": "Error code in a JSON-RPC error or in an `error` notification.\n\nStandard JSON-RPC codes and application codes in the range -32000 to -32099.",
+      "type": "integer",
+      "format": "int32"
+    },
+    "ErrorObject": {
+      "description": "Error details in an [`ErrorResponse`].",
+      "type": "object",
+      "properties": {
+        "code": {
+          "description": "Error code.",
+          "$ref": "#/$defs/ErrorCode"
+        },
+        "data": {
+          "description": "Optional extra data.",
+          "tsType": "unknown"
+        },
+        "message": {
+          "description": "Error message.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "code",
+        "message"
+      ]
+    },
+    "ErrorResponse": {
+      "description": "Error answer of the engine.",
+      "type": "object",
+      "properties": {
+        "error": {
+          "description": "Error details.",
+          "$ref": "#/$defs/ErrorObject"
+        },
+        "id": {
+          "description": "ID of the request, or `null` if the engine could not read the request.",
+          "type": [
+            "integer",
+            "null"
+          ],
+          "format": "uint64",
+          "minimum": 0
+        },
+        "jsonrpc": {
+          "description": "Always `\"2.0\"`.",
+          "$ref": "#/$defs/JsonRpcVersion"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "error"
+      ]
+    },
+    "FromEngine": {
+      "description": "Notification that the engine sends to Rust.",
+      "oneOf": [
+        {
+          "description": "First message of each connection.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "engine.hello"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "electron": {
+                  "description": "Version of Electron.",
+                  "type": "string"
+                },
+                "engine_version": {
+                  "description": "Version of the engine package.",
+                  "type": "string"
+                },
+                "proto": {
+                  "description": "Protocol version of the engine.",
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "proto",
+                "engine_version",
+                "electron"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Widevine is ready and MusicKit is available.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "engine.ready"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "A self-check failed.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "engine.incompatible"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "check": {
+                  "description": "Name of the failed check.",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "Details of the failure.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "check",
+                "detail"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "A log record. Rust re-emits it with `tracing`, target `engine`.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "engine.log"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "fields": {
+                  "description": "Structured fields of the record.",
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "level": {
+                  "description": "Severity of the record.",
+                  "$ref": "#/$defs/LogLevel"
+                },
+                "message": {
+                  "description": "Log message.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "level",
+                "message",
+                "fields"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "The authorization changed.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "auth.changed"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "authorized": {
+                  "description": "The user authorized the app.",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "authorized"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "The playback state changed.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.state"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "description": "New playback state.",
+                  "$ref": "#/$defs/PlaybackState"
+                }
+              },
+              "required": [
+                "state"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "The current item changed.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.nowPlaying"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "album": {
+                  "description": "Album name.",
+                  "type": "string"
+                },
+                "artist": {
+                  "description": "Artist name.",
+                  "type": "string"
+                },
+                "artwork_url": {
+                  "description": "Artwork URL, if the item has artwork.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "duration_ms": {
+                  "description": "Duration in milliseconds.",
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0
+                },
+                "id": {
+                  "description": "Item ID.",
+                  "type": "string"
+                },
+                "queue_index": {
+                  "description": "Index of the item in the queue that Rust sent.",
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0
+                },
+                "title": {
+                  "description": "Item title.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "artist",
+                "album",
+                "duration_ms",
+                "queue_index"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "The playback position changed. The engine sends at most 4 per second.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.position"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "position_ms": {
+                  "description": "Position in milliseconds.",
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "position_ms"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "The engine reports an error.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "error"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "description": "Error code.",
+                  "$ref": "#/$defs/ErrorCode"
+                },
+                "fatal": {
+                  "description": "If `true`, the engine quits after this notification.",
+                  "type": "boolean"
+                },
+                "message": {
+                  "description": "Error message.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message",
+                "fatal"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        }
+      ]
+    },
+    "JsonRpcVersion": {
+      "type": "string",
+      "const": "2.0"
+    },
+    "LogLevel": {
+      "description": "Severity of an `engine.log` record.",
+      "oneOf": [
+        {
+          "description": "Fine-grained trace.",
+          "type": "string",
+          "const": "trace"
+        },
+        {
+          "description": "Debug information.",
+          "type": "string",
+          "const": "debug"
+        },
+        {
+          "description": "Normal event.",
+          "type": "string",
+          "const": "info"
+        },
+        {
+          "description": "Recoverable problem.",
+          "type": "string",
+          "const": "warn"
+        },
+        {
+          "description": "Failure.",
+          "type": "string",
+          "const": "error"
+        }
+      ]
+    },
+    "Notification": {
+      "description": "Notification from the engine to Rust. It has no `id` and gets no answer.",
+      "type": "object",
+      "properties": {
+        "jsonrpc": {
+          "description": "Always `\"2.0\"`.",
+          "$ref": "#/$defs/JsonRpcVersion"
+        }
+      },
+      "oneOf": [
+        {
+          "description": "First message of each connection.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "engine.hello"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "electron": {
+                  "description": "Version of Electron.",
+                  "type": "string"
+                },
+                "engine_version": {
+                  "description": "Version of the engine package.",
+                  "type": "string"
+                },
+                "proto": {
+                  "description": "Protocol version of the engine.",
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "proto",
+                "engine_version",
+                "electron"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Widevine is ready and MusicKit is available.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "engine.ready"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "A self-check failed.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "engine.incompatible"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "check": {
+                  "description": "Name of the failed check.",
+                  "type": "string"
+                },
+                "detail": {
+                  "description": "Details of the failure.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "check",
+                "detail"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "A log record. Rust re-emits it with `tracing`, target `engine`.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "engine.log"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "fields": {
+                  "description": "Structured fields of the record.",
+                  "type": "object",
+                  "additionalProperties": true
+                },
+                "level": {
+                  "description": "Severity of the record.",
+                  "$ref": "#/$defs/LogLevel"
+                },
+                "message": {
+                  "description": "Log message.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "level",
+                "message",
+                "fields"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "The authorization changed.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "auth.changed"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "authorized": {
+                  "description": "The user authorized the app.",
+                  "type": "boolean"
+                }
+              },
+              "required": [
+                "authorized"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "The playback state changed.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.state"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "state": {
+                  "description": "New playback state.",
+                  "$ref": "#/$defs/PlaybackState"
+                }
+              },
+              "required": [
+                "state"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "The current item changed.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.nowPlaying"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "album": {
+                  "description": "Album name.",
+                  "type": "string"
+                },
+                "artist": {
+                  "description": "Artist name.",
+                  "type": "string"
+                },
+                "artwork_url": {
+                  "description": "Artwork URL, if the item has artwork.",
+                  "type": [
+                    "string",
+                    "null"
+                  ]
+                },
+                "duration_ms": {
+                  "description": "Duration in milliseconds.",
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0
+                },
+                "id": {
+                  "description": "Item ID.",
+                  "type": "string"
+                },
+                "queue_index": {
+                  "description": "Index of the item in the queue that Rust sent.",
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0
+                },
+                "title": {
+                  "description": "Item title.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "title",
+                "artist",
+                "album",
+                "duration_ms",
+                "queue_index"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "The playback position changed. The engine sends at most 4 per second.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.position"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "position_ms": {
+                  "description": "Position in milliseconds.",
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "position_ms"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "The engine reports an error.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "error"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "description": "Error code.",
+                  "$ref": "#/$defs/ErrorCode"
+                },
+                "fatal": {
+                  "description": "If `true`, the engine quits after this notification.",
+                  "type": "boolean"
+                },
+                "message": {
+                  "description": "Error message.",
+                  "type": "string"
+                }
+              },
+              "required": [
+                "code",
+                "message",
+                "fatal"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        }
+      ],
+      "required": [
+        "jsonrpc"
+      ]
+    },
+    "PlaybackState": {
+      "description": "Playback state of the engine.",
+      "oneOf": [
+        {
+          "description": "An item plays.",
+          "type": "string",
+          "const": "playing"
+        },
+        {
+          "description": "Playback is paused.",
+          "type": "string",
+          "const": "paused"
+        },
+        {
+          "description": "Playback is stopped.",
+          "type": "string",
+          "const": "stopped"
+        },
+        {
+          "description": "An item loads.",
+          "type": "string",
+          "const": "loading"
+        },
+        {
+          "description": "The queue ended.",
+          "type": "string",
+          "const": "ended"
+        }
+      ]
+    },
+    "QueueKind": {
+      "description": "Kind of the IDs in a queue.",
+      "oneOf": [
+        {
+          "description": "Song IDs. Catalog IDs and library IDs (`i.…`) both work.",
+          "type": "string",
+          "const": "songs"
+        }
+      ]
+    },
+    "RepeatMode": {
+      "description": "Repeat mode of the player.",
+      "oneOf": [
+        {
+          "description": "No repeat.",
+          "type": "string",
+          "const": "none"
+        },
+        {
+          "description": "Repeat the current item.",
+          "type": "string",
+          "const": "one"
+        },
+        {
+          "description": "Repeat the whole queue.",
+          "type": "string",
+          "const": "all"
+        }
+      ]
+    },
+    "Request": {
+      "description": "Request from Rust to the engine. The engine answers with the same `id`.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "Request ID, unique in the connection.",
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "jsonrpc": {
+          "description": "Always `\"2.0\"`.",
+          "$ref": "#/$defs/JsonRpcVersion"
+        }
+      },
+      "oneOf": [
+        {
+          "description": "Returns [`AuthStatus`].",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "auth.status"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Shows the login window. Returns when the login completes or the user cancels.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "auth.signIn"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Signs the user out.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "auth.signOut"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Replaces the queue. Rust owns the order, including shuffle.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.setQueue"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "description": "Catalog or library IDs, in play order.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "kind": {
+                  "description": "Kind of the IDs in `items`.",
+                  "$ref": "#/$defs/QueueKind"
+                },
+                "start_index": {
+                  "description": "Index in `items` of the first item to play.",
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "items",
+                "start_index",
+                "kind"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Starts or resumes playback.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.play"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Pauses playback.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.pause"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Stops playback.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.stop"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Plays the next queue item.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.next"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Plays the previous queue item.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.previous"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Seeks in the current item.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.seek"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "position_ms": {
+                  "description": "New position in milliseconds.",
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "position_ms"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Sets the volume.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.setVolume"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "volume": {
+                  "description": "Volume from 0.0 to 1.0.",
+                  "type": "number",
+                  "format": "float"
+                }
+              },
+              "required": [
+                "volume"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Sets the repeat mode.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.setRepeat"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "description": "New repeat mode.",
+                  "$ref": "#/$defs/RepeatMode"
+                }
+              },
+              "required": [
+                "mode"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Runs a GET request with `api.music()`. Returns the raw JSON response.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "api.get"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "description": "API path, for example `/v1/catalog/us/search`.",
+                  "type": "string"
+                },
+                "query": {
+                  "description": "Query parameters.",
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "path",
+                "query"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Asks the engine to quit.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "engine.shutdown"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        }
+      ],
+      "required": [
+        "jsonrpc",
+        "id"
+      ]
+    },
+    "SuccessResponse": {
+      "description": "Success answer of the engine. Methods without a result return `null`.",
+      "type": "object",
+      "properties": {
+        "id": {
+          "description": "ID of the request.",
+          "type": "integer",
+          "format": "uint64",
+          "minimum": 0
+        },
+        "jsonrpc": {
+          "description": "Always `\"2.0\"`.",
+          "$ref": "#/$defs/JsonRpcVersion"
+        },
+        "result": {
+          "description": "Result of the method. Its shape depends on the method.",
+          "tsType": "unknown"
+        }
+      },
+      "required": [
+        "jsonrpc",
+        "id",
+        "result"
+      ]
+    },
+    "ToEngine": {
+      "description": "Method that Rust sends to the engine, with typed params.",
+      "oneOf": [
+        {
+          "description": "Returns [`AuthStatus`].",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "auth.status"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Shows the login window. Returns when the login completes or the user cancels.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "auth.signIn"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Signs the user out.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "auth.signOut"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Replaces the queue. Rust owns the order, including shuffle.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.setQueue"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "description": "Catalog or library IDs, in play order.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "kind": {
+                  "description": "Kind of the IDs in `items`.",
+                  "$ref": "#/$defs/QueueKind"
+                },
+                "start_index": {
+                  "description": "Index in `items` of the first item to play.",
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "items",
+                "start_index",
+                "kind"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Starts or resumes playback.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.play"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Pauses playback.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.pause"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Stops playback.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.stop"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Plays the next queue item.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.next"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Plays the previous queue item.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.previous"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        },
+        {
+          "description": "Seeks in the current item.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.seek"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "position_ms": {
+                  "description": "New position in milliseconds.",
+                  "type": "integer",
+                  "format": "uint64",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "position_ms"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Sets the volume.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.setVolume"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "volume": {
+                  "description": "Volume from 0.0 to 1.0.",
+                  "type": "number",
+                  "format": "float"
+                }
+              },
+              "required": [
+                "volume"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Sets the repeat mode.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.setRepeat"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "mode": {
+                  "description": "New repeat mode.",
+                  "$ref": "#/$defs/RepeatMode"
+                }
+              },
+              "required": [
+                "mode"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Runs a GET request with `api.music()`. Returns the raw JSON response.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "api.get"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "path": {
+                  "description": "API path, for example `/v1/catalog/us/search`.",
+                  "type": "string"
+                },
+                "query": {
+                  "description": "Query parameters.",
+                  "type": "object",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              },
+              "required": [
+                "path",
+                "query"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Asks the engine to quit.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "engine.shutdown"
+            }
+          },
+          "required": [
+            "method"
+          ]
+        }
+      ]
+    }
+  }
+}

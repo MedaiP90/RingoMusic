@@ -48,6 +48,12 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: npm run check
+      - name: Check the generated protocol files
+        working-directory: .
+        run: |
+          RINGO_UPDATE_SCHEMA=1 cargo test -p ringo-engine schema_is_up_to_date
+          (cd engine && npm run gen:protocol)
+          git diff --exit-code protocol/ engine/src/protocol.ts
 
   reuse:
     runs-on: ubuntu-latest

@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 13,
+  "method": "api.get",
+  "params": {
+    "path": "/v1/catalog/us/search",
+    "query": {
+      "term": "daft punk",
+      "types": "songs"
+    }
+  }
+}

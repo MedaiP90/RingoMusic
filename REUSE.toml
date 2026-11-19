@@ -12,12 +12,14 @@ path = [
   "README.md",
   "rust-toolchain.toml",
   "rustfmt.toml",
+  "clippy.toml",
   "deny.toml",
   "engine/package.json",
   "engine/package-lock.json",
   "engine/tsconfig.json",
   "icon/**",
   "protocol/schema.json",
+  "protocol/examples/**",
   ".github/**",
 ]
 precedence = "aggregate"

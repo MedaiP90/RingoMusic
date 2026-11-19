@@ -1,0 +1,11 @@
+{
+  "jsonrpc": "2.0",
+  "method": "engine.log",
+  "params": {
+    "level": "info",
+    "message": "socket connected",
+    "fields": {
+      "path": "/run/user/1000/ringomusic/engine.sock"
+    }
+  }
+}

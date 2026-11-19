@@ -1,0 +1,7 @@
+{
+  "jsonrpc": "2.0",
+  "method": "player.state",
+  "params": {
+    "state": "playing"
+  }
+}

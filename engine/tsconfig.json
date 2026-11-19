@@ -13,5 +13,5 @@
     "skipLibCheck": true,
     "noEmit": true
   },
-  "include": ["src", "eslint.config.mjs", "build.mjs"]
+  "include": ["src", "eslint.config.mjs", "build.mjs", "gen-protocol.mjs"]
 }

@@ -2,3 +2,5 @@
 // Copyright (C) 2026 RingoMusic contributors
 
 //! Supervisor and client for the Electron playback engine.
+
+pub mod protocol;

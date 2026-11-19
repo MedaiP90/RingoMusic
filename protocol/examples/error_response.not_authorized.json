@@ -1,0 +1,8 @@
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "error": {
+    "code": -32001,
+    "message": "user did not authorize the app"
+  }
+}

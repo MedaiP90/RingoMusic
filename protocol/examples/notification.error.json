@@ -1,0 +1,9 @@
+{
+  "jsonrpc": "2.0",
+  "method": "error",
+  "params": {
+    "code": -32003,
+    "message": "musickit is not ready",
+    "fatal": false
+  }
+}
