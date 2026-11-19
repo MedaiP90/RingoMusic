@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "node build.mjs",
+    "start": "npm run build && electron .",
     "gen:protocol": "node gen-protocol.mjs",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
@@ -22,6 +23,7 @@
   "devDependencies": {
     "@eslint/js": "10.0.1",
     "@types/node": "24.19.2",
+    "electron": "github:castlabs/electron-releases#v45.2.1+wvcus",
     "esbuild": "0.28.2",
     "eslint": "10.15.0",
     "json-schema-to-typescript": "16.0.0",
