@@ -25,3 +25,10 @@ rustc-ice-*.txt
 
 plan
 CLAUDE.md
+
+# RingoMusic
+/stage
+engine/node_modules
+engine/dist
+/builddir
+/repo
