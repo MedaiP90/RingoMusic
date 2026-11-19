@@ -89,7 +89,7 @@ mod tests {
 
     #[test]
     fn rows_are_empty_without_results() {
-        assert!(rows(&json!({})).is_empty());
+        assert_eq!(rows(&json!({})), Vec::new());
     }
 
     #[test]
