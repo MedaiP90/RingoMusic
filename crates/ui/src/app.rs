@@ -24,6 +24,7 @@ use crate::background::{self, BackgroundPlayback, CloseAction};
 use crate::detail_pages::{self, PageSources};
 use crate::gate::{self, Gate};
 use crate::item_actions::{self, SongCatalog};
+use crate::preferences::{Preferences, PreferencesInit};
 use crate::section::Section;
 use crate::services::AppServices;
 use crate::views::home::{HomeInit, HomeInput, HomeView};
@@ -32,7 +33,9 @@ use crate::views::queue::{QueueInit, QueueView};
 use crate::views::search::{SearchInit, SearchInput, SearchView};
 use crate::views::section_page;
 use crate::widgets::player_bar::{PlayerBar, PlayerBarInit, PlayerBarInput};
-use crate::{about, artwork, menu, network_banner, notification, sidebar, subscription};
+use crate::{
+    about, accent, artwork, menu, network_banner, notification, sidebar, subscription, theme,
+};
 
 /// The part of the state that the shell follows.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -68,6 +71,7 @@ pub struct App {
     search: relm4::Sender<SearchInput>,
     player_bar: relm4::Sender<PlayerBarInput>,
     queue_open: bool,
+    services: AppServices,
     settings: Settings,
     background: BackgroundPlayback,
     sign_in_failed: bool,
@@ -94,6 +98,8 @@ pub enum Input {
     ShowToast(String),
     /// The user asks for the about dialog.
     ShowAbout,
+    /// The user asks for the preferences dialog.
+    ShowPreferences,
     /// The song changed.
     TrackChanged(NowPlaying),
     /// The user closes the window.
@@ -189,6 +195,8 @@ impl SimpleComponent for App {
         let Init { services, package } = init;
         let core = services.core();
         artwork::install_store(services.artwork().clone());
+        accent::install(services.settings());
+        theme::install(services.settings());
         forward_state(core, &sender);
         forward_track_changes(core, &sender);
         publish_mpris(core, services.artwork(), &sender);
@@ -271,6 +279,7 @@ impl SimpleComponent for App {
             search: search_input,
             player_bar: bar_input,
             queue_open: false,
+            services,
             settings,
             background,
             sign_in_failed: false,
@@ -290,6 +299,7 @@ impl SimpleComponent for App {
             Input::QueueVisibility(open) => self.set_queue_open(open),
             Input::ShowToast(message) => self.toast_overlay.add_toast(adw::Toast::new(&message)),
             Input::ShowAbout => about::present(&self.window),
+            Input::ShowPreferences => self.show_preferences(),
             Input::TrackChanged(track) => self.notify(&track),
             Input::CloseRequested => self.close(&sender),
             Input::PermissionAnswered(granted) => {
@@ -377,6 +387,16 @@ impl App {
         self.window.set_visible(false);
     }
 
+    /// Opens the preferences dialog. Like the gate, it lives as long as its widget.
+    fn show_preferences(&self) {
+        let mut preferences = Preferences::builder().launch(PreferencesInit {
+            services: self.services.clone(),
+        });
+        let dialog = preferences.widget().clone();
+        preferences.detach_runtime();
+        dialog.present(Some(&self.window));
+    }
+
     /// Shows a notification if the user cannot see the window.
     fn notify(&self, track: &NowPlaying) {
         if self.window.is_active() || !self.settings.show_notifications() {
@@ -399,12 +419,12 @@ fn register_actions(sender: &ComponentSender<App>) {
     let about = ActionEntry::builder("about")
         .activate(move |_: &gtk::Application, _, _| about_input.emit(Input::ShowAbout))
         .build();
-    // ponytail: prompt 34 adds the preferences dialog. The action is off until then.
-    let preferences = SimpleAction::new("preferences", None);
-    preferences.set_enabled(false);
+    let preferences_input = sender.input_sender().clone();
+    let preferences = ActionEntry::builder("preferences")
+        .activate(move |_: &gtk::Application, _, _| preferences_input.emit(Input::ShowPreferences))
+        .build();
     let app = relm4::main_application();
-    app.add_action_entries([quit, about]);
-    app.add_action(&preferences);
+    app.add_action_entries([quit, about, preferences]);
     app.set_accels_for_action("app.quit", &["<Ctrl>q"]);
     app.set_accels_for_action("app.preferences", &["<Ctrl>comma"]);
 }

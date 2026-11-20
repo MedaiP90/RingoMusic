@@ -17,9 +17,12 @@ const VOLUME: &str = "volume";
 const QUIT_ON_CLOSE: &str = "quit-on-close";
 const SHOW_NOTIFICATIONS: &str = "show-notifications";
 const BACKGROUND_DENIED: &str = "background-denied";
+const COLOR_SCHEME: &str = "color-scheme";
+const ACCENT_COLOR: &str = "accent-color";
 const CHECK_UPDATES: &str = "check-updates";
 const LAST_UPDATE_CHECK: &str = "last-update-check";
 const API_CACHE_MAX_MB: &str = "api-cache-max-mb";
+const ARTWORK_CACHE_MAX_MB: &str = "artwork-cache-max-mb";
 
 /// Typed view of the application settings.
 ///
@@ -216,6 +219,54 @@ impl Settings {
         Self::write(
             API_CACHE_MAX_MB,
             self.inner.set_uint(API_CACHE_MAX_MB, value),
+        )
+    }
+
+    /// Color scheme: `system`, `light`, or `dark`.
+    #[must_use]
+    pub fn color_scheme(&self) -> String {
+        self.inner.string(COLOR_SCHEME).into()
+    }
+
+    /// Sets the color scheme.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `value` is not one of the choices of the key.
+    pub fn set_color_scheme(&self, value: &str) -> Result<()> {
+        Self::write(COLOR_SCHEME, self.inner.set_string(COLOR_SCHEME, value))
+    }
+
+    /// Accent color: `system` or the name of a fixed color, for example `blue`.
+    #[must_use]
+    pub fn accent_color(&self) -> String {
+        self.inner.string(ACCENT_COLOR).into()
+    }
+
+    /// Sets the accent color.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `value` is not one of the choices of the key.
+    pub fn set_accent_color(&self, value: &str) -> Result<()> {
+        Self::write(ACCENT_COLOR, self.inner.set_string(ACCENT_COLOR, value))
+    }
+
+    /// Size limit of the artwork cache, in mebibytes.
+    #[must_use]
+    pub fn artwork_cache_max_mb(&self) -> u32 {
+        self.inner.uint(ARTWORK_CACHE_MAX_MB)
+    }
+
+    /// Sets the size limit of the artwork cache.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if `value` is not between 16 and 4096.
+    pub fn set_artwork_cache_max_mb(&self, value: u32) -> Result<()> {
+        Self::write(
+            ARTWORK_CACHE_MAX_MB,
+            self.inner.set_uint(ARTWORK_CACHE_MAX_MB, value),
         )
     }
 

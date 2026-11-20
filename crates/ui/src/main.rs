@@ -4,6 +4,7 @@
 //! Desktop application for the Apple Music player.
 
 mod about;
+mod accent;
 mod app;
 mod artwork;
 mod background;
@@ -19,11 +20,13 @@ mod network_banner;
 mod notification;
 mod paged;
 mod playback_actions;
+mod preferences;
 mod section;
 mod services;
 mod sidebar;
 mod startup_error;
 mod subscription;
+mod theme;
 mod tint;
 mod views;
 mod widgets;

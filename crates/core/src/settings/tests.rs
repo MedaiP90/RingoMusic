@@ -29,7 +29,10 @@ fn defaults_match_the_schema_table() {
     assert!(!settings.background_denied());
     assert!(settings.check_updates());
     assert_eq!(settings.last_update_check(), 0);
-    assert_eq!(settings.api_cache_max_mb(), 256);
+    assert_eq!(settings.api_cache_max_mb(), 50);
+    assert_eq!(settings.artwork_cache_max_mb(), 500);
+    assert_eq!(settings.accent_color(), "system");
+    assert_eq!(settings.color_scheme(), "system");
 }
 
 #[test]
@@ -80,6 +83,33 @@ fn volume_rejects_values_outside_the_range() {
 }
 
 #[test]
+fn color_scheme_accepts_only_the_choices() {
+    let settings = test_settings();
+    assert!(settings.set_color_scheme("sepia").is_err());
+    settings.set_color_scheme("dark").expect("dark is a choice");
+    assert_eq!(settings.color_scheme(), "dark");
+}
+
+#[test]
+fn accent_color_accepts_only_the_choices() {
+    let settings = test_settings();
+    assert!(settings.set_accent_color("magenta").is_err());
+    settings.set_accent_color("teal").expect("teal is a choice");
+    assert_eq!(settings.accent_color(), "teal");
+}
+
+#[test]
+fn artwork_cache_size_rejects_values_outside_the_range() {
+    let settings = test_settings();
+    assert!(settings.set_artwork_cache_max_mb(15).is_err());
+    assert!(settings.set_artwork_cache_max_mb(4097).is_err());
+    settings
+        .set_artwork_cache_max_mb(4096)
+        .expect("value is in range");
+    assert_eq!(settings.artwork_cache_max_mb(), 4096);
+}
+
+#[test]
 fn api_cache_size_accepts_the_range_limits() {
     let settings = test_settings();
     settings
@@ -96,7 +126,7 @@ fn api_cache_size_rejects_values_outside_the_range() {
     let settings = test_settings();
     assert!(settings.set_api_cache_max_mb(15).is_err());
     assert!(settings.set_api_cache_max_mb(4097).is_err());
-    assert_eq!(settings.api_cache_max_mb(), 256);
+    assert_eq!(settings.api_cache_max_mb(), 50);
 }
 
 #[test]

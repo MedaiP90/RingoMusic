@@ -200,6 +200,8 @@ impl SimpleComponent for QueueView {
                             set_vexpand: true,
                             set_hscrollbar_policy: gtk::PolicyType::Never,
                             add_css_class: "card",
+                            // The rows must not paint over the rounded corners of the card.
+                            set_overflow: gtk::Overflow::Hidden,
                             #[watch]
                             set_visible: !model.snapshot.upcoming.is_empty(),
                             set_child: Some(&model.upcoming.view),

@@ -110,7 +110,8 @@ impl Services {
         let artwork = ArtworkStore::new(paths.artwork_cache_dir.clone())
             .context("cannot start the artwork cache")?;
         let pruned = artwork.clone();
-        runtime.spawn_blocking(move || pruned.prune());
+        let artwork_max_bytes = u64::from(settings.artwork_cache_max_mb()) * MEBIBYTE;
+        runtime.spawn_blocking(move || pruned.prune(artwork_max_bytes));
         let shared = AppServices {
             api,
             core,

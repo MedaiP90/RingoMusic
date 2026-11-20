@@ -41,6 +41,33 @@ Copyright (C) 2026 RingoMusic contributors
       <summary>Background permission was refused</summary>
       <description>Set to true when the background portal refused to let the application run in the background. The application shows a message at the next start and sets the key to false.</description>
     </key>
+    <key name="color-scheme" type="s">
+      <choices>
+        <choice value="system"/>
+        <choice value="light"/>
+        <choice value="dark"/>
+      </choices>
+      <default>"system"</default>
+      <summary>Color scheme</summary>
+      <description>Light or dark style of the application. The value "system" follows the style of the desktop.</description>
+    </key>
+    <key name="accent-color" type="s">
+      <choices>
+        <choice value="system"/>
+        <choice value="blue"/>
+        <choice value="teal"/>
+        <choice value="green"/>
+        <choice value="yellow"/>
+        <choice value="orange"/>
+        <choice value="red"/>
+        <choice value="pink"/>
+        <choice value="purple"/>
+        <choice value="slate"/>
+      </choices>
+      <default>"system"</default>
+      <summary>Accent color</summary>
+      <description>Accent color of the application. The value "system" follows the accent color of the desktop. The other values are fixed colors.</description>
+    </key>
     <key name="check-updates" type="b">
       <default>true</default>
       <summary>Check for updates</summary>
@@ -53,9 +80,15 @@ Copyright (C) 2026 RingoMusic contributors
     </key>
     <key name="api-cache-max-mb" type="u">
       <range min="16" max="4096"/>
-      <default>256</default>
+      <default>50</default>
       <summary>Size limit of the API cache</summary>
       <description>Maximum size of the cache for API responses, in mebibytes. The application removes the oldest entries when the cache is larger.</description>
+    </key>
+    <key name="artwork-cache-max-mb" type="u">
+      <range min="16" max="4096"/>
+      <default>500</default>
+      <summary>Size limit of the artwork cache</summary>
+      <description>Maximum size of the cache for artwork images, in mebibytes. The application removes the oldest files at start-up when the cache is larger.</description>
     </key>
   </schema>
 </schemalist>

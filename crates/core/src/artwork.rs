@@ -21,10 +21,6 @@ use tracing::{info, warn};
 
 use crate::{Error, Result};
 
-/// Size that the disk cache can have. `ArtworkStore::prune` removes the least recently used
-/// files above this size.
-pub const MAX_DISK_BYTES: u64 = 300 * 1024 * 1024;
-
 /// Time that one download can take.
 const DOWNLOAD_TIMEOUT: Duration = Duration::from_secs(20);
 
@@ -137,13 +133,33 @@ impl ArtworkStore {
         path
     }
 
-    /// Deletes the oldest files if the cache is larger than [`MAX_DISK_BYTES`].
+    /// Deletes the oldest files if the cache is larger than `max_bytes`.
     /// The call blocks. Run it on a blocking thread.
-    pub fn prune(&self) {
-        match prune_dir(&self.inner.dir, MAX_DISK_BYTES) {
+    pub fn prune(&self, max_bytes: u64) {
+        match prune_dir(&self.inner.dir, max_bytes) {
             Ok(0) => {}
             Ok(count) => info!(count, "removed old artwork files"),
             Err(error) => warn!(%error, "cannot prune the artwork cache"),
+        }
+    }
+
+    /// Returns the total size of the cached files, in bytes. The call blocks.
+    /// Run it on a blocking thread.
+    #[must_use]
+    pub fn used_bytes(&self) -> u64 {
+        directory_size(&self.inner.dir)
+    }
+
+    /// Deletes all cached files. Returns the number of freed bytes. The call
+    /// blocks. Run it on a blocking thread.
+    pub fn clear(&self) -> u64 {
+        let freed = directory_size(&self.inner.dir);
+        match prune_dir(&self.inner.dir, 0) {
+            Ok(_) => freed,
+            Err(error) => {
+                warn!(%error, "cannot clear the artwork cache");
+                0
+            }
         }
     }
 
@@ -204,6 +220,19 @@ fn write_atomically(path: &Path, bytes: &[u8]) -> io::Result<()> {
     let temporary = path.with_extension("part");
     fs::write(&temporary, bytes)?;
     fs::rename(&temporary, path)
+}
+
+/// Returns the total size of the files in `dir`. An unreadable entry counts as 0.
+fn directory_size(dir: &Path) -> u64 {
+    let Ok(entries) = fs::read_dir(dir) else {
+        return 0;
+    };
+    entries
+        .flatten()
+        .filter_map(|entry| entry.metadata().ok())
+        .filter(fs::Metadata::is_file)
+        .map(|metadata| metadata.len())
+        .sum()
 }
 
 /// Deletes the oldest files of `dir` until the rest fits in `limit` bytes.
@@ -326,6 +355,17 @@ mod tests {
             .and_then(|metadata| metadata.modified())
             .expect("time is known");
         assert!(modified > old, "time {modified:?} is not after {old:?}");
+        fs::remove_dir_all(dir).expect("test directory is removed");
+    }
+
+    #[test]
+    fn clear_deletes_all_files_and_returns_the_freed_bytes() {
+        let dir = temp_dir("clear");
+        let store = ArtworkStore::new(dir.clone()).expect("client starts");
+        fs::write(dir.join("a.jpg"), [0_u8; 10]).expect("file is written");
+        fs::write(dir.join("b.jpg"), [0_u8; 5]).expect("file is written");
+        assert_eq!(store.clear(), 15);
+        assert_eq!(fs::read_dir(&dir).expect("directory exists").count(), 0);
         fs::remove_dir_all(dir).expect("test directory is removed");
     }
 

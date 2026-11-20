@@ -33,7 +33,7 @@ const EXPIRY_BY_RESOURCE: &[(&str, Duration)] = &[
 const DEFAULT_EXPIRY: Duration = HOUR;
 
 /// Default limit for the total size of the cached bodies.
-pub const DEFAULT_MAX_BYTES: u64 = 256 * 1024 * 1024;
+pub const DEFAULT_MAX_BYTES: u64 = 50 * 1024 * 1024;
 
 /// Default time between two sweeps of expired rows.
 pub const SWEEP_INTERVAL: Duration = HOUR;
@@ -107,6 +107,36 @@ impl<T: ApiTransport, C: Clock + 'static> CachingTransport<T, C> {
                 sweep(&database, clock.as_ref()).await;
             }
         })
+    }
+
+    /// Returns the total size of the cached bodies, in bytes.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the database query fails.
+    pub async fn used_bytes(&self) -> crate::Result<u64> {
+        let bytes = self
+            .database
+            .run(|connection| Ok(body_bytes(connection)?))
+            .await?;
+        Ok(u64::try_from(bytes).unwrap_or_default())
+    }
+
+    /// Deletes all cached responses. Returns the number of freed bytes of body text.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the database query fails.
+    pub async fn clear(&self) -> crate::Result<u64> {
+        let freed = self
+            .database
+            .run(|connection| {
+                let bytes = body_bytes(connection)?;
+                connection.execute("DELETE FROM api_cache", [])?;
+                Ok(bytes)
+            })
+            .await?;
+        Ok(u64::try_from(freed).unwrap_or_default())
     }
 
     async fn read_cache(&self, key: &str) -> Option<Value> {
@@ -184,6 +214,15 @@ async fn sweep(database: &Database, clock: &impl Clock) {
     if let Err(error) = result {
         tracing::warn!(%error, "cannot sweep the API cache");
     }
+}
+
+/// Returns the total size of the cached bodies in bytes.
+fn body_bytes(connection: &Connection) -> rusqlite::Result<i64> {
+    connection.query_row(
+        "SELECT COALESCE(SUM(length(CAST(body AS BLOB))), 0) FROM api_cache",
+        [],
+        |row| row.get(0),
+    )
 }
 
 /// Deletes the rows that are expired at `now` (seconds since the Unix epoch).
@@ -363,6 +402,23 @@ mod tests {
         let _ = fixture.transport.get("/v1/me/library/songs", &[]).await;
 
         assert_eq!(calls(&fixture), 2);
+    }
+
+    #[tokio::test]
+    async fn clear_deletes_all_rows_and_returns_the_freed_bytes() {
+        let fixture = fixture();
+        let _ = fixture.transport.get("/v1/catalog/us/songs/1", &[]).await;
+        let _ = fixture.transport.get("/v1/catalog/us/songs/2", &[]).await;
+
+        assert_eq!(
+            fixture.transport.used_bytes().await.expect("size is read"),
+            20
+        );
+        let freed = fixture.transport.clear().await.expect("cache is cleared");
+
+        assert_eq!(freed, 20);
+        let _ = fixture.transport.get("/v1/catalog/us/songs/1", &[]).await;
+        assert_eq!(calls(&fixture), 3);
     }
 
     #[tokio::test]
