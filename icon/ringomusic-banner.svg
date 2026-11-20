@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- RingoMusic banner: app icon at the left, name and subtitle at the right. -->
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="200" viewBox="0 0 800 200">
+  <!-- App icon, scaled from 128 px to 160 px -->
+  <g transform="translate(20 20) scale(1.25)" fill="#e01b24">
+    <circle cx="64" cy="72" r="29" stroke="#e01b24" stroke-width="4" fill="none"/>
+    <circle cx="64" cy="72" r="24.5"/>
+    <path d="M17 72 C17 4 111 4 111 72" stroke="#e01b24" stroke-width="8" stroke-linecap="round" fill="none"/>
+    <rect x="7" y="58" width="20" height="36" rx="10"/>
+    <rect x="101" y="58" width="20" height="36" rx="10"/>
+  </g>
+
+  <!-- Text: red name and red subtitle -->
+  <text x="215" y="102" font-family="Adwaita Sans, Cantarell, sans-serif" font-size="86" font-weight="800" fill="#e01b24">RingoMusic</text>
+  <text x="217" y="148" font-family="Adwaita Sans, Cantarell, sans-serif" font-size="26" fill="#e01b24">Apple Music for Linux, native GNOME style</text>
+</svg>
