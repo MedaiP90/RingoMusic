@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 RingoMusic contributors
+
+//! Serde models for the Apple Music API resources.
+//!
+//! The models keep only the fields that the UI and the queue need. A list of
+//! resources uses [`LenientVec`], so one broken item never breaks a response.
+
+mod catalog;
+mod id;
+mod lenient;
+mod library;
+mod recommendation;
+mod resource;
+mod search;
+mod shared;
+
+pub use catalog::{
+    Album, AlbumAttributes, AlbumRelationships, Artist, ArtistAttributes, ArtistRelationships,
+    ArtistViews, Playlist, PlaylistAttributes, PlaylistRelationships, Song, SongAttributes,
+    SongRelationships,
+};
+pub use id::{
+    AlbumId, ArtistId, LibraryAlbumId, LibraryArtistId, LibraryPlaylistId, LibrarySongId,
+    PlaylistId, SongId,
+};
+pub use lenient::LenientVec;
+pub use library::{
+    LibraryAlbum, LibraryAlbumAttributes, LibraryAlbumRelationships, LibraryArtist,
+    LibraryArtistAttributes, LibraryPlaylist, LibraryPlaylistAttributes,
+    LibraryPlaylistRelationships, LibrarySong, LibrarySongAttributes,
+};
+pub use recommendation::Recommendation;
+pub use resource::Resource;
+pub use search::{LibrarySearchResults, SearchResults};
+pub use shared::{ApiPage, Artwork, ContentRating, PlayParams, Relationship, ResourceRef};

@@ -47,6 +47,16 @@ ringo-cli api-get /v1/me/library/artists limit=25 > $F/library_artists.json
 ringo-cli api-get /v1/me/library/songs limit=25 > $F/library_songs.json
 ```
 
+### Top results and library search
+
+The library search response holds personal data: apply the privacy rule.
+Top results are not a type. Add `with=topResults` to the search request.
+
+```sh
+ringo-cli api-get '/v1/catalog/{storefront}/search' term=radiohead types=songs,albums,artists,playlists limit=5 with=topResults > $F/catalog_search_top.json
+ringo-cli api-get /v1/me/library/search term=<a word from your library> types=library-songs,library-albums,library-artists,library-playlists limit=5 > $F/library_search.json
+```
+
 ### Recommendations (personal data: apply the privacy rule)
 
 ```sh
@@ -73,5 +83,7 @@ ringo-cli api-get /v1/me/recommendations > $F/recommendations.json
 | `library_albums.json` | `/v1/me/library/albums` |
 | `library_artists.json` | `/v1/me/library/artists` |
 | `library_songs.json` | `/v1/me/library/songs` |
+| `catalog_search_top.json` | `/v1/catalog/{storefront}/search` with `with=topResults` |
+| `library_search.json` | `/v1/me/library/search` with `types=library-songs,...` |
 | `recommendations.json` | `/v1/me/recommendations` |
 | `catalog_search_broken_item.json` | `catalog_search.json` with one damaged item |

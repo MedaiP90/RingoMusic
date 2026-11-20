@@ -3,6 +3,8 @@
 
 //! Typed client for the Apple Music API.
 
+pub mod models;
+
 mod artwork;
 mod error;
 mod fixture_transport;
