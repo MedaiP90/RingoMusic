@@ -17,6 +17,7 @@ mock = []
 ringo-am-api = { path = "../am-api" }
 ringo-engine = { path = "../engine" }
 async-trait.workspace = true
+gio = "0.22"
 rand = { workspace = true, features = ["std", "std_rng", "thread_rng"] }
 rusqlite.workspace = true
 serde.workspace = true

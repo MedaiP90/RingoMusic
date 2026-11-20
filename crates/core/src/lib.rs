@@ -9,6 +9,7 @@ pub mod paths;
 pub mod queue;
 pub mod queue_store;
 pub mod runner;
+pub mod settings;
 pub mod state;
 
 mod error;

@@ -1,0 +1,92 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 RingoMusic contributors
+
+use gio::SettingsSchemaSource;
+
+use super::*;
+use crate::api_cache::DEFAULT_MAX_BYTES;
+
+/// Opens the compiled schema on a memory backend. No system install is needed.
+fn test_settings() -> Settings {
+    let source = SettingsSchemaSource::from_directory(env!("RINGO_SCHEMA_DIR"), None, false)
+        .expect("build.rs compiled the schema");
+    let schema = source
+        .lookup(SCHEMA_ID, false)
+        .expect("schema is in the compiled directory");
+    let backend = gio::memory_settings_backend_new();
+    Settings::from_raw(gio::Settings::new_full(&schema, Some(&backend), None))
+}
+
+#[test]
+fn defaults_match_the_schema_table() {
+    let settings = test_settings();
+    assert_eq!(settings.window_width(), 1000);
+    assert_eq!(settings.window_height(), 700);
+    assert!(!settings.window_maximized());
+    assert!((settings.volume() - 1.0).abs() < f64::EPSILON);
+    assert!(!settings.quit_on_close());
+    assert!(settings.show_notifications());
+    assert!(settings.check_updates());
+    assert_eq!(settings.last_update_check(), 0);
+    assert_eq!(settings.api_cache_max_mb(), 256);
+}
+
+#[test]
+fn setters_store_values() {
+    let settings = test_settings();
+    settings.set_window_width(800).expect("value is in range");
+    settings
+        .set_window_maximized(true)
+        .expect("value is in range");
+    settings
+        .set_last_update_check(1_700_000_000)
+        .expect("value is in range");
+    assert_eq!(settings.window_width(), 800);
+    assert!(settings.window_maximized());
+    assert_eq!(settings.last_update_check(), 1_700_000_000);
+}
+
+#[test]
+fn volume_accepts_the_range_limits() {
+    let settings = test_settings();
+    settings.set_volume(0.0).expect("value is in range");
+    assert!(settings.volume().abs() < f64::EPSILON);
+    settings.set_volume(1.0).expect("value is in range");
+}
+
+#[test]
+fn volume_rejects_values_outside_the_range() {
+    let settings = test_settings();
+    assert!(matches!(
+        settings.set_volume(-0.1),
+        Err(Error::WriteSetting { key: "volume", .. })
+    ));
+    assert!(settings.set_volume(1.1).is_err());
+    assert!((settings.volume() - 1.0).abs() < f64::EPSILON);
+}
+
+#[test]
+fn api_cache_size_accepts_the_range_limits() {
+    let settings = test_settings();
+    settings
+        .set_api_cache_max_mb(16)
+        .expect("value is in range");
+    settings
+        .set_api_cache_max_mb(4096)
+        .expect("value is in range");
+    assert_eq!(settings.api_cache_max_mb(), 4096);
+}
+
+#[test]
+fn api_cache_size_rejects_values_outside_the_range() {
+    let settings = test_settings();
+    assert!(settings.set_api_cache_max_mb(15).is_err());
+    assert!(settings.set_api_cache_max_mb(4097).is_err());
+    assert_eq!(settings.api_cache_max_mb(), 256);
+}
+
+#[test]
+fn api_cache_default_equals_the_cache_constant() {
+    let default_bytes = u64::from(test_settings().api_cache_max_mb()) * 1024 * 1024;
+    assert_eq!(default_bytes, DEFAULT_MAX_BYTES);
+}

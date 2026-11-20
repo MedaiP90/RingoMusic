@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-License-Identifier: GPL-3.0-or-later
+Copyright (C) 2026 RingoMusic contributors
+-->
+<schemalist>
+  <schema id="io.github.MedaiP90.RingoMusic" path="/io/github/MedaiP90/RingoMusic/">
+    <key name="window-width" type="i">
+      <default>1000</default>
+      <summary>Window width</summary>
+      <description>Width of the main window in pixels. The application saves it when the window closes.</description>
+    </key>
+    <key name="window-height" type="i">
+      <default>700</default>
+      <summary>Window height</summary>
+      <description>Height of the main window in pixels. The application saves it when the window closes.</description>
+    </key>
+    <key name="window-maximized" type="b">
+      <default>false</default>
+      <summary>Window maximized</summary>
+      <description>Set to true if the main window was maximized when it closed.</description>
+    </key>
+    <key name="volume" type="d">
+      <range min="0.0" max="1.0"/>
+      <default>1.0</default>
+      <summary>Volume</summary>
+      <description>Volume of the last session. Use 0.0 for silence and 1.0 for full volume.</description>
+    </key>
+    <key name="quit-on-close" type="b">
+      <default>false</default>
+      <summary>Quit when the window closes</summary>
+      <description>If true, the application stops when the user closes the window. If false, it continues to play in the background.</description>
+    </key>
+    <key name="show-notifications" type="b">
+      <default>true</default>
+      <summary>Show notifications</summary>
+      <description>If true, the application shows a notification when the track changes while the window is closed.</description>
+    </key>
+    <key name="check-updates" type="b">
+      <default>true</default>
+      <summary>Check for updates</summary>
+      <description>If true, the application checks for a new version at start-up.</description>
+    </key>
+    <key name="last-update-check" type="x">
+      <default>0</default>
+      <summary>Time of the last update check</summary>
+      <description>Unix time, in seconds, of the last update check. The value 0 means that no check was done.</description>
+    </key>
+    <key name="api-cache-max-mb" type="u">
+      <range min="16" max="4096"/>
+      <default>256</default>
+      <summary>Size limit of the API cache</summary>
+      <description>Maximum size of the cache for API responses, in mebibytes. The application removes the oldest entries when the cache is larger.</description>
+    </key>
+  </schema>
+</schemalist>

@@ -77,6 +77,15 @@ cargo run -p ringo-cli -- search radiohead
 
 Run `ringo-cli --help` for all commands.
 
+The GUI reads its settings from GSettings. Cargo compiles the schema into `target/`. Point
+GSettings at it when you run the GUI from the source tree (`<profile>` is `debug` or `release`):
+
+```sh
+export GSETTINGS_SCHEMA_DIR="$(echo "$PWD"/target/<profile>/build/ringo-core-*/out/schemas)"
+```
+
+The build needs `glib-compile-schemas` (package `libglib2.0-bin` on Debian).
+
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before you open a pull request.

@@ -68,6 +68,16 @@ pub enum Error {
         reason: &'static str,
     },
 
+    /// A setting cannot be written, for example because the value is out of range.
+    #[error("cannot write setting {key}")]
+    WriteSetting {
+        /// Name of the key.
+        key: &'static str,
+        /// Cause of the failure.
+        #[source]
+        source: gio::glib::BoolError,
+    },
+
     /// The blocking task of a database call did not finish.
     #[error("database task failed")]
     Task(#[source] tokio::task::JoinError),

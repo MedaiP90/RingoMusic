@@ -304,7 +304,7 @@ fn restore_queue_waits_for_the_engine_and_does_not_play() {
         position: Duration::from_secs(7),
     };
     let mut state = AppState::new();
-    assert!(update(&mut state, message).is_empty());
+    assert_eq!(update(&mut state, message), Vec::new());
     assert_eq!(state.queue, saved.queue);
     assert_eq!(state.playback.position, Duration::from_secs(7));
 
