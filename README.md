@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="icon/ringomusic-banner.png" alt="RingoMusic: Apple Music for Linux, native GNOME style" width="640">
+  <img src="assets/ringomusic-banner.png" alt="RingoMusic: Apple Music for Linux, native GNOME style" width="640">
 </p>
 
 # RingoMusic

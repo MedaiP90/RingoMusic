@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-License-Identifier: GPL-3.0-or-later
+Copyright (C) 2026 RingoMusic contributors
+-->
+<component type="desktop-application">
+  <id>io.github.MedaiP90.RingoMusic</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>RingoMusic</name>
+  <summary>Play your Apple Music library</summary>
+  <developer id="io.github.medaip90">
+    <name>MedaiP90</name>
+  </developer>
+  <launchable type="desktop-id">io.github.MedaiP90.RingoMusic.desktop</launchable>
+  <provides>
+    <binary>ringomusic</binary>
+  </provides>
+  <description>
+    <p>RingoMusic is a native GNOME music player for Apple Music. Use it to browse your library, search the catalog, and play songs, albums, and playlists.</p>
+    <p>You must have an Apple Music subscription to use this application.</p>
+    <p>The audio quality is AAC 256 kbps.</p>
+    <p>RingoMusic is not affiliated with Apple Inc. Apple Music is a trademark of Apple Inc.</p>
+  </description>
+  <url type="homepage">https://github.com/MedaiP90/RingoMusic</url>
+  <url type="bugtracker">https://github.com/MedaiP90/RingoMusic/issues</url>
+  <url type="vcs-browser">https://github.com/MedaiP90/RingoMusic</url>
+  <content_rating type="oars-1.1" />
+  <branding>
+    <color type="primary" scheme_preference="light">#f6a5a9</color>
+    <color type="primary" scheme_preference="dark">#a51d2d</color>
+  </branding>
+  <!-- Prompt 47 adds the screenshots.
+  <screenshots>
+    <screenshot type="default">
+      <image>https://example.invalid/screenshot.png</image>
+      <caption>The main window</caption>
+    </screenshot>
+  </screenshots>
+  -->
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <releases>
+    <release version="0.1.0" date="2026-11-20" />
+  </releases>
+</component>

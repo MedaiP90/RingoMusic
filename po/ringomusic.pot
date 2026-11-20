@@ -22,7 +22,7 @@ msgstr ""
 msgid "RingoMusic contributors"
 msgstr ""
 
-#: crates/ui/src/about.rs
+#: crates/ui/src/about.rs data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
 "RingoMusic is not affiliated with Apple Inc. Apple Music is a trademark of "
 "Apple Inc."
@@ -580,4 +580,36 @@ msgstr ""
 
 #: crates/ui/src/widgets/song_row.rs
 msgid "Go to Artist"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.desktop
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "RingoMusic"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.desktop
+msgid "Music Player"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.desktop
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Play your Apple Music library"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.desktop
+msgid "Music;Streaming;Player;Songs;Albums;"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"RingoMusic is a native GNOME music player for Apple Music. Use it to browse "
+"your library, search the catalog, and play songs, albums, and playlists."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "You must have an Apple Music subscription to use this application."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "The audio quality is AAC 256 kbps."
 msgstr ""

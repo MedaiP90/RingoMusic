@@ -17,7 +17,6 @@ path = [
   "engine/package.json",
   "engine/package-lock.json",
   "engine/tsconfig.json",
-  "icon/**",
   "protocol/schema.json",
   "protocol/examples/**",
   "tests/fixtures/**",
@@ -30,3 +29,13 @@ path = [
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 RingoMusic contributors"
 SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Artwork.
+[[annotations]]
+path = [
+  "data/icons/**",
+  "assets/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 RingoMusic contributors"
+SPDX-License-Identifier = "CC-BY-SA-4.0"

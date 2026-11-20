@@ -30,13 +30,38 @@ jobs:
           echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
       - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
       - run: cargo fmt --all --check
-      - run: glib-compile-schemas --strict --dry-run data/
-      - name: Check the translation template
-        run: |
-          po/update-pot.sh
-          git diff --exit-code po/
       - run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
       - run: cargo test --workspace --all-features --locked
+
+  pot:
+    runs-on: ubuntu-latest
+    # xgettext reads Rust from GNU gettext 0.24. Debian 13 has an older version.
+    container: fedora:43
+    steps:
+      - name: Install system packages
+        run: dnf install -y --setopt=install_weak_deps=False gettext git diffutils
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check the translation template
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          po/update-pot.sh
+          git diff --exit-code po/
+
+  data:
+    runs-on: ubuntu-latest
+    container: debian:13
+    steps:
+      - name: Install validators
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            appstream desktop-file-utils libglib2.0-bin
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: desktop-file-validate data/io.github.MedaiP90.RingoMusic.desktop
+      # The screenshots are missing until prompt 47. The id has capital letters
+      # because of the GitHub user name. Both are pedantic notes, not failures.
+      - run: appstreamcli validate --no-net --pedantic data/io.github.MedaiP90.RingoMusic.metainfo.xml
+      - run: glib-compile-schemas --strict --dry-run data/
 
   engine:
     runs-on: ubuntu-latest

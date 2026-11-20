@@ -26,3 +26,5 @@ crates/ui/src/widgets/detail_header.rs
 crates/ui/src/widgets/player_bar.rs
 crates/ui/src/widgets/queue_row.rs
 crates/ui/src/widgets/song_row.rs
+data/io.github.MedaiP90.RingoMusic.desktop
+data/io.github.MedaiP90.RingoMusic.metainfo.xml

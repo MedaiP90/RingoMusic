@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- RingoMusic symbolic icon: a seal that wears headphones. 16x16, pixel-aligned. -->
+
+<svg
+   width="16"
+   height="16"
+   viewBox="0 0 16 16"
+   fill="#2e3436"
+   version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+  <!-- Seal: outer border, 1 px empty ring, inner disc -->
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 8,5 C 5.7967833,5 4,6.7967833 4,9 c 0,2.203217 1.7967833,4 4,4 2.203217,0 4,-1.796783 4,-4 C 12,6.7967833 10.203217,5 8,5 Z m 0,1 c 1.6627766,0 3,1.3372234 3,3 0,1.662777 -1.3372234,3 -3,3 C 6.3372234,12 5,10.662777 5,9 5,7.3372234 6.3372234,6 8,6 Z" />
+  <circle
+     cx="8"
+     cy="9"
+     r="2" />
+  <!-- Headband -->
+  <path
+     style="baseline-shift:baseline;display:inline;overflow:visible;vector-effect:none;enable-background:accumulate;stop-color:#000000;stop-opacity:1;opacity:1"
+     d="M 8,1 C 6.1698718,1 4.3258424,1.5537559 2.8964844,2.7265625 1.4671263,3.8993691 0.5,5.7291667 0.5,8 h 2 C 2.5,6.2708333 3.1578737,5.1006309 4.1660156,4.2734375 5.1741576,3.4462441 6.5801282,3 8,3 9.4198718,3 10.825842,3.4462441 11.833984,4.2734375 12.842126,5.1006309 13.5,6.2708333 13.5,8 h 2 C 15.5,5.7291667 14.532874,3.8993691 13.103516,2.7265625 11.674158,1.5537559 9.8301282,1 8,1 Z" />
+  <!-- Ear cups -->
+  <rect
+     x="0"
+     y="6"
+     width="3"
+     height="7"
+     rx="1.5" />
+  <rect
+     x="13"
+     y="6"
+     width="3"
+     height="7"
+     rx="1.5" />
+</svg>

@@ -1,20 +1,21 @@
-#!/bin/sh
+#!/bin/bash
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 RingoMusic contributors
 #
 # Extracts the translatable strings into po/ringomusic.pot.
-# xgettext reads Rust with --language=Rust (GNU gettext 0.24 and later).
+# xgettext picks the language from the file extension: Rust (GNU gettext 0.24
+# and later), desktop files, and AppStream metainfo files.
 # Limit: it finds only literal arguments of gettext() and ngettext(), so a
 # string inside a macro or a constant is not found.
-set -eu
+set -euo pipefail
 
 # A fixed locale keeps the sort order and the messages the same on every machine.
 export LC_ALL=C
 
 cd "$(dirname "$0")/.."
 
-# Every file with translatable strings must be listed.
-missing=$(grep -rlE 'n?gettext\(' crates --include='*.rs' | sort | diff - po/POTFILES.in || true)
+# Every Rust file with translatable strings must be listed.
+missing=$(grep -rlE 'n?gettext\(' crates --include='*.rs' | sort | diff - <(grep '^crates/' po/POTFILES.in) || true)
 if [ -n "$missing" ]; then
     echo "po/POTFILES.in is out of date:" >&2
     echo "$missing" >&2
@@ -22,7 +23,6 @@ if [ -n "$missing" ]; then
 fi
 
 xgettext \
-    --language=Rust \
     --from-code=UTF-8 \
     --keyword=gettext \
     --keyword=ngettext:1,2 \
