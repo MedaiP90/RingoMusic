@@ -40,6 +40,27 @@ pub enum Error {
     #[error("database query failed")]
     Query(#[from] rusqlite::Error),
 
+    /// A required environment variable is not set.
+    #[error("environment variable {name} is not set")]
+    MissingEnvironment {
+        /// Name of the variable.
+        name: &'static str,
+    },
+
+    /// The path of the running executable is unknown.
+    #[error("cannot find the path of the executable")]
+    Executable(#[source] std::io::Error),
+
+    /// An application directory cannot be created.
+    #[error("cannot create directory {path}")]
+    CreateDir {
+        /// Path of the directory.
+        path: PathBuf,
+        /// Cause of the failure.
+        #[source]
+        source: std::io::Error,
+    },
+
     /// The blocking task of a database call did not finish.
     #[error("database task failed")]
     Task(#[source] tokio::task::JoinError),

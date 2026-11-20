@@ -3,7 +3,6 @@
 
 //! Developer command-line client for the playback engine.
 
-mod data_dir;
 mod event_json;
 mod play;
 mod search;
@@ -13,6 +12,7 @@ use std::sync::Arc;
 use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand};
 use ringo_am_api::ApiTransport;
+use ringo_core::paths::Paths;
 use ringo_engine::{EngineConfig, EngineEvent, PlaybackEngine, SidecarEngine, SidecarTransport};
 use serde_json::Value;
 use tokio::signal;
@@ -74,8 +74,15 @@ enum Command {
 async fn main() -> Result<()> {
     let cli = Cli::parse();
     init_tracing();
-    let config = EngineConfig::from_env_or_default(data_dir::engine_data_dir()?)
-        .context("cannot configure the engine (see --help for the development setup)")?;
+    let paths = Paths::from_env().context("cannot resolve the application paths")?;
+    paths
+        .ensure()
+        .context("cannot create the application directories")?;
+    let config = EngineConfig::from_env_or_default(
+        paths.engine_data_dir,
+        paths.runtime_dir.join("engine.sock"),
+    )
+    .context("cannot configure the engine (see --help for the development setup)")?;
     let engine = Arc::new(SidecarEngine::start(config).context("cannot start the engine")?);
     // The runtime has one thread, so no event is lost between `start` and `subscribe`.
     let events = engine.events();

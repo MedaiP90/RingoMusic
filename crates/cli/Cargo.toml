@@ -11,6 +11,7 @@ name = "ringo-cli"
 path = "src/main.rs"
 
 [dependencies]
+ringo-core = { path = "../core" }
 ringo-engine = { path = "../engine" }
 ringo-am-api = { path = "../am-api" }
 anyhow.workspace = true

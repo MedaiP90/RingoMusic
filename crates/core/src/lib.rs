@@ -5,6 +5,7 @@
 
 pub mod api_cache;
 pub mod db;
+pub mod paths;
 pub mod queue;
 pub mod runner;
 pub mod state;

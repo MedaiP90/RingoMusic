@@ -470,6 +470,7 @@ dependencies = [
  "anyhow",
  "clap",
  "ringo-am-api",
+ "ringo-core",
  "ringo-engine",
  "serde_json",
  "tokio",
