@@ -6,5 +6,15 @@ license.workspace = true
 repository.workspace = true
 rust-version.workspace = true
 
+[dependencies]
+ringo-am-api = { path = "../am-api" }
+ringo-core = { path = "../core" }
+ringo-engine = { path = "../engine" }
+# The `tokio` feature makes the D-Bus connection use the Tokio runtime (decision D12).
+mpris-server = { version = "0.11", features = ["tokio"] }
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
 [lints]
 workspace = true

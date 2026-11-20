@@ -17,7 +17,7 @@ use crate::{EngineConfig, EngineEvent, Error, ItemId, PlaybackEngine, Result, Rp
 /// Time limit for a request. `auth.signIn` does not use it.
 const CALL_TIMEOUT: Duration = Duration::from_secs(30);
 /// Time limit that is long enough to be no limit.
-const NO_TIMEOUT: Duration = Duration::from_secs(365 * 24 * 60 * 60);
+const NO_TIMEOUT: Duration = Duration::from_hours(365 * 24);
 /// Capacity of the event channel.
 const EVENT_CAPACITY: usize = 256;
 

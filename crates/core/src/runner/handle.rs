@@ -21,6 +21,14 @@ impl CoreHandle {
         let _ = self.inbox.send(message).await;
     }
 
+    /// Returns a sender for the inbox. Use it for code that sends messages from
+    /// a thread without a runtime. The runner does not stop while a sender
+    /// exists, so stop it with [`Message::Shutdown`].
+    #[must_use]
+    pub fn sender(&self) -> mpsc::Sender<Message> {
+        self.inbox.clone()
+    }
+
     /// Returns a receiver of state snapshots.
     #[must_use]
     pub fn subscribe(&self) -> watch::Receiver<AppState> {

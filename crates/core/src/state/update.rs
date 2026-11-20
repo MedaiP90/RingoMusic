@@ -19,6 +19,7 @@ pub fn update(state: &mut AppState, message: Message) -> Vec<Command> {
     match message {
         Message::Play => vec![Command::Play],
         Message::Pause => vec![Command::Pause],
+        Message::Stop => vec![Command::Stop],
         Message::Next => skip_forward(&mut state.queue),
         Message::Previous => skip_back(&mut state.queue),
         Message::Seek(position) => vec![Command::Seek(position)],

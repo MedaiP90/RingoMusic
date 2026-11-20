@@ -17,6 +17,8 @@ pub enum Message {
     Play,
     /// Pauses playback.
     Pause,
+    /// Stops playback. The queue stays as it is.
+    Stop,
     /// Skips to the next item. With repeat one, the current item restarts.
     Next,
     /// Goes to the previous item. At the start of the queue, the current item

@@ -132,6 +132,13 @@ fn remove_current_item_while_playing_sets_queue_and_plays() {
 }
 
 #[test]
+fn stop_message_stops_the_engine_and_keeps_the_queue() {
+    let mut state = state_with(&["a", "b"], 0);
+    assert_eq!(update(&mut state, Message::Stop), vec![Command::Stop]);
+    assert_eq!(state.queue.items().len(), 2);
+}
+
+#[test]
 fn remove_last_item_stops_playback() {
     let mut state = state_with(&["a"], 0);
     assert_eq!(update(&mut state, Message::Remove(0)), vec![Command::Stop]);

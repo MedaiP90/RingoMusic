@@ -7,7 +7,7 @@ use std::time::{Duration, Instant};
 /// Restarts that the supervisor allows in one window.
 const MAX_RESTARTS: usize = 5;
 /// Length of the sliding window.
-const WINDOW: Duration = Duration::from_secs(5 * 60);
+const WINDOW: Duration = Duration::from_mins(5);
 /// Delay before the first restart. Each restart doubles it.
 const BACKOFF_START: Duration = Duration::from_secs(1);
 /// Number of doublings after which the delay stops to grow (1, 2, 4, 8, 16 s).

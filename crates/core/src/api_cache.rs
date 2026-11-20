@@ -14,9 +14,9 @@ use tokio::time::{self, Instant};
 
 use crate::db::{Database, unix_seconds};
 
-const TEN_MINUTES: Duration = Duration::from_secs(10 * 60);
-const HOUR: Duration = Duration::from_secs(60 * 60);
-const SEVEN_DAYS: Duration = Duration::from_secs(7 * 24 * 60 * 60);
+const TEN_MINUTES: Duration = Duration::from_mins(10);
+const HOUR: Duration = Duration::from_hours(1);
+const SEVEN_DAYS: Duration = Duration::from_hours(168);
 
 const CATALOG_PREFIX: &str = "/v1/catalog/";
 
