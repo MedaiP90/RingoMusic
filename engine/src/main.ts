@@ -20,6 +20,11 @@ const SESSION_PARTITION = 'persist:ringomusic';
 const EXIT_CODE_BAD_CONFIGURATION = 2;
 const QUIT_GRACE_MS = 3000;
 
+// The Rust side owns the MPRIS player and the media keys. Without this,
+// Chromium publishes a second MPRIS player. Chromium ignores the switch when it
+// is set after the first `await`, so keep it at the top level.
+app.commandLine.appendSwitch('disable-features', 'MediaSessionService,HardwareMediaKeyHandling');
+
 // Set when the app quits, so that the window can close.
 let quitting = false;
 app.on('before-quit', () => {
