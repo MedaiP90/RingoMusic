@@ -9,6 +9,8 @@ mod artwork;
 mod background;
 mod debug_play;
 mod gate;
+mod item;
+mod item_actions;
 mod menu;
 mod network_banner;
 mod notification;

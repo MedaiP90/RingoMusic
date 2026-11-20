@@ -25,6 +25,9 @@ ashpd = { version = "0.14", default-features = false, features = ["tokio", "back
 # `gettext-system` uses the gettext of glibc. No source build.
 gettext-rs = { version = "0.8", features = ["gettext-system"] }
 
+[dev-dependencies]
+serde_json.workspace = true
+
 [lints]
 workspace = true
 

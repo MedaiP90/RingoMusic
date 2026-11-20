@@ -36,6 +36,14 @@ impl Section {
         Self::ALL.get(index).copied()
     }
 
+    /// Index of the sidebar row of the section.
+    pub fn row_index(self) -> i32 {
+        let index = Self::ALL.iter().position(|section| *section == self);
+        index
+            .and_then(|index| i32::try_from(index).ok())
+            .unwrap_or(0)
+    }
+
     /// Stable name for the stack child and the navigation page tag.
     pub fn id(self) -> &'static str {
         match self {
@@ -85,6 +93,13 @@ mod tests {
         for (index, section) in Section::ALL.into_iter().enumerate() {
             let index = i32::try_from(index).expect("the section count is small");
             assert_eq!(Section::from_row_index(index), Some(section));
+        }
+    }
+
+    #[test]
+    fn row_index_is_the_inverse_of_from_row_index() {
+        for section in Section::ALL {
+            assert_eq!(Section::from_row_index(section.row_index()), Some(section));
         }
     }
 

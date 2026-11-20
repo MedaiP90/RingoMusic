@@ -21,7 +21,7 @@ use ringo_core::state::{AppState, Message};
 use ringo_engine::protocol::{PlaybackState, RepeatMode};
 use tracing::warn;
 
-use crate::playback_actions::{self as shortcuts, ActionState, OPEN_ALBUM, PlaybackActions};
+use crate::playback_actions::{self as shortcuts, ActionState, PlaybackActions};
 use crate::widgets::artwork_image::ArtworkImage;
 
 /// Size of the artwork in pixels.
@@ -156,14 +156,8 @@ impl SimpleComponent for PlayerBar {
                     #[watch]
                     set_tooltip_text: Some(&model.state.title),
 
-                    // The action is off until prompt 32. A disabled action does nothing.
-                    add_controller = gtk::GestureClick {
-                        connect_released => move |gesture, _, _, _| {
-                            if let Some(label) = gesture.widget() {
-                                let _ = label.activate_action(OPEN_ALBUM, None);
-                            }
-                        },
-                    },
+                    // ponytail: prompt 32 links the title to the album. The now-playing
+                    // state has no album ID yet.
                 },
 
                 gtk::Label {
@@ -477,7 +471,7 @@ fn core_volume(volume: f64) -> f32 {
 }
 
 /// Formats a time as `m:ss`, or as `h:mm:ss` from one hour.
-fn format_time(time: Duration) -> String {
+pub(crate) fn format_time(time: Duration) -> String {
     let seconds = time.as_secs();
     let (hours, minutes, seconds) = (seconds / 3600, seconds / 60 % 60, seconds % 60);
     if hours > 0 {

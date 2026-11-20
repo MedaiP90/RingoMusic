@@ -5,3 +5,5 @@
 
 pub mod artwork_image;
 pub mod player_bar;
+pub mod song_row;
+pub mod tile;

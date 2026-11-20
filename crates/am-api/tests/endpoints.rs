@@ -26,6 +26,7 @@ async fn search_returns_results_with_top_results() {
             ("types", "songs,albums,artists,playlists"),
             ("limit", "5"),
             ("with", "topResults"),
+            ("include[songs]", "albums,artists"),
         ],
         "catalog_search_top.json",
     );

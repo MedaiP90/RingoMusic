@@ -61,6 +61,12 @@ impl ArtworkImage {
         Self { state }
     }
 
+    /// Makes an image that uses the store of [`artwork::install_store`]. Use it
+    /// where the caller has no store, for example in a list item.
+    pub fn shared() -> Self {
+        Self::new(artwork::shared_store())
+    }
+
     /// The widget to put in a container.
     pub fn widget(&self) -> &gtk::Image {
         &self.state.image

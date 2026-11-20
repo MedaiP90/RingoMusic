@@ -44,9 +44,6 @@ pub const CYCLE_REPEAT: Shortcut = Shortcut {
     accelerator: "<Ctrl>r",
 };
 
-/// Action that opens the album of the current song.
-pub const OPEN_ALBUM: &str = "win.open-album";
-
 impl Shortcut {
     /// Returns `label` with the shortcut, for a tooltip. The shortcut is
     /// written for the user, for example "Ctrl+Space".
@@ -97,7 +94,6 @@ impl PlaybackActions {
         for action in actions.all() {
             window.add_action(action);
         }
-        window.add_action(&disabled_open_album_action());
         let application = relm4::main_application();
         for shortcut in [PLAY_PAUSE, NEXT, PREVIOUS, TOGGLE_SHUFFLE, CYCLE_REPEAT] {
             application.set_accels_for_action(shortcut.action, &[shortcut.accelerator]);
@@ -183,15 +179,6 @@ fn repeat_action(core: &CoreHandle) -> SimpleAction {
         let mode = next_repeat(state.borrow().queue.repeat());
         send(&core, Message::SetRepeat(mode));
     });
-    action
-}
-
-/// Creates the action for the title of the song. It stays off until the album
-/// view exists.
-// ponytail: prompt 32 gives this action a handler and turns it on.
-fn disabled_open_album_action() -> SimpleAction {
-    let action = SimpleAction::new("open-album", None);
-    action.set_enabled(false);
     action
 }
 

@@ -66,7 +66,8 @@ impl LibrarySearchType {
     }
 }
 
-/// Searches the catalog. The result includes the top results.
+/// Searches the catalog. The result includes the top results. Each song
+/// has its `relationships` with the album and the artist.
 ///
 /// `limit` is the maximum number of results for each type. Apple accepts
 /// values from 1 to 25 and rejects larger values.
@@ -91,6 +92,8 @@ pub async fn search(
         ("types", &types),
         ("limit", &limit),
         ("with", "topResults"),
+        // Song results then link to their albums and artists.
+        ("include[songs]", "albums,artists"),
     ];
     let envelope: SearchEnvelope<SearchResults> = fetch(transport, &path, &query).await?;
     Ok(envelope.results)

@@ -26,10 +26,16 @@ pub fn build(section: Section, split_view: &adw::NavigationSplitView) -> adw::Na
             .title(section.title())
             .build(),
     ));
+    wrap(section, &toolbar)
+}
+
+/// Builds the navigation stack of `section` with `content` as its root page.
+/// The content brings its own header bar.
+pub fn wrap(section: Section, content: &impl IsA<gtk::Widget>) -> adw::NavigationView {
     let root = adw::NavigationPage::builder()
         .tag(section.id())
         .title(section.title())
-        .child(&toolbar)
+        .child(content)
         .build();
     let view = adw::NavigationView::new();
     view.add(&root);
@@ -38,7 +44,7 @@ pub fn build(section: Section, split_view: &adw::NavigationSplitView) -> adw::Na
 
 /// Builds the button that shows the sidebar again. It is visible only while
 /// the split view is collapsed.
-fn back_button(split_view: &adw::NavigationSplitView) -> gtk::Button {
+pub fn back_button(split_view: &adw::NavigationSplitView) -> gtk::Button {
     let button = gtk::Button::builder()
         .icon_name("go-previous-symbolic")
         .tooltip_text(gettext("Back to sidebar"))

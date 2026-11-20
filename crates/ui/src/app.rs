@@ -20,11 +20,13 @@ use tracing::{debug, warn};
 
 use crate::background::{self, BackgroundPlayback, CloseAction};
 use crate::gate::{self, Gate};
+use crate::item_actions::{self, SongCatalog};
 use crate::section::Section;
 use crate::services::AppServices;
+use crate::views::search::{SearchInit, SearchInput, SearchView};
 use crate::views::section_page;
 use crate::widgets::player_bar::{PlayerBar, PlayerBarInit};
-use crate::{about, menu, network_banner, notification, sidebar, subscription};
+use crate::{about, artwork, menu, network_banner, notification, sidebar, subscription};
 
 /// The part of the state that the shell follows.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -55,6 +57,9 @@ pub struct App {
     window: adw::ApplicationWindow,
     toast_overlay: adw::ToastOverlay,
     section: Section,
+    sidebar_list: gtk::ListBox,
+    split_view: adw::NavigationSplitView,
+    search: relm4::Sender<SearchInput>,
     settings: Settings,
     background: BackgroundPlayback,
     sign_in_failed: bool,
@@ -71,6 +76,8 @@ pub enum Input {
     Raise,
     /// The user or a D-Bus client asks to quit.
     QuitRequested,
+    /// The user asks to search: show the search page and focus its entry.
+    ShowSearch,
     /// A view asks for a short message.
     ShowToast(String),
     /// The user asks for the about dialog.
@@ -155,10 +162,13 @@ impl SimpleComponent for App {
     ) -> ComponentParts<Self> {
         let Init { services, package } = init;
         let core = services.core();
+        artwork::install_store(services.artwork().clone());
         forward_state(core, &sender);
         forward_track_changes(core, &sender);
         publish_mpris(core, services.artwork(), &sender);
         register_actions(&sender);
+        let catalog = SongCatalog::default();
+        register_window_actions(&root, core, &catalog, &sender);
         subscription::watch(core, services.api());
         let mut gate = Gate::builder().launch(core.clone());
         let gate_stack = gate.widget().clone();
@@ -182,7 +192,16 @@ impl SimpleComponent for App {
             sender.input(Input::ShowToast(message));
         }
         let split_view = adw::NavigationSplitView::new();
-        let content_stack = build_content_stack(&split_view);
+        let mut search = SearchView::builder().launch(SearchInit {
+            services: services.clone(),
+            catalog,
+            split_view: split_view.clone(),
+        });
+        let search_page = search.widget().clone();
+        let search_input = search.sender().clone();
+        // Like the gate, the search view lives as long as its widget.
+        search.detach_runtime();
+        let content_stack = build_content_stack(&split_view, &search_page);
         let sidebar_list = sidebar::build_list();
         connect_sidebar(&sidebar_list, &split_view, &sender);
 
@@ -190,6 +209,9 @@ impl SimpleComponent for App {
             window: root.clone(),
             toast_overlay: toast_overlay.clone(),
             section: Section::Home,
+            sidebar_list: sidebar_list.clone(),
+            split_view: split_view.clone(),
+            search: search_input,
             settings,
             background,
             sign_in_failed: false,
@@ -204,6 +226,7 @@ impl SimpleComponent for App {
             Input::SummaryChanged(summary) => self.follow(&summary),
             Input::Raise => self.window.present(),
             Input::QuitRequested => self.quit(),
+            Input::ShowSearch => self.show_search(),
             Input::ShowToast(message) => self.toast_overlay.add_toast(adw::Toast::new(&message)),
             Input::ShowAbout => about::present(&self.window),
             Input::TrackChanged(track) => self.notify(&track),
@@ -229,6 +252,15 @@ impl App {
             self.toast_overlay.add_toast(adw::Toast::new(&message));
         }
         self.sign_in_failed = summary.sign_in_failed;
+    }
+
+    /// Selects the search section and puts the cursor in the search entry.
+    fn show_search(&mut self) {
+        let row = self.sidebar_list.row_at_index(Section::Search.row_index());
+        self.sidebar_list.select_row(row.as_ref());
+        self.section = Section::Search;
+        self.split_view.set_show_content(true);
+        self.search.emit(SearchInput::Focus);
     }
 
     /// Saves the window state and stops the application. The shutdown handler
@@ -294,14 +326,39 @@ fn register_actions(sender: &ComponentSender<App>) {
     app.set_accels_for_action("app.preferences", &["<Ctrl>comma"]);
 }
 
-/// Builds the stack with the navigation stack of each section.
-fn build_content_stack(split_view: &adw::NavigationSplitView) -> gtk::Stack {
+/// Adds the window actions: the search shortcut and the item actions.
+fn register_window_actions(
+    window: &adw::ApplicationWindow,
+    core: &CoreHandle,
+    catalog: &SongCatalog,
+    sender: &ComponentSender<App>,
+) {
+    let input = sender.input_sender().clone();
+    let search = ActionEntry::builder("search")
+        .activate(move |_: &adw::ApplicationWindow, _, _| input.emit(Input::ShowSearch))
+        .build();
+    window.add_action_entries([search]);
+    relm4::main_application().set_accels_for_action("win.search", &["<Ctrl>f"]);
+    let input = sender.input_sender().clone();
+    item_actions::register(window, core, catalog, move |message| {
+        input.emit(Input::ShowToast(message));
+    });
+}
+
+/// Builds the stack with the navigation stack of each section. The search
+/// section shows `search_page`. The others show an empty page.
+fn build_content_stack(
+    split_view: &adw::NavigationSplitView,
+    search_page: &adw::ToolbarView,
+) -> gtk::Stack {
     let stack = gtk::Stack::new();
     for section in Section::ALL {
-        stack.add_named(
-            &section_page::build(section, split_view),
-            Some(section.id()),
-        );
+        let page = if section == Section::Search {
+            section_page::wrap(section, search_page)
+        } else {
+            section_page::build(section, split_view)
+        };
+        stack.add_named(&page, Some(section.id()));
     }
     stack
 }

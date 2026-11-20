@@ -54,6 +54,28 @@ thread_local! {
         RefCell::new(BoundedCache::new(MEMORY_ENTRIES));
 }
 
+thread_local! {
+    // A list item is set up without any context, so its image gets the store here.
+    static STORE: RefCell<Option<ArtworkStore>> = const { RefCell::new(None) };
+}
+
+/// Sets the store that [`shared_store`] returns. Call it once, at start-up,
+/// on the main thread.
+pub fn install_store(store: ArtworkStore) {
+    STORE.with_borrow_mut(|installed| *installed = Some(store));
+}
+
+/// Returns the store from [`install_store`].
+///
+/// # Panics
+///
+/// Panics if the store is not installed.
+pub fn shared_store() -> ArtworkStore {
+    STORE
+        .with_borrow(Clone::clone)
+        .expect("internal error: the artwork store is installed at start-up")
+}
+
 /// Returns the texture of `url` if the memory cache has it.
 pub fn cached_texture(url: &str) -> Option<Texture> {
     TEXTURES.with_borrow(|cache| cache.get(url).cloned())
