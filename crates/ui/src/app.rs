@@ -22,6 +22,7 @@ use crate::gate::{self, Gate};
 use crate::section::Section;
 use crate::services::AppServices;
 use crate::views::section_page;
+use crate::widgets::player_bar::{PlayerBar, PlayerBarInit};
 use crate::{about, menu, network_banner, notification, sidebar, subscription};
 
 /// The part of the state that the shell follows.
@@ -104,7 +105,12 @@ impl SimpleComponent for App {
                 set_content = &toast_overlay.clone() -> adw::ToastOverlay {
                   #[wrap(Some)]
                   set_child = &gate_stack.clone() -> gtk::Stack {
-                    add_named[Some(gate::CONTENT_PAGE)] = &split_view.clone() -> adw::NavigationSplitView {
+                    add_named[Some(gate::CONTENT_PAGE)] = &adw::ToolbarView {
+                      set_bottom_bar_style: adw::ToolbarStyle::Raised,
+                      add_bottom_bar: &player_bar,
+
+                      #[wrap(Some)]
+                      set_content = &split_view.clone() -> adw::NavigationSplitView {
                 #[wrap(Some)]
                 set_sidebar = &adw::NavigationPage {
                     set_title: "RingoMusic",
@@ -133,6 +139,7 @@ impl SimpleComponent for App {
                         set_visible_child_name: model.section.id(),
                     },
                 },
+                      },
                     },
                   },
                 },
@@ -159,6 +166,14 @@ impl SimpleComponent for App {
 
         let settings = services.settings().clone();
         restore_window_state(&root, &settings);
+        let mut bar = PlayerBar::builder().launch(PlayerBarInit {
+            core: core.clone(),
+            settings: settings.clone(),
+            window: root.clone(),
+        });
+        let player_bar = bar.widget().clone();
+        // Like the gate, the bar lives as long as its widget.
+        bar.detach_runtime();
         let background = BackgroundPlayback::new(settings.clone(), package);
         let toast_overlay = adw::ToastOverlay::new();
         if let Some(message) = background.take_refusal_message() {

@@ -11,12 +11,14 @@ mod gate;
 mod menu;
 mod network_banner;
 mod notification;
+mod playback_actions;
 mod section;
 mod services;
 mod sidebar;
 mod startup_error;
 mod subscription;
 mod views;
+mod widgets;
 
 use std::cell::RefCell;
 use std::rc::Rc;
