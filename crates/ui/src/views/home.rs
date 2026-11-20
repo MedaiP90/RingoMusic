@@ -18,7 +18,6 @@ use tracing::{debug, warn};
 use crate::item::TileItem;
 use crate::services::{ApiClient, AppServices};
 use crate::views::phase::Phase;
-use crate::views::section_page;
 use crate::widgets::tile::TileRow;
 
 /// One recommendation, ready for a row of tiles.
@@ -65,8 +64,6 @@ fn tile_of(resource: &Resource) -> Option<TileItem> {
 /// What the home view needs to start.
 pub struct HomeInit {
     pub services: AppServices,
-    /// The back button of the header bar goes to the sidebar of this view.
-    pub split_view: adw::NavigationSplitView,
 }
 
 /// Input of the home view.
@@ -101,8 +98,6 @@ impl SimpleComponent for HomeView {
     view! {
         adw::ToolbarView {
             add_top_bar = &adw::HeaderBar {
-                pack_start: &back_button,
-
                 pack_end = &gtk::Button {
                     set_icon_name: "view-refresh-symbolic",
                     set_tooltip_text: Some(&gettext("Refresh (F5)")),
@@ -156,11 +151,7 @@ impl SimpleComponent for HomeView {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let HomeInit {
-            services,
-            split_view,
-        } = init;
-        let back_button = section_page::back_button(&split_view);
+        let HomeInit { services } = init;
         let groups = gtk::Box::builder()
             .orientation(gtk::Orientation::Vertical)
             .spacing(24)

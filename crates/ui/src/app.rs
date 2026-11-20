@@ -32,10 +32,17 @@ use crate::views::library::{LibraryInit, LibraryKind, LibraryView};
 use crate::views::queue::{QueueInit, QueueView};
 use crate::views::search::{SearchInit, SearchInput, SearchView};
 use crate::views::section_page;
-use crate::widgets::player_bar::{PlayerBar, PlayerBarInit, PlayerBarInput};
+use crate::widgets::player_bar::{PlayerBar, PlayerBarInit, PlayerBarInput, TOGGLE_QUEUE};
 use crate::{
     about, accent, artwork, menu, network_banner, notification, sidebar, subscription, theme,
 };
+
+/// Window width in sp below which the sidebar and the queue panel collapse.
+const COLLAPSE_WIDTH_SP: f64 = 600.0;
+
+/// Window width in sp below which the player bar shows only the song and
+/// play/pause. The full bar needs about 760 px, so it must not apply below this.
+const COMPACT_WIDTH_SP: f64 = 800.0;
 
 /// The part of the state that the shell follows.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -211,6 +218,8 @@ impl SimpleComponent for App {
 
         let settings = services.settings().clone();
         restore_window_state(&root, &settings);
+        let compact = narrow_breakpoint(COMPACT_WIDTH_SP);
+        let narrow = narrow_breakpoint(COLLAPSE_WIDTH_SP);
         let mut bar = PlayerBar::builder().launch(PlayerBarInit {
             core: core.clone(),
             settings: settings.clone(),
@@ -218,6 +227,7 @@ impl SimpleComponent for App {
             window: root.clone(),
             catalog: catalog.clone(),
             api: Arc::clone(services.api()),
+            compact: vec![compact.clone(), narrow.clone()],
         });
         let player_bar = bar.widget().clone();
         let bar_input = bar.sender().clone();
@@ -232,7 +242,6 @@ impl SimpleComponent for App {
         let mut search = SearchView::builder().launch(SearchInit {
             services: services.clone(),
             catalog: catalog.clone(),
-            split_view: split_view.clone(),
         });
         let search_page = search.widget().clone();
         let search_input = search.sender().clone();
@@ -240,23 +249,21 @@ impl SimpleComponent for App {
         search.detach_runtime();
         let mut home = HomeView::builder().launch(HomeInit {
             services: services.clone(),
-            split_view: split_view.clone(),
         });
         let home_page = home.widget().clone();
         register_refresh(&root, home.sender());
         // The home view also lives as long as its widget.
         home.detach_runtime();
-        let library_pages =
-            LibraryKind::ALL.map(|kind| launch_library(kind, &services, &catalog, &split_view));
+        let library_pages = LibraryKind::ALL.map(|kind| launch_library(kind, &services, &catalog));
         let mut queue = QueueView::builder().launch(QueueInit {
             core: core.clone(),
             window: root.clone(),
         });
         let queue_page = queue.widget().clone();
+        close_queue_on_escape(&queue_page, &sender);
         // The queue view also lives as long as its widget.
         queue.detach_runtime();
-        let content_stack =
-            build_content_stack(&split_view, &home_page, &search_page, &library_pages);
+        let content_stack = build_content_stack(&home_page, &search_page, &library_pages);
         detail_pages::register(
             &root,
             PageSources {
@@ -285,6 +292,11 @@ impl SimpleComponent for App {
             sign_in_failed: false,
         };
         let widgets = view_output!();
+        // A window applies one breakpoint at a time, the last one that matches.
+        // So the narrower one also gets the setters of the wider one.
+        collapse_on(&narrow, &split_view, &queue_split);
+        root.add_breakpoint(compact);
+        root.add_breakpoint(narrow);
         ComponentParts { model, widgets }
     }
 
@@ -445,7 +457,9 @@ fn register_window_actions(
         .activate(move |_: &adw::ApplicationWindow, _, _| input.emit(Input::ToggleQueue))
         .build();
     window.add_action_entries([search, toggle_queue]);
-    relm4::main_application().set_accels_for_action("win.search", &["<Ctrl>f"]);
+    let application = relm4::main_application();
+    application.set_accels_for_action("win.search", &["<Ctrl>f"]);
+    application.set_accels_for_action(TOGGLE_QUEUE.action, &[TOGGLE_QUEUE.accelerator]);
     item_actions::register(window, core, catalog);
 }
 
@@ -465,13 +479,11 @@ fn launch_library(
     kind: LibraryKind,
     services: &AppServices,
     catalog: &SongCatalog,
-    split_view: &adw::NavigationSplitView,
 ) -> (LibraryKind, adw::ToolbarView) {
     let mut view = LibraryView::builder().launch(LibraryInit {
         kind,
         services: services.clone(),
         catalog: catalog.clone(),
-        split_view: split_view.clone(),
     });
     let page = view.widget().clone();
     view.detach_runtime();
@@ -481,7 +493,6 @@ fn launch_library(
 /// Builds the stack with the navigation stack of each section. A section
 /// without a view shows an empty page.
 fn build_content_stack(
-    split_view: &adw::NavigationSplitView,
     home_page: &adw::ToolbarView,
     search_page: &adw::ToolbarView,
     library_pages: &[(LibraryKind, adw::ToolbarView)],
@@ -495,7 +506,7 @@ fn build_content_stack(
             (_, Some((_, page))) => section_page::wrap(section, page),
             (Section::Home, None) => section_page::wrap(section, home_page),
             (Section::Search, None) => section_page::wrap(section, search_page),
-            _ => section_page::build(section, split_view),
+            _ => section_page::build(section),
         };
         stack.add_named(&page, Some(section.id()));
     }
@@ -519,6 +530,41 @@ fn connect_sidebar(
     });
     let split_view = split_view.clone();
     list.connect_row_activated(move |_, _| split_view.set_show_content(true));
+}
+
+/// Closes the queue panel when the user presses Escape inside it.
+fn close_queue_on_escape(page: &adw::ToolbarView, sender: &ComponentSender<App>) {
+    let input = sender.input_sender().clone();
+    let keys = gtk::EventControllerKey::new();
+    keys.connect_key_pressed(move |_, key, _, _| {
+        if key == gtk::gdk::Key::Escape {
+            input.emit(Input::QueueVisibility(false));
+            Propagation::Stop
+        } else {
+            Propagation::Proceed
+        }
+    });
+    page.add_controller(keys);
+}
+
+/// Builds the breakpoint for a window narrower than `width` sp.
+fn narrow_breakpoint(width: f64) -> adw::Breakpoint {
+    adw::Breakpoint::new(adw::BreakpointCondition::new_length(
+        adw::BreakpointConditionLengthType::MaxWidth,
+        width,
+        adw::LengthUnit::Sp,
+    ))
+}
+
+/// Collapses the sidebar and the queue panel when `breakpoint` applies.
+/// Both then show their page over the content, one at a time.
+fn collapse_on(
+    breakpoint: &adw::Breakpoint,
+    split_view: &adw::NavigationSplitView,
+    queue_split: &adw::OverlaySplitView,
+) {
+    breakpoint.add_setter(split_view, "collapsed", Some(&true.to_value()));
+    breakpoint.add_setter(queue_split, "collapsed", Some(&true.to_value()));
 }
 
 /// Sets the size and the maximized state of `window` from the settings.

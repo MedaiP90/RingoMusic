@@ -41,7 +41,10 @@ struct State {
 impl ArtworkImage {
     /// Makes an image with the placeholder icon.
     pub fn new(store: ArtworkStore) -> Self {
-        let image = gtk::Image::new();
+        // The picture only decorates. The text next to it names the item.
+        let image = gtk::Image::builder()
+            .accessible_role(gtk::AccessibleRole::Presentation)
+            .build();
         image.set_overflow(gtk::Overflow::Hidden);
         image.add_css_class("card");
         let state = Rc::new(State {

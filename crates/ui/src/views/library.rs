@@ -27,7 +27,6 @@ use crate::paged::{self, PageCursor};
 use crate::section::Section;
 use crate::services::{ApiClient, AppServices};
 use crate::views::phase::Phase;
-use crate::views::section_page;
 use crate::widgets::library_tile::{ArtistRow, GridTile};
 use crate::widgets::song_row::{self, SongRow};
 
@@ -247,8 +246,6 @@ pub struct LibraryInit {
     pub kind: LibraryKind,
     pub services: AppServices,
     pub catalog: SongCatalog,
-    /// The back button of the header bar goes to the sidebar of this view.
-    pub split_view: adw::NavigationSplitView,
 }
 
 /// Input of a library page.
@@ -290,8 +287,6 @@ impl SimpleComponent for LibraryView {
     view! {
         adw::ToolbarView {
             add_top_bar = &adw::HeaderBar {
-                pack_start: &back_button,
-
                 #[wrap(Some)]
                 set_title_widget = &adw::Clamp {
                     set_maximum_size: 480,
@@ -371,9 +366,7 @@ impl SimpleComponent for LibraryView {
             kind,
             services,
             catalog,
-            split_view,
         } = init;
-        let back_button = section_page::back_button(&split_view);
         let filter = NameFilter::default();
         let content = Content::new(kind, &filter, &sender);
         let filter_entry = build_filter_entry(&sender);

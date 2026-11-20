@@ -22,7 +22,6 @@ use crate::detail::storefront;
 use crate::item::{SongItem, TileItem};
 use crate::item_actions::{self, SongCatalog};
 use crate::services::{ApiClient, AppServices};
-use crate::views::section_page;
 use crate::widgets::song_row::{self, SongRow};
 use crate::widgets::tile::{self, TileRow};
 
@@ -100,8 +99,6 @@ impl Phase {
 pub struct SearchInit {
     pub services: AppServices,
     pub catalog: SongCatalog,
-    /// The back button of the header bar goes to the sidebar of this view.
-    pub split_view: adw::NavigationSplitView,
 }
 
 /// Input of the search view.
@@ -147,8 +144,6 @@ impl SimpleComponent for SearchView {
     view! {
         adw::ToolbarView {
             add_top_bar = &adw::HeaderBar {
-                pack_start: &back_button,
-
                 #[wrap(Some)]
                 set_title_widget = &adw::Clamp {
                     set_maximum_size: 480,
@@ -207,12 +202,7 @@ impl SimpleComponent for SearchView {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let SearchInit {
-            services,
-            catalog,
-            split_view,
-        } = init;
-        let back_button = section_page::back_button(&split_view);
+        let SearchInit { services, catalog } = init;
         let search_entry = build_entry(&sender);
         let songs = TypedListView::<SongRow, gtk::SingleSelection>::new();
         connect_song_view(&songs.view, &sender);

@@ -90,6 +90,22 @@ export GSETTINGS_SCHEMA_DIR="$(echo "$PWD"/target/<profile>/build/ringo-core-*/o
 
 The build needs `glib-compile-schemas` (package `libglib2.0-bin` on Debian).
 
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|---|---|
+| `Ctrl`+`Space` | Play or pause |
+| `Ctrl`+`Right` | Next song |
+| `Ctrl`+`Left` | Previous song |
+| `Ctrl`+`S` | Toggle shuffle |
+| `Ctrl`+`R` | Cycle repeat mode |
+| `Ctrl`+`F` | Search |
+| `F9` | Show or hide the queue |
+| `F5` | Refresh the home page |
+| `Ctrl`+`,` | Preferences |
+| `Ctrl`+`Q` | Quit |
+| `Esc` | Close a dialog or the queue panel, or go back |
+
 ## Contributing
 
 Read [CONTRIBUTING.md](CONTRIBUTING.md) before you open a pull request.

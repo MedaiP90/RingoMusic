@@ -22,6 +22,10 @@ path = [
   "protocol/examples/**",
   "tests/fixtures/**",
   ".github/**",
+  "po/POTFILES.in",
+  "po/LINGUAS",
+  "po/*.pot",
+  "po/*.po",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 RingoMusic contributors"

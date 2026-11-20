@@ -10,11 +10,11 @@ use std::time::Duration;
 
 use gettextrs::gettext;
 use relm4::adw;
+use relm4::adw::prelude::*;
 use relm4::gtk;
 use relm4::gtk::gdk::EventType;
 use relm4::gtk::glib::{self, Propagation};
 use relm4::gtk::pango::EllipsizeMode;
-use relm4::gtk::prelude::*;
 use relm4::prelude::*;
 use ringo_core::artwork::ArtworkStore;
 use ringo_core::runner::CoreHandle;
@@ -133,6 +133,9 @@ pub struct PlayerBarInit {
     pub catalog: SongCatalog,
     /// Finds the album and the artist of a song that no view showed.
     pub api: Arc<ApiClient>,
+    /// Breakpoints for narrow windows. The bar adds its own setters. The
+    /// window owner adds the breakpoints to the window.
+    pub compact: Vec<adw::Breakpoint>,
 }
 
 /// Player bar model.
@@ -194,6 +197,11 @@ impl SimpleComponent for PlayerBar {
             #[watch]
             set_visible: model.state.has_queue,
 
+            // The cover and the song text. They stay on one row.
+            #[name = "song_box"]
+            gtk::Box {
+                set_spacing: 16,
+
             // The cover opens the album of the song. Without an album ID, it does
             // nothing and the pointer stays an arrow. It is never greyed out.
             gtk::Button {
@@ -201,6 +209,7 @@ impl SimpleComponent for PlayerBar {
                 add_css_class: "artwork-button",
                 set_valign: gtk::Align::Center,
                 set_sensitive: true,
+                set_tooltip_text: Some(&gettext("Open album")),
                 #[watch]
                 set_can_target: model.state.album_id.is_some(),
                 #[watch]
@@ -212,6 +221,7 @@ impl SimpleComponent for PlayerBar {
                 set_child = &artwork_widget -> gtk::Image {},
             },
 
+            #[name = "info_box"]
             gtk::Box {
                 set_orientation: gtk::Orientation::Vertical,
                 set_valign: gtk::Align::Center,
@@ -253,6 +263,15 @@ impl SimpleComponent for PlayerBar {
                 },
             },
 
+            },
+
+            // The groups of controls. A narrow window stacks them.
+            #[name = "controls"]
+            gtk::Box {
+                set_spacing: 16,
+                set_hexpand: true,
+
+            #[name = "transport_box"]
             gtk::Box {
                 set_spacing: 6,
                 set_valign: gtk::Align::Center,
@@ -341,6 +360,7 @@ impl SimpleComponent for PlayerBar {
                 },
             },
 
+            #[name = "extras_box"]
             gtk::Box {
                 set_spacing: 6,
                 set_valign: gtk::Align::Center,
@@ -363,12 +383,13 @@ impl SimpleComponent for PlayerBar {
                     set_action_name: Some(shortcuts::CYCLE_REPEAT.action),
                 },
 
+                #[name = "queue_button"]
                 gtk::Button {
                     set_icon_name: "view-list-symbolic",
                     #[watch]
                     set_css_classes: accent_when(model.queue_open),
-                    set_tooltip_text: Some(&gettext("Queue")),
-                    set_action_name: Some(TOGGLE_QUEUE_ACTION),
+                    set_tooltip_text: Some(&TOGGLE_QUEUE.tooltip(&gettext("Queue"))),
+                    set_action_name: Some(TOGGLE_QUEUE.action),
                 },
 
                 gtk::MenuButton {
@@ -402,6 +423,7 @@ impl SimpleComponent for PlayerBar {
                     },
                 },
             },
+            },
         }
     }
 
@@ -417,6 +439,7 @@ impl SimpleComponent for PlayerBar {
             window,
             catalog,
             api,
+            compact,
         } = init;
         let actions = PlaybackActions::register(&window, &core);
         let mut state = BarState::of(&core.subscribe().borrow());
@@ -446,6 +469,7 @@ impl SimpleComponent for PlayerBar {
         model.ask_links(&sender);
         let widgets = view_output!();
         show_elapsed_time(&widgets.seek_scale, &widgets.elapsed_label);
+        CompactMode::install(&compact, &root, &widgets);
         ComponentParts { model, widgets }
     }
 
@@ -580,6 +604,28 @@ impl PlayerBar {
     }
 }
 
+/// The compact layout of the bar. In a narrow window, the song is on the
+/// first row and the controls are stacked below it.
+struct CompactMode;
+
+impl CompactMode {
+    /// Adds the setters of the compact layout to each of `breakpoints`.
+    fn install(breakpoints: &[adw::Breakpoint], bar: &gtk::Box, widgets: &PlayerBarWidgets) {
+        let vertical = gtk::Orientation::Vertical.to_value();
+        let center = gtk::Align::Center.to_value();
+        for breakpoint in breakpoints {
+            breakpoint.add_setter(bar, "orientation", Some(&vertical));
+            breakpoint.add_setter(&widgets.controls, "orientation", Some(&vertical));
+            breakpoint.add_setter(&widgets.controls, "spacing", Some(&8.to_value()));
+            breakpoint.add_setter(&widgets.transport_box, "halign", Some(&center));
+            breakpoint.add_setter(&widgets.extras_box, "halign", Some(&center));
+            breakpoint.add_setter(&widgets.info_box, "width-request", Some(&(-1).to_value()));
+            breakpoint.add_setter(&widgets.info_box, "hexpand", Some(&true.to_value()));
+            breakpoint.add_setter(&widgets.song_box, "hexpand", Some(&true.to_value()));
+        }
+    }
+}
+
 /// Sends the saved volume to the core. The engine does not know it at start.
 fn restore_volume(core: &CoreHandle, settings: &Settings) {
     let (core, volume) = (core.clone(), settings.volume());
@@ -611,8 +657,11 @@ fn forward_state(core: &CoreHandle, sender: &ComponentSender<PlayerBar>) {
     });
 }
 
-/// Name of the window action that opens and closes the queue panel.
-pub const TOGGLE_QUEUE_ACTION: &str = "win.toggle-queue";
+/// The window action that opens and closes the queue panel, with its key.
+pub const TOGGLE_QUEUE: shortcuts::Shortcut = shortcuts::Shortcut {
+    action: "win.toggle-queue",
+    accelerator: "F9",
+};
 
 /// Converts the volume of the scale to the volume of the core.
 #[expect(
