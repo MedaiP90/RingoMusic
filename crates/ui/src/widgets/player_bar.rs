@@ -150,6 +150,8 @@ pub struct PlayerBar {
     dragging: bool,
     /// The last position that the user chose while the seek bar was held.
     seek_target: Option<Duration>,
+    /// The queue page is open.
+    queue_open: bool,
 }
 
 /// Input of the player bar.
@@ -167,6 +169,8 @@ pub enum PlayerBarInput {
     VolumeMoved(f64),
     /// The volume popover closed. The bar shows the volume again.
     VolumePopoverClosed,
+    /// The queue page opened or closed.
+    QueueShown(bool),
     /// The user pressed the cover.
     OpenAlbum,
     /// The user pressed the artist.
@@ -357,6 +361,14 @@ impl SimpleComponent for PlayerBar {
                     set_action_name: Some(shortcuts::CYCLE_REPEAT.action),
                 },
 
+                gtk::Button {
+                    set_icon_name: "view-list-symbolic",
+                    #[watch]
+                    set_css_classes: accent_when(model.queue_open),
+                    set_tooltip_text: Some(&gettext("Queue")),
+                    set_action_name: Some(SHOW_QUEUE_ACTION),
+                },
+
                 gtk::MenuButton {
                     add_css_class: "flat",
                     set_tooltip_text: Some(&gettext("Volume")),
@@ -426,6 +438,7 @@ impl SimpleComponent for PlayerBar {
             artwork,
             dragging: false,
             seek_target: None,
+            queue_open: false,
         };
         model.ask_links(&sender);
         let widgets = view_output!();
@@ -450,6 +463,7 @@ impl SimpleComponent for PlayerBar {
             }
             // The view update that follows shows the volume.
             PlayerBarInput::VolumePopoverClosed => {}
+            PlayerBarInput::QueueShown(open) => self.queue_open = open,
             PlayerBarInput::OpenAlbum => self.open(OPEN_ALBUM, self.state.album_id.clone()),
             PlayerBarInput::OpenArtist => self.open(OPEN_ARTIST, self.state.artist_id.clone()),
             PlayerBarInput::LinksLoaded(song_id, links) => self.take_links(&song_id, links),
@@ -593,6 +607,9 @@ fn forward_state(core: &CoreHandle, sender: &ComponentSender<PlayerBar>) {
         }
     });
 }
+
+/// Name of the window action that shows the queue page.
+pub const SHOW_QUEUE_ACTION: &str = "win.show-queue";
 
 /// Converts the volume of the scale to the volume of the core.
 #[expect(

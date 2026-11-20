@@ -281,7 +281,12 @@ async fn upcoming_changes_use_small_edits_during_playback() {
         .await;
     fixture.send(Message::PlayNext(queue_items(&["x"]))).await;
     fixture.send(Message::Append(queue_items(&["y"]))).await;
-    fixture.send(Message::Remove(2)).await;
+    fixture
+        .send(Message::Remove {
+            index: 2,
+            id: ItemId::new("s2"),
+        })
+        .await;
     tokio::time::timeout(WAIT_LIMIT, async {
         while !fixture.engine.calls().contains(&EngineCall::Remove(2)) {
             tokio::task::yield_now().await;

@@ -8,7 +8,7 @@
 
 use std::collections::HashMap;
 
-use gettextrs::gettext;
+use gettextrs::{gettext, ngettext};
 use relm4::adw;
 use relm4::adw::prelude::*;
 use relm4::gtk;
@@ -24,6 +24,8 @@ use ringo_engine::ItemId;
 
 use super::queue_diff::{self, Edit};
 use crate::views::section_page;
+use crate::widgets::artwork_image::ArtworkImage;
+use crate::widgets::player_bar::format_time;
 use crate::widgets::queue_row::{QueueRow, QueueRowWidgets};
 
 /// What the queue page needs to start.
@@ -117,8 +119,10 @@ pub struct QueueView {
     window: adw::ApplicationWindow,
     upcoming: TypedListView<QueueRow, gtk::SingleSelection>,
     now_row: QueueRowWidgets,
-    history_list: gtk::ListBox,
-    history_rows: Vec<QueueRowWidgets>,
+    history_expander: adw::ExpanderRow,
+    /// The rows of the history. The artwork loads in the background, so the
+    /// images live as long as the rows.
+    history_rows: Vec<(adw::ActionRow, ArtworkImage)>,
     /// The IDs of the rows of the upcoming list.
     shown: Vec<ItemId>,
     snapshot: Snapshot,
@@ -158,20 +162,27 @@ impl SimpleComponent for QueueView {
                     set_description: Some(&gettext("Songs that you play or add show here.")),
                 },
 
-                add_named[Some("content")] = &adw::Clamp {
-                    set_maximum_size: 720,
+                add_named[Some("content")] = &gtk::Box {
+                    set_orientation: gtk::Orientation::Vertical,
+                    set_spacing: 24,
+                    set_margin_all: 18,
 
-                    #[wrap(Some)]
-                    set_child = &gtk::Box {
+                    append = &gtk::Box {
                         set_orientation: gtk::Orientation::Vertical,
-                        set_spacing: 6,
-                        set_margin_all: 12,
+                        set_spacing: 8,
 
                         append = &section_heading(&gettext("Now Playing")),
                         append = &gtk::Box {
                             add_css_class: "card",
                             append: now_root,
                         },
+                    },
+
+                    append = &gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+                        set_spacing: 8,
+                        set_vexpand: true,
+
                         append = &section_heading(&gettext("Up Next")),
                         append = &gtk::Label {
                             set_label: &gettext("Nothing is up next."),
@@ -184,22 +195,26 @@ impl SimpleComponent for QueueView {
                         append = &gtk::ScrolledWindow {
                             set_vexpand: true,
                             set_hscrollbar_policy: gtk::PolicyType::Never,
+                            add_css_class: "card",
                             #[watch]
                             set_visible: !model.snapshot.upcoming.is_empty(),
                             set_child: Some(&model.upcoming.view),
                         },
-                        append = &gtk::Expander {
-                            set_label: Some(&gettext("History")),
-                            #[watch]
-                            set_visible: !model.snapshot.history.is_empty(),
+                    },
 
-                            #[wrap(Some)]
-                            set_child = &gtk::ScrolledWindow {
-                                set_propagate_natural_height: true,
-                                set_max_content_height: 240,
-                                set_hscrollbar_policy: gtk::PolicyType::Never,
-                                set_child: Some(&history_list),
-                            },
+                    append = &gtk::ScrolledWindow {
+                        set_propagate_natural_height: true,
+                        set_max_content_height: 320,
+                        set_hscrollbar_policy: gtk::PolicyType::Never,
+                        set_vscrollbar_policy: gtk::PolicyType::Automatic,
+                        #[watch]
+                        set_visible: !model.snapshot.history.is_empty(),
+
+                        #[wrap(Some)]
+                        set_child = &gtk::ListBox {
+                            set_selection_mode: gtk::SelectionMode::None,
+                            add_css_class: "boxed-list",
+                            append: &history_expander,
                         },
                     },
                 },
@@ -226,7 +241,9 @@ impl SimpleComponent for QueueView {
         connect_keys(&upcoming.view, &sender);
         let (now_root, now_row) = QueueRowWidgets::build();
         let now_root = &now_root;
-        let history_list = build_history_list(&sender);
+        let history_expander = adw::ExpanderRow::builder()
+            .title(gettext("History"))
+            .build();
         register_actions(&window, &sender);
         forward_queue(&core, &sender);
 
@@ -235,7 +252,7 @@ impl SimpleComponent for QueueView {
             window,
             upcoming,
             now_row,
-            history_list: history_list.clone(),
+            history_expander: history_expander.clone(),
             history_rows: Vec::new(),
             shown: Vec::new(),
             snapshot: Snapshot::default(),
@@ -244,12 +261,15 @@ impl SimpleComponent for QueueView {
         ComponentParts { model, widgets }
     }
 
-    fn update(&mut self, message: Self::Input, _sender: ComponentSender<Self>) {
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
-            QueueInput::Changed(snapshot) => self.show(*snapshot),
+            QueueInput::Changed(snapshot) => self.show(*snapshot, &sender),
             QueueInput::Activated(position) => {
                 if let Some(entry) = self.upcoming_entry(position) {
-                    self.send(Message::JumpTo(entry.index));
+                    self.send(Message::JumpTo {
+                        index: entry.index,
+                        id: entry.item.id.clone(),
+                    });
                 }
             }
             QueueInput::Remove(position) => self.remove_upcoming(position),
@@ -269,13 +289,19 @@ impl SimpleComponent for QueueView {
                     .ok()
                     .and_then(|position| self.snapshot.history.get(position));
                 if let Some(entry) = entry {
-                    self.send(Message::JumpTo(entry.index));
+                    self.send(Message::JumpTo {
+                        index: entry.index,
+                        id: entry.item.id.clone(),
+                    });
                 }
             }
             QueueInput::ClearRequested => self.confirm_clear(),
         }
     }
 }
+
+/// Size of the artwork of a history row in pixels.
+const HISTORY_ARTWORK_SIZE: i32 = 40;
 
 /// Name of the window action that asks to clear the queue.
 const CLEAR_ACTION: &str = "win.queue-clear";
@@ -287,7 +313,10 @@ impl QueueView {
 
     fn remove_upcoming(&self, position: u32) {
         if let Some(entry) = self.upcoming_entry(position) {
-            self.send(Message::Remove(entry.index));
+            self.send(Message::Remove {
+                index: entry.index,
+                id: entry.item.id.clone(),
+            });
         }
     }
 
@@ -303,6 +332,7 @@ impl QueueView {
         // The upcoming list starts after the current item.
         let first = self.snapshot.current_position + 1;
         self.send(Message::MoveUpcoming {
+            id: self.snapshot.upcoming[from].item.id.clone(),
             from: first + from,
             to: first + to,
         });
@@ -314,13 +344,13 @@ impl QueueView {
     }
 
     /// Shows `snapshot`. Only the rows that differ change.
-    fn show(&mut self, snapshot: Snapshot) {
+    fn show(&mut self, snapshot: Snapshot, sender: &ComponentSender<Self>) {
         if let Some(now) = &snapshot.now {
             self.now_row.show(now);
         }
         self.show_upcoming(&snapshot.upcoming);
         if snapshot.history != self.snapshot.history {
-            self.show_history(&snapshot.history);
+            self.show_history(&snapshot.history, sender);
         }
         self.snapshot = snapshot;
     }
@@ -353,14 +383,18 @@ impl QueueView {
         self.shown = want_ids;
     }
 
-    fn show_history(&mut self, history: &[Entry]) {
-        self.history_list.remove_all();
-        self.history_rows.clear();
-        for entry in history {
-            let (root, widgets) = QueueRowWidgets::build();
-            widgets.show(&entry.item);
-            self.history_list.append(&root);
-            self.history_rows.push(widgets);
+    fn show_history(&mut self, history: &[Entry], sender: &ComponentSender<Self>) {
+        for (row, _) in self.history_rows.drain(..) {
+            self.history_expander.remove(&row);
+        }
+        let count = u32::try_from(history.len()).unwrap_or(u32::MAX);
+        self.history_expander.set_subtitle(
+            &ngettext("{} song", "{} songs", count).replace("{}", &count.to_string()),
+        );
+        for (position, entry) in (0..).zip(history) {
+            let (row, artwork) = history_row(&entry.item, position, sender);
+            self.history_expander.add_row(&row);
+            self.history_rows.push((row, artwork));
         }
     }
 
@@ -406,20 +440,30 @@ fn section_heading(text: &str) -> gtk::Label {
         .build()
 }
 
-/// Builds the list of the history. A press on a row plays the item again.
-fn build_history_list(sender: &ComponentSender<QueueView>) -> gtk::ListBox {
-    let list = gtk::ListBox::builder()
-        .selection_mode(gtk::SelectionMode::None)
-        .show_separators(true)
-        .css_classes(["boxed-list"])
+/// Builds the row of a history item. A press on it plays the item again.
+fn history_row(
+    item: &QueueItem,
+    position: u32,
+    sender: &ComponentSender<QueueView>,
+) -> (adw::ActionRow, ArtworkImage) {
+    let row = adw::ActionRow::builder()
+        .title(&item.title)
+        .subtitle(&item.artist)
+        .use_markup(false)
+        .activatable(true)
         .build();
+    let artwork = ArtworkImage::shared();
+    artwork.set_artwork(item.artwork_template.as_deref(), HISTORY_ARTWORK_SIZE);
+    row.add_prefix(artwork.widget());
+    row.add_suffix(
+        &gtk::Label::builder()
+            .label(format_time(item.duration))
+            .css_classes(["dim-label", "numeric"])
+            .build(),
+    );
     let input = sender.input_sender().clone();
-    list.connect_row_activated(move |_, row| {
-        if let Ok(position) = u32::try_from(row.index()) {
-            input.emit(QueueInput::HistoryActivated(position));
-        }
-    });
-    list
+    row.connect_activated(move |_| input.emit(QueueInput::HistoryActivated(position)));
+    (row, artwork)
 }
 
 /// Connects the keys of the upcoming list: Delete removes the selected

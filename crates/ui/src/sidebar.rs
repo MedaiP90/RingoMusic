@@ -10,13 +10,13 @@ use relm4::gtk::prelude::*;
 use crate::section::Section;
 
 /// Builds the list with one row for each section. The row order is the order
-/// of [`Section::ALL`]. The "Library" heading is a header, not a row.
+/// of [`Section::SIDEBAR`]. The "Library" heading is a header, not a row.
 pub fn build_list() -> gtk::ListBox {
     let list = gtk::ListBox::builder()
         .selection_mode(gtk::SelectionMode::Single)
         .css_classes(["navigation-sidebar"])
         .build();
-    for section in Section::ALL {
+    for section in Section::SIDEBAR {
         list.append(&build_row(section));
     }
     list.set_header_func(|row, _previous| {

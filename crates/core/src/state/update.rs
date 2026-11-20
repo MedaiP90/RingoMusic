@@ -5,8 +5,8 @@ use std::time::Duration;
 
 use rand::SeedableRng;
 use rand::rngs::StdRng;
-use ringo_engine::EngineEvent;
 use ringo_engine::protocol::PlaybackState;
+use ringo_engine::{EngineEvent, ItemId};
 
 use super::app_state::Resume;
 use super::{AppState, AuthState, Command, EngineStatus, Message, NowPlaying};
@@ -22,7 +22,7 @@ pub fn update(state: &mut AppState, message: Message) -> Vec<Command> {
         Message::Stop => vec![Command::Stop],
         Message::Next => skip_forward(&mut state.queue),
         Message::Previous => skip_back(&mut state.queue),
-        Message::JumpTo(index) => jump_to(&mut state.queue, index),
+        Message::JumpTo { index, id } => jump_to(&mut state.queue, index, &id),
         Message::Seek(position) => vec![Command::Seek(position)],
         Message::SetVolume(volume) => {
             let volume = volume.clamp(0.0, 1.0);
@@ -67,9 +67,22 @@ fn edit_queue(state: &mut AppState, message: Message) -> Vec<Command> {
         }
         Message::Append(items) => (queue.append(items), was_playing),
         Message::PlayNext(items) => (queue.play_next(items), was_playing),
-        Message::Remove(index) => (queue.remove(index), was_playing),
+        Message::Remove { index, id } => {
+            let change = if has_item(queue, index, &id) {
+                queue.remove(index)
+            } else {
+                QueueChange::None
+            };
+            (change, was_playing)
+        }
         Message::Move { from, to } => (queue.move_item(from, to), was_playing),
-        Message::MoveUpcoming { from, to } => (queue.move_upcoming(from, to), was_playing),
+        Message::MoveUpcoming { id, from, to } => {
+            let change = match queue.index_at_position(from) {
+                Some(index) if has_item(queue, index, &id) => queue.move_upcoming(from, to),
+                _ => QueueChange::None,
+            };
+            (change, was_playing)
+        }
         Message::ClearQueue => (queue.clear(), false),
         Message::SetShuffle { enabled, seed } => {
             let mut rng = StdRng::seed_from_u64(seed);
@@ -117,9 +130,18 @@ fn skip_forward(queue: &mut Queue) -> Vec<Command> {
     }
 }
 
+/// Tells if the item at `index` in the user order has the ID `id`.
+fn has_item(queue: &Queue, index: usize, id: &ItemId) -> bool {
+    queue.items().get(index).is_some_and(|item| item.id == *id)
+}
+
 /// The user picks an item of the queue. The current item restarts if it is
-/// the one picked. An invalid index does nothing.
-fn jump_to(queue: &mut Queue, index: usize) -> Vec<Command> {
+/// the one picked. An invalid index, or an item with another ID, does
+/// nothing.
+fn jump_to(queue: &mut Queue, index: usize, id: &ItemId) -> Vec<Command> {
+    if !has_item(queue, index, id) {
+        return Vec::new();
+    }
     if queue.current_index() == Some(index) {
         return vec![Command::Seek(Duration::ZERO)];
     }

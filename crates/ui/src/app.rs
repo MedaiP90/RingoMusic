@@ -31,7 +31,7 @@ use crate::views::library::{LibraryInit, LibraryKind, LibraryView};
 use crate::views::queue::{QueueInit, QueueView};
 use crate::views::search::{SearchInit, SearchInput, SearchView};
 use crate::views::section_page;
-use crate::widgets::player_bar::{PlayerBar, PlayerBarInit};
+use crate::widgets::player_bar::{PlayerBar, PlayerBarInit, PlayerBarInput};
 use crate::{about, artwork, menu, network_banner, notification, sidebar, subscription};
 
 /// The part of the state that the shell follows.
@@ -66,6 +66,7 @@ pub struct App {
     sidebar_list: gtk::ListBox,
     split_view: adw::NavigationSplitView,
     search: relm4::Sender<SearchInput>,
+    player_bar: relm4::Sender<PlayerBarInput>,
     settings: Settings,
     background: BackgroundPlayback,
     sign_in_failed: bool,
@@ -84,6 +85,8 @@ pub enum Input {
     QuitRequested,
     /// The user asks to search: show the search page and focus its entry.
     ShowSearch,
+    /// The user asks for the queue page.
+    ShowQueue,
     /// A view asks for a short message.
     ShowToast(String),
     /// The user asks for the about dialog.
@@ -192,6 +195,7 @@ impl SimpleComponent for App {
             api: Arc::clone(services.api()),
         });
         let player_bar = bar.widget().clone();
+        let bar_input = bar.sender().clone();
         // Like the gate, the bar lives as long as its widget.
         bar.detach_runtime();
         let background = BackgroundPlayback::new(settings.clone(), package);
@@ -253,6 +257,7 @@ impl SimpleComponent for App {
             sidebar_list: sidebar_list.clone(),
             split_view: split_view.clone(),
             search: search_input,
+            player_bar: bar_input,
             settings,
             background,
             sign_in_failed: false,
@@ -268,6 +273,7 @@ impl SimpleComponent for App {
             Input::Raise => self.window.present(),
             Input::QuitRequested => self.quit(),
             Input::ShowSearch => self.show_search(),
+            Input::ShowQueue => self.show_section(Section::Queue),
             Input::ShowToast(message) => self.toast_overlay.add_toast(adw::Toast::new(&message)),
             Input::ShowAbout => about::present(&self.window),
             Input::TrackChanged(track) => self.notify(&track),
@@ -298,6 +304,8 @@ impl App {
     /// Makes `section` the current one. The refresh action works on the home page only.
     fn select(&mut self, section: Section) {
         self.section = section;
+        self.player_bar
+            .emit(PlayerBarInput::QueueShown(section == Section::Queue));
         let refresh = self.window.lookup_action("refresh");
         if let Some(refresh) = refresh.and_then(|action| action.downcast::<SimpleAction>().ok()) {
             refresh.set_enabled(section == Section::Home);
@@ -306,11 +314,19 @@ impl App {
 
     /// Selects the search section and puts the cursor in the search entry.
     fn show_search(&mut self) {
-        let row = self.sidebar_list.row_at_index(Section::Search.row_index());
-        self.sidebar_list.select_row(row.as_ref());
-        self.select(Section::Search);
-        self.split_view.set_show_content(true);
+        self.show_section(Section::Search);
         self.search.emit(SearchInput::Focus);
+    }
+
+    /// Selects `section` in the sidebar and shows its page.
+    fn show_section(&mut self, section: Section) {
+        // A section without a row clears the selection of the sidebar.
+        let row = section
+            .row_index()
+            .and_then(|index| self.sidebar_list.row_at_index(index));
+        self.sidebar_list.select_row(row.as_ref());
+        self.select(section);
+        self.split_view.set_show_content(true);
     }
 
     /// Saves the window state and stops the application. The shutdown handler
@@ -387,7 +403,11 @@ fn register_window_actions(
     let search = ActionEntry::builder("search")
         .activate(move |_: &adw::ApplicationWindow, _, _| input.emit(Input::ShowSearch))
         .build();
-    window.add_action_entries([search]);
+    let input = sender.input_sender().clone();
+    let show_queue = ActionEntry::builder("show-queue")
+        .activate(move |_: &adw::ApplicationWindow, _, _| input.emit(Input::ShowQueue))
+        .build();
+    window.add_action_entries([search, show_queue]);
     relm4::main_application().set_accels_for_action("win.search", &["<Ctrl>f"]);
     item_actions::register(window, core, catalog);
 }

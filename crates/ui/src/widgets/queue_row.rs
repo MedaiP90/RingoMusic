@@ -23,6 +23,15 @@ pub const REMOVE_ACTION: &str = "win.queue-remove";
 /// and the new position in the list.
 pub const MOVE_ACTION: &str = "win.queue-move";
 
+/// Style classes of the drag and drop. `style.css` defines them.
+const DRAGGING_CLASS: &str = "queue-dragging";
+const DROP_ABOVE_CLASS: &str = "queue-drop-above";
+const DROP_BELOW_CLASS: &str = "queue-drop-below";
+
+/// Where the pointer holds the drag icon, in pixels from the row corner.
+const DRAG_HOT_X: i32 = 24;
+const DRAG_HOT_Y: i32 = 24;
+
 /// Size of the artwork in pixels.
 const ARTWORK_SIZE: i32 = 40;
 
@@ -143,9 +152,43 @@ fn add_edit_controls(root: &gtk::Box, list_item: &gtk::ListItem) {
         let position = item.upgrade()?.position();
         Some(ContentProvider::for_value(&position.to_value()))
     });
+    // The drag icon is the row itself. The row in the list gets dim, so the
+    // user sees what moves.
+    let row = root.downgrade();
+    source.connect_drag_begin(move |source, _| {
+        if let Some(row) = row.upgrade() {
+            let icon = gtk::WidgetPaintable::new(Some(&row));
+            source.set_icon(Some(&icon), DRAG_HOT_X, DRAG_HOT_Y);
+            row.add_css_class(DRAGGING_CLASS);
+        }
+    });
+    let row = root.downgrade();
+    source.connect_drag_end(move |_, _, _| {
+        if let Some(row) = row.upgrade() {
+            row.remove_css_class(DRAGGING_CLASS);
+        }
+    });
     root.add_controller(source);
 
     let target = gtk::DropTarget::new(u32::static_type(), DragAction::MOVE);
+    // A line shows where the dragged item goes: above the row when the item
+    // comes from below, and under the row when it comes from above.
+    let item = list_item.downgrade();
+    let row = root.downgrade();
+    target.connect_motion(move |target, _, _| {
+        let (Some(item), Some(row)) = (item.upgrade(), row.upgrade()) else {
+            return DragAction::empty();
+        };
+        let from = target.value().and_then(|value| value.get::<u32>().ok());
+        show_drop_line(&row, from.map(|from| from < item.position()));
+        DragAction::MOVE
+    });
+    let row = root.downgrade();
+    target.connect_leave(move |_| {
+        if let Some(row) = row.upgrade() {
+            show_drop_line(&row, None);
+        }
+    });
     let item = list_item.downgrade();
     let row = root.downgrade();
     target.connect_drop(move |_, value, _, _| {
@@ -153,8 +196,21 @@ fn add_edit_controls(root: &gtk::Box, list_item: &gtk::ListItem) {
         else {
             return false;
         };
+        show_drop_line(&row, None);
         let moved = (from, item.position()).to_variant();
         row.activate_action(MOVE_ACTION, Some(&moved)).is_ok()
     });
     root.add_controller(target);
+}
+
+/// Shows the drop line under the row (`Some(true)`), above it
+/// (`Some(false)`), or hides it (`None`).
+fn show_drop_line(row: &gtk::Box, below: Option<bool>) {
+    row.remove_css_class(DROP_ABOVE_CLASS);
+    row.remove_css_class(DROP_BELOW_CLASS);
+    match below {
+        Some(true) => row.add_css_class(DROP_BELOW_CLASS),
+        Some(false) => row.add_css_class(DROP_ABOVE_CLASS),
+        None => {}
+    }
 }

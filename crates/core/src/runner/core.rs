@@ -339,7 +339,7 @@ fn changes_queue(message: &Message) -> bool {
             | Message::ReplaceQueueShuffled { .. }
             | Message::Append(_)
             | Message::PlayNext(_)
-            | Message::Remove(_)
+            | Message::Remove { .. }
             | Message::Move { .. }
             | Message::SetShuffle { .. }
             | Message::SetRepeat(_)
