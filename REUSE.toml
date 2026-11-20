@@ -25,6 +25,7 @@ path = [
   "po/LINGUAS",
   "po/*.pot",
   "po/*.po",
+  "packaging/castlabs.sha256",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 RingoMusic contributors"
