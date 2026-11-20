@@ -5,7 +5,7 @@
 // All page-specific code is in this file.
 
 import { ErrorCode } from './error-code.ts';
-import { createHandlers, dispatchRequest, QueueErrorWatch } from './hook-handlers.ts';
+import { createHandlers, dispatchRequest } from './hook-handlers.ts';
 import type { PageRequest } from './hook-handlers.ts';
 import { mapNowPlaying, mapPlaybackState, RateLimiter } from './musickit-mapping.ts';
 import type { Notification } from './protocol.ts';
@@ -87,7 +87,7 @@ function runSelfChecks(instance: MusicKitInstance): boolean {
   return !failed;
 }
 
-function subscribe(music: MusicKitInstance, queueWatch: QueueErrorWatch): void {
+function subscribe(music: MusicKitInstance): void {
   const positionLimiter = new RateLimiter(POSITION_INTERVAL_MS);
 
   music.addEventListener('playbackStateDidChange', ({ state }) => {
@@ -112,9 +112,6 @@ function subscribe(music: MusicKitInstance, queueWatch: QueueErrorWatch): void {
     notify({ jsonrpc: '2.0', method: 'auth.changed', params: { authorized: music.isAuthorized } });
   });
   music.addEventListener('mediaPlaybackError', ({ message }) => {
-    if (queueWatch.absorb(message)) {
-      return;
-    }
     notify({
       jsonrpc: '2.0',
       method: 'error',
@@ -124,8 +121,8 @@ function subscribe(music: MusicKitInstance, queueWatch: QueueErrorWatch): void {
 }
 
 // Answers each request from main. A request without a numeric `id` is dropped.
-function answerRequests(music: MusicKitInstance, queueWatch: QueueErrorWatch): void {
-  const handlers = createHandlers(music, queueWatch);
+function answerRequests(music: MusicKitInstance): void {
+  const handlers = createHandlers(music);
   getBridge().onRequest((request) => {
     const { id } = request as { id?: unknown };
     if (typeof id === 'number') {
@@ -145,9 +142,8 @@ async function main(): Promise<void> {
   if (!runSelfChecks(music)) {
     return;
   }
-  const queueWatch = new QueueErrorWatch();
-  subscribe(music, queueWatch);
-  answerRequests(music, queueWatch);
+  subscribe(music);
+  answerRequests(music);
   notify({ jsonrpc: '2.0', method: 'engine.ready' });
 }
 

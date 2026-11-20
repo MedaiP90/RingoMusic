@@ -25,6 +25,7 @@ rustc-ice-*.txt
 
 plan
 CLAUDE.md
+test.sh
 
 # RingoMusic
 /stage

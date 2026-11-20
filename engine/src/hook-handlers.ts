@@ -18,68 +18,8 @@ export type HandlerMap = {
 };
 
 const SHUFFLE_OFF = 0;
-const QUEUE_MAX_ATTEMPTS = 3;
-const QUEUE_RETRY_DELAY_MS = 1000;
 
-// Catches `mk-007 CONTENT_RESTRICTED` during `setQueue`. Right after the page loads, MusicKit
-// can refuse a valid queue. The same call works a moment later. MusicKit reports the refusal as a
-// `mediaPlaybackError` event, and `setQueue` still resolves.
-export class QueueErrorWatch {
-  private watching = false;
-  private restricted: string | undefined;
-
-  begin(): void {
-    this.watching = true;
-    this.restricted = undefined;
-  }
-
-  // Stops the watch. Returns the message of a restricted-content error, if one came.
-  end(): string | undefined {
-    this.watching = false;
-    return this.restricted;
-  }
-
-  // Returns `true` when the error belongs to the watched `setQueue` call. The caller must then
-  // not report it.
-  absorb(message: string | undefined): boolean {
-    if (this.watching && message !== undefined && /mk-007|CONTENT_RESTRICTED/.test(message)) {
-      this.restricted = message;
-      return true;
-    }
-    return false;
-  }
-}
-
-// ponytail: fixed retry for a MusicKit start-up race. Wait for a real readiness signal if one is found.
-async function setQueueWithRetry(
-  music: MusicKitInstance,
-  watch: QueueErrorWatch,
-  options: { songs: string[]; startWith?: number },
-  retryDelayMs: number,
-): Promise<void> {
-  for (let attempt = 1; ; attempt++) {
-    watch.begin();
-    let restricted: string | undefined;
-    try {
-      await music.setQueue(options);
-    } finally {
-      restricted = watch.end();
-    }
-    if (restricted === undefined) {
-      return;
-    }
-    if (attempt >= QUEUE_MAX_ATTEMPTS) {
-      throw new Error(restricted);
-    }
-    await new Promise((resolve) => setTimeout(resolve, retryDelayMs));
-  }
-}
-
-export function createHandlers(
-  music: MusicKitInstance,
-  watch: QueueErrorWatch = new QueueErrorWatch(),
-  retryDelayMs: number = QUEUE_RETRY_DELAY_MS,
-): HandlerMap {
+export function createHandlers(music: MusicKitInstance): HandlerMap {
   return {
     'auth.status': (): AuthStatus => ({
       authorized: music.isAuthorized,
@@ -90,7 +30,7 @@ export function createHandlers(
       return null;
     },
     'player.setQueue': async ({ items, start_index }) => {
-      await setQueueWithRetry(music, watch, { songs: items, startWith: start_index }, retryDelayMs);
+      await music.setQueue({ songs: items, startWith: start_index });
       // Rust owns the shuffle order (D13). The queue must not start to play.
       music.shuffleMode = SHUFFLE_OFF;
       return null;

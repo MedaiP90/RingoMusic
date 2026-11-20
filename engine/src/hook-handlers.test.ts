@@ -7,7 +7,7 @@ import path from 'node:path';
 import { test } from 'node:test';
 
 import { ErrorCode } from './error-code.ts';
-import { createHandlers, dispatchRequest, QueueErrorWatch } from './hook-handlers.ts';
+import { createHandlers, dispatchRequest } from './hook-handlers.ts';
 import { PAGE_METHODS } from './page-methods.ts';
 
 function fakeMusic(overrides: Partial<MusicKitInstance> = {}): MusicKitInstance {
@@ -92,42 +92,4 @@ void test('api.get / response / should return only the data', async () => {
     params: { path: '/v1/me/library/songs', query: {} },
   });
   assert.deepEqual(response, { jsonrpc: '2.0', id: 5, result: { x: 1 } });
-});
-
-const RESTRICTED = '[mk-007] CONTENT_RESTRICTED; Content restricted';
-
-function restrictedMusic(watch: QueueErrorWatch, failures: number): { music: MusicKitInstance; calls: () => number } {
-  let calls = 0;
-  const music = fakeMusic({
-    setQueue: () => {
-      calls += 1;
-      if (calls <= failures) {
-        watch.absorb(RESTRICTED);
-      }
-      return Promise.resolve();
-    },
-  });
-  return { music, calls: () => calls };
-}
-
-const QUEUE_REQUEST = { id: 5, method: 'player.setQueue', params: { items: ['1'], kind: 'songs', start_index: 0 } };
-
-void test('player.setQueue / restricted once / should retry and succeed', async () => {
-  const watch = new QueueErrorWatch();
-  const { music, calls } = restrictedMusic(watch, 1);
-  const response = await dispatchRequest(createHandlers(music, watch, 0), QUEUE_REQUEST);
-  assert.equal(calls(), 2);
-  assert.deepEqual(response, { jsonrpc: '2.0', id: 5, result: null });
-});
-
-void test('player.setQueue / always restricted / should fail after three attempts', async () => {
-  const watch = new QueueErrorWatch();
-  const { music, calls } = restrictedMusic(watch, 99);
-  const response = await dispatchRequest(createHandlers(music, watch, 0), QUEUE_REQUEST);
-  assert.equal(calls(), 3);
-  assert.ok('error' in response);
-});
-
-void test('QueueErrorWatch / error outside setQueue / should not absorb it', () => {
-  assert.equal(new QueueErrorWatch().absorb(RESTRICTED), false);
 });

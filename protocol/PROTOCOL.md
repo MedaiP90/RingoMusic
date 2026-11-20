@@ -54,7 +54,7 @@ A notification has no `id` and gets no response.
 |---|---|---|
 | `auth.status` | none | `{ authorized, storefront }` |
 | `auth.signIn` | none | `null`. Shows the window. The user signs in with the site's own Sign In button. Returns when `auth.changed` reports `authorized: true`, or fails with `cancelled` if the user closes the window. Returns at once if already authorized. |
-| `auth.signOut` | none | `null` |
+| `auth.signOut` | none | `null`. Drops the MusicKit token and clears the cookies of the session. The page would sign in again from the Apple ID cookies without the clear. Other storage stays, because it holds the device identity. |
 | `player.setQueue` | `{ items, start_index, kind }` | `null`. `kind` is `songs`. IDs can be catalog IDs or library IDs (`i.…`). |
 | `player.play`, `player.pause`, `player.stop` | none | `null` |
 | `player.next`, `player.previous` | none | `null` |

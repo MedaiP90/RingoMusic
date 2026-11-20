@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
-// Methods that run in the page. Main handles `auth.signIn` and `engine.shutdown` alone.
+// Methods that run in the page. Main handles `auth.signIn` and `engine.shutdown` alone. Main wraps `auth.signOut`: it also clears the cookies.
 
 import type { Request } from './protocol.ts';
 

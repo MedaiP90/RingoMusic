@@ -18,6 +18,7 @@ import { decidePopup, SignIn } from './sign-in.ts';
 const START_URL = 'https://music.apple.com';
 const SESSION_PARTITION = 'persist:ringomusic';
 const EXIT_CODE_BAD_CONFIGURATION = 2;
+const QUIT_GRACE_MS = 3000;
 
 // Set when the app quits, so that the window can close.
 let quitting = false;
@@ -61,17 +62,23 @@ function readSocketPath(): string {
   return socketPath;
 }
 
+// Quits the app. A quit can stall while the page plays audio, so a timer forces the exit.
+function quitEngine(): void {
+  setTimeout(() => app.exit(0), QUIT_GRACE_MS).unref();
+  app.quit();
+}
+
 // Connects to Rust, forwards logs, and quits the app when the socket closes.
 async function connectToRust(): Promise<RpcClient> {
   const client = await RpcClient.connect(
     readSocketPath(),
     { engineVersion: pkg.version, electron: process.versions.electron },
-    () => app.quit(),
+    quitEngine,
   );
   forwardLogs((notification) => client.notify(notification));
   client.register('engine.shutdown', () => {
     // Reply first, then quit on the next tick.
-    setImmediate(() => app.quit());
+    setImmediate(quitEngine);
     return Promise.resolve(null);
   });
   return client;
@@ -88,6 +95,14 @@ function connectPageBridge(client: RpcClient, window: BrowserWindow): void {
     client.register(method, (params) => bridge.call(method, params));
   }
   client.register('auth.signIn', () => signIn.run());
+  // `unauthorize()` drops only the MusicKit token. The page signs in again from the Apple ID
+  // cookies, so a real sign-out must also clear the cookies. Other storage stays: it holds the
+  // device identity, and a new one counts against the Apple device limit.
+  client.register('auth.signOut', async () => {
+    await bridge.call('auth.signOut', undefined);
+    await window.webContents.session.clearStorageData({ storages: ['cookies'] });
+    return null;
+  });
   // The login window hides, never closes. A close during sign-in cancels it.
   window.on('close', (event) => {
     if (!quitting) {
