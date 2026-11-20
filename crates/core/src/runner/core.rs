@@ -2,18 +2,29 @@
 // Copyright (C) 2026 RingoMusic contributors
 
 use std::sync::Arc;
+use std::time::Duration;
 
+use ringo_engine::protocol::PlaybackState;
 use ringo_engine::{EngineEvent, ItemId, PlaybackEngine, Result};
 use tokio::sync::broadcast::error::RecvError;
 use tokio::sync::{broadcast, mpsc, watch};
+use tokio::time::{self, Instant, MissedTickBehavior};
 use tracing::warn;
 
 use super::CoreHandle;
 use super::engine_queue::{Edit, EngineQueue};
+use crate::queue_store::QueueStore;
 use crate::state::{AppState, Command, Message, update};
 
 /// Capacity of the message inbox.
 const INBOX_CAPACITY: usize = 64;
+
+/// Time to wait after a queue change before the queue is saved. Many changes
+/// in this time make one save.
+const SAVE_DEBOUNCE: Duration = Duration::from_secs(1);
+
+/// Time between two saves of the position during playback.
+const POSITION_SAVE_INTERVAL: Duration = Duration::from_secs(10);
 
 /// Owner of the application state. It runs [`update`] for each message, calls
 /// the engine for each command, and publishes a state snapshot.
@@ -26,6 +37,9 @@ pub struct Core {
     events: broadcast::Receiver<EngineEvent>,
     snapshots: watch::Sender<AppState>,
     engine_queue: EngineQueue,
+    store: Option<QueueStore>,
+    /// When the changed queue must be saved. `None` if nothing is waiting.
+    save_due: Option<Instant>,
 }
 
 impl Core {
@@ -44,6 +58,8 @@ impl Core {
             feedback: sender.downgrade(),
             snapshots,
             engine_queue: EngineQueue::default(),
+            store: None,
+            save_due: None,
         };
         let handle = CoreHandle {
             inbox: sender,
@@ -52,15 +68,39 @@ impl Core {
         (core, handle)
     }
 
-    /// Handles messages and engine events until all handles are dropped or the
-    /// engine closes its event channel.
+    /// Saves the queue in `store` and restores it when the runner starts.
+    #[must_use]
+    pub fn with_queue_store(mut self, store: QueueStore) -> Self {
+        self.store = Some(store);
+        self
+    }
+
+    /// Handles messages and engine events until a [`Message::Shutdown`], until
+    /// all handles are dropped, or until the engine closes its event channel.
+    /// Then it calls [`Core::shutdown`].
     pub async fn run(mut self) {
+        self.restore_queue().await;
+        let mut position_timer = time::interval_at(
+            Instant::now() + POSITION_SAVE_INTERVAL,
+            POSITION_SAVE_INTERVAL,
+        );
+        position_timer.set_missed_tick_behavior(MissedTickBehavior::Delay);
         loop {
+            let save_due = self.save_due;
             let message = tokio::select! {
                 message = self.inbox.recv() => match message {
+                    Some(Message::Shutdown) | None => break,
                     Some(message) => message,
-                    None => break,
                 },
+                () = time::sleep_until(save_due.unwrap_or_else(Instant::now)), if save_due.is_some() => {
+                    self.save_due = None;
+                    self.save_queue().await;
+                    continue;
+                }
+                _ = position_timer.tick() => {
+                    self.save_position().await;
+                    continue;
+                }
                 event = self.events.recv() => match event {
                     Ok(event) => Message::Engine(event),
                     Err(RecvError::Lagged(skipped)) => {
@@ -72,10 +112,23 @@ impl Core {
             };
             self.handle(message).await;
         }
+        self.shutdown().await;
+    }
+
+    /// Saves the queue, then stops the engine.
+    pub async fn shutdown(&mut self) {
+        self.save_due = None;
+        self.save_queue().await;
+        if let Err(error) = self.engine.shutdown().await {
+            warn!(%error, "cannot stop the engine");
+        }
     }
 
     async fn handle(&mut self, message: Message) {
         let mut message = message;
+        if changes_queue(&message) {
+            self.save_due = Some(Instant::now() + SAVE_DEBOUNCE);
+        }
         self.observe(&mut message);
         let commands = update(&mut self.state, message);
         self.snapshots.send_replace(self.state.clone());
@@ -83,6 +136,48 @@ impl Core {
             if let Err(error) = self.execute(&command).await {
                 warn!(%error, ?command, "engine command failed");
             }
+        }
+    }
+
+    /// Loads the saved queue and puts it in the state. A failure is logged and
+    /// the application starts with an empty queue.
+    async fn restore_queue(&mut self) {
+        let Some(store) = &self.store else {
+            return;
+        };
+        match store.load().await {
+            Ok(Some((queue, position))) => {
+                self.handle(Message::RestoreQueue { queue, position }).await;
+            }
+            Ok(None) => {}
+            Err(error) => warn!(%error, "cannot load the saved queue"),
+        }
+    }
+
+    async fn save_queue(&self) {
+        let Some(store) = &self.store else {
+            return;
+        };
+        let state = &self.state;
+        // While the engine restarts, the live position is 0. The waiting resume has the real one.
+        let position = state
+            .resume
+            .map_or(state.playback.position, |resume| resume.position);
+        if let Err(error) = store.save(&state.queue, position).await {
+            warn!(%error, "cannot save the queue");
+        }
+    }
+
+    /// Saves the position if an item plays.
+    async fn save_position(&self) {
+        let Some(store) = &self.store else {
+            return;
+        };
+        if self.state.playback.state != PlaybackState::Playing {
+            return;
+        }
+        if let Err(error) = store.save_position(self.state.playback.position).await {
+            warn!(%error, "cannot save the position");
         }
     }
 
@@ -210,4 +305,21 @@ impl Core {
             }
         });
     }
+}
+
+/// Returns `true` if the message can change the queue, so the queue needs a save.
+fn changes_queue(message: &Message) -> bool {
+    matches!(
+        message,
+        Message::Next
+            | Message::Previous
+            | Message::ReplaceQueue { .. }
+            | Message::Append(_)
+            | Message::PlayNext(_)
+            | Message::Remove(_)
+            | Message::Move { .. }
+            | Message::SetShuffle { .. }
+            | Message::SetRepeat(_)
+            | Message::Engine(EngineEvent::NowPlaying { .. })
+    )
 }

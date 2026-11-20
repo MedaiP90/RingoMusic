@@ -6,7 +6,7 @@ use std::time::Duration;
 use ringo_engine::EngineEvent;
 use ringo_engine::protocol::{AuthStatus, RepeatMode};
 
-use crate::queue::QueueItem;
+use crate::queue::{Queue, QueueItem};
 
 /// Input of [`update`](super::update): an intent of the user or a fact from
 /// the engine.
@@ -62,6 +62,16 @@ pub enum Message {
     SignOut,
     /// The engine reported the authorization.
     AuthLoaded(AuthStatus),
+    /// Puts a saved queue in place at application start. The engine gets it
+    /// when it is ready. Playback does not start.
+    RestoreQueue {
+        /// The saved queue.
+        queue: Queue,
+        /// The saved position in the current item.
+        position: Duration,
+    },
+    /// Stops the runner. It saves the queue and stops the engine first.
+    Shutdown,
     /// An event of the engine.
     Engine(EngineEvent),
 }

@@ -70,6 +70,15 @@ pub struct NowPlaying {
     pub artwork_url: Option<String>,
 }
 
+/// Playback to resume when the engine is ready: after a start or a restart.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub(crate) struct Resume {
+    /// Position in the current item.
+    pub(crate) position: Duration,
+    /// `true` if playback must start again.
+    pub(crate) play: bool,
+}
+
 /// All state of the application. The fields can be read from everywhere.
 /// Only [`update`](super::update) changes them.
 #[derive(Clone, Debug)]
@@ -84,6 +93,8 @@ pub struct AppState {
     pub playback: Playback,
     /// The item that plays now.
     pub now_playing: Option<NowPlaying>,
+    /// Set until the engine is ready and has the queue again.
+    pub(crate) resume: Option<Resume>,
 }
 
 impl Default for AppState {
@@ -107,6 +118,7 @@ impl AppState {
                 volume: 1.0,
             },
             now_playing: None,
+            resume: None,
         }
     }
 }

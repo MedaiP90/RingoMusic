@@ -8,6 +8,7 @@ use rand::rngs::StdRng;
 use ringo_engine::EngineEvent;
 use ringo_engine::protocol::PlaybackState;
 
+use super::app_state::Resume;
 use super::{AppState, AuthState, Command, EngineStatus, Message, NowPlaying};
 use crate::queue::{Queue, QueueChange};
 
@@ -42,6 +43,7 @@ pub fn update(state: &mut AppState, message: Message) -> Vec<Command> {
             };
             Vec::new()
         }
+        Message::RestoreQueue { queue, position } => restore_queue(state, queue, position),
         Message::Engine(event) => apply_event(state, event),
         message => edit_queue(state, message),
     }
@@ -175,6 +177,13 @@ fn apply_event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
             Vec::new()
         }
         EngineEvent::Restarted => {
+            // A second restart before `Ready` keeps the first, which has the real position.
+            if state.resume.is_none() && state.queue.current().is_some() {
+                state.resume = Some(Resume {
+                    position: state.playback.position,
+                    play: state.playback.state == PlaybackState::Playing,
+                });
+            }
             state.engine = EngineStatus::Restarting;
             state.playback.state = PlaybackState::Stopped;
             state.playback.position = Duration::ZERO;
@@ -189,21 +198,50 @@ fn apply_event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
     }
 }
 
-/// The engine is ready. After a restart, the new engine has no queue, so
-/// the queue goes to it again. Playback stays stopped.
+/// Puts a saved queue in place. If the engine is ready, it gets the queue now.
+fn restore_queue(state: &mut AppState, queue: Queue, position: Duration) -> Vec<Command> {
+    state.queue = queue;
+    state.playback.position = position;
+    state.resume = state.queue.current().map(|_| Resume {
+        position,
+        play: false,
+    });
+    if state.engine == EngineStatus::Ready {
+        resume_commands(state)
+    } else {
+        Vec::new()
+    }
+}
+
+/// The engine is ready. If a resume is waiting (start or restart), the new
+/// engine has no queue, so it gets the queue and the position again.
 fn on_ready(state: &mut AppState) -> Vec<Command> {
-    let restarted = state.engine == EngineStatus::Restarting;
     state.engine = EngineStatus::Ready;
     let mut commands = vec![
         Command::RefreshAuth,
         Command::SetVolume(state.playback.volume),
         Command::SetRepeat(state.queue.repeat()),
     ];
-    if restarted && let Some(start) = state.queue.current_playback_index() {
-        commands.push(Command::SetQueue {
-            items: state.queue.playback_order(),
-            start,
-        });
+    commands.extend(resume_commands(state));
+    commands
+}
+
+/// Takes the waiting resume and returns the calls for it: set the queue, seek,
+/// and play if wanted.
+fn resume_commands(state: &mut AppState) -> Vec<Command> {
+    let (Some(resume), Some(start)) = (state.resume.take(), state.queue.current_playback_index())
+    else {
+        return Vec::new();
+    };
+    let mut commands = vec![Command::SetQueue {
+        items: state.queue.playback_order(),
+        start,
+    }];
+    if !resume.position.is_zero() {
+        commands.push(Command::Seek(resume.position));
+    }
+    if resume.play {
+        commands.push(Command::Play);
     }
     commands
 }

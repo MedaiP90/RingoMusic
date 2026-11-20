@@ -28,3 +28,4 @@ tracing.workspace = true
 [dev-dependencies]
 # Enables the `mock` feature for the integration tests.
 ringo-core = { path = ".", features = ["mock"] }
+tokio = { workspace = true, features = ["test-util"] }

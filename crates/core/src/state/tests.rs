@@ -257,6 +257,104 @@ fn ready_after_restart_sets_the_queue_again() {
 }
 
 #[test]
+fn ready_after_restart_seeks_and_plays_if_playback_was_running() {
+    let mut state = state_with(&["a", "b"], 1);
+    let _ = event(
+        &mut state,
+        EngineEvent::State {
+            state: PlaybackState::Playing,
+        },
+    );
+    let _ = event(
+        &mut state,
+        EngineEvent::Position {
+            position: Duration::from_secs(42),
+        },
+    );
+    let _ = event(&mut state, EngineEvent::Restarted);
+    // A second restart before the engine is ready must keep the first position.
+    let _ = event(&mut state, EngineEvent::Restarted);
+    let commands = event(&mut state, EngineEvent::Ready);
+    let resume: Vec<_> = commands.into_iter().skip(3).collect();
+    assert_eq!(
+        resume,
+        vec![
+            Command::SetQueue {
+                items: ids(&["a", "b"]),
+                start: 1
+            },
+            Command::Seek(Duration::from_secs(42)),
+            Command::Play,
+        ]
+    );
+}
+
+#[test]
+fn restore_queue_waits_for_the_engine_and_does_not_play() {
+    let mut saved = AppState::new();
+    let _ = update(
+        &mut saved,
+        Message::ReplaceQueue {
+            items: items(&["a", "b"]),
+            start: 1,
+        },
+    );
+    let message = Message::RestoreQueue {
+        queue: saved.queue.clone(),
+        position: Duration::from_secs(7),
+    };
+    let mut state = AppState::new();
+    assert!(update(&mut state, message).is_empty());
+    assert_eq!(state.queue, saved.queue);
+    assert_eq!(state.playback.position, Duration::from_secs(7));
+
+    let commands = event(&mut state, EngineEvent::Ready);
+
+    let resume: Vec<_> = commands.into_iter().skip(3).collect();
+    assert_eq!(
+        resume,
+        vec![
+            Command::SetQueue {
+                items: ids(&["a", "b"]),
+                start: 1
+            },
+            Command::Seek(Duration::from_secs(7)),
+        ]
+    );
+}
+
+#[test]
+fn restore_queue_goes_to_a_ready_engine_at_once() {
+    let mut state = AppState::new();
+    let _ = event(&mut state, EngineEvent::Ready);
+    let mut saved = AppState::new();
+    let _ = update(
+        &mut saved,
+        Message::ReplaceQueue {
+            items: items(&["a"]),
+            start: 0,
+        },
+    );
+    let commands = update(
+        &mut state,
+        Message::RestoreQueue {
+            queue: saved.queue,
+            position: Duration::from_secs(3),
+        },
+    );
+    assert_eq!(
+        commands,
+        vec![
+            Command::SetQueue {
+                items: ids(&["a"]),
+                start: 0
+            },
+            Command::Seek(Duration::from_secs(3)),
+        ]
+    );
+}
+
+#[test]
 fn first_ready_does_not_set_the_queue() {
     let mut state = state_with(&["a"], 0);
     let commands = event(&mut state, EngineEvent::Ready);

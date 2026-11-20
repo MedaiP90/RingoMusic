@@ -19,7 +19,7 @@ const HISTORY_LIMIT: usize = 100;
 /// An *index* is a place in the user order. A *position* is a place in the
 /// playback order. Both are the same when shuffle is off. The current item is
 /// always valid when the queue has items.
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Queue {
     items: Vec<QueueItem>,
     /// Index of the current item. `None` only when the queue is empty.
@@ -47,6 +47,56 @@ impl Queue {
             repeat: RepeatMode::None,
             history: VecDeque::new(),
         }
+    }
+
+    /// Builds a queue from saved parts. `history` keeps its last 100 items.
+    ///
+    /// Returns `None` if the parts do not fit: `current` is not an index of
+    /// `items` (or is set for no items), or `shuffle` is not a permutation of
+    /// all indexes.
+    #[must_use]
+    pub fn from_parts(
+        items: Vec<QueueItem>,
+        current: Option<usize>,
+        shuffle: Option<Vec<usize>>,
+        repeat: RepeatMode,
+        history: Vec<ItemId>,
+    ) -> Option<Self> {
+        let len = items.len();
+        if current.is_some_and(|index| index >= len) || current.is_none() != items.is_empty() {
+            return None;
+        }
+        if let Some(order) = &shuffle {
+            let mut seen = vec![false; len];
+            for index in order {
+                let slot = seen.get_mut(*index)?;
+                if std::mem::replace(slot, true) {
+                    return None;
+                }
+            }
+            if order.len() != len {
+                return None;
+            }
+        }
+        Some(Self {
+            items,
+            current,
+            shuffle,
+            repeat,
+            history: history
+                .into_iter()
+                .rev()
+                .take(HISTORY_LIMIT)
+                .rev()
+                .collect(),
+        })
+    }
+
+    /// Returns the shuffle order: a permutation of all indexes. `None` when
+    /// shuffle is off.
+    #[must_use]
+    pub fn shuffle_order(&self) -> Option<&[usize]> {
+        self.shuffle.as_deref()
     }
 
     /// Returns the items in user order.

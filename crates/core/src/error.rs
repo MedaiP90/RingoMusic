@@ -61,6 +61,13 @@ pub enum Error {
         source: std::io::Error,
     },
 
+    /// The saved queue is not valid.
+    #[error("saved queue is not valid: {reason}")]
+    InvalidQueue {
+        /// What is wrong.
+        reason: &'static str,
+    },
+
     /// The blocking task of a database call did not finish.
     #[error("database task failed")]
     Task(#[source] tokio::task::JoinError),

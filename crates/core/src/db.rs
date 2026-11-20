@@ -15,11 +15,38 @@ use crate::{Error, Result};
 
 /// Migration steps in order. Step `n` (counting from 1) moves the schema to version `n`.
 /// Never change a released step. Add a new one.
-const MIGRATIONS: &[&str] = &["CREATE TABLE api_cache (
+const MIGRATIONS: &[&str] = &[
+    "CREATE TABLE api_cache (
         key TEXT PRIMARY KEY,
         body TEXT NOT NULL,
         expires_at INTEGER NOT NULL
-    )"];
+    )",
+    // `place` is the index in the user order (queue_item) or the position in the
+    // shuffle order (queue_shuffle). `queue_state` has one row at most.
+    "CREATE TABLE queue_item (
+        place INTEGER PRIMARY KEY,
+        id TEXT NOT NULL,
+        title TEXT NOT NULL,
+        artist TEXT NOT NULL,
+        album TEXT NOT NULL,
+        duration_ms INTEGER NOT NULL,
+        artwork_template TEXT
+    );
+    CREATE TABLE queue_shuffle (
+        place INTEGER PRIMARY KEY,
+        item_index INTEGER NOT NULL
+    );
+    CREATE TABLE queue_history (
+        place INTEGER PRIMARY KEY,
+        id TEXT NOT NULL
+    );
+    CREATE TABLE queue_state (
+        singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+        current_index INTEGER NOT NULL,
+        repeat TEXT NOT NULL,
+        position_ms INTEGER NOT NULL
+    )",
+];
 
 /// Handle to the application database. Clones share one connection.
 #[derive(Clone, Debug)]
@@ -155,7 +182,7 @@ mod tests {
         Database::open(&path).expect("database can be opened");
 
         let connection = Connection::open(&path).expect("file can be reopened");
-        assert_eq!(user_version(&connection), 1);
+        assert_eq!(user_version(&connection), 2);
         let rows: i64 = connection
             .query_row("SELECT count(*) FROM api_cache", [], |row| row.get(0))
             .expect("api_cache exists");
@@ -193,7 +220,7 @@ mod tests {
             error,
             Error::UnsupportedVersion {
                 found: 99,
-                supported: 1
+                supported: 2
             }
         ));
     }
