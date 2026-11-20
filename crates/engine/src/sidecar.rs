@@ -161,10 +161,10 @@ impl PlaybackEngine for SidecarEngine {
             let _ = stop.send(());
         }
         let task = lock(&self.task).take();
-        if let Some(task) = task {
-            if let Err(error) = task.await {
-                warn!(%error, "the engine supervisor task failed");
-            }
+        if let Some(task) = task
+            && let Err(error) = task.await
+        {
+            warn!(%error, "the engine supervisor task failed");
         }
         Ok(())
     }

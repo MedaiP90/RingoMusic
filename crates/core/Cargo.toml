@@ -11,9 +11,14 @@ workspace = true
 
 [dependencies]
 ringo-am-api = { path = "../am-api" }
+ringo-engine = { path = "../engine" }
 async-trait.workspace = true
+rand = { workspace = true, features = ["thread_rng"] }
 rusqlite.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true
+
+[dev-dependencies]
+rand = { workspace = true, features = ["std", "std_rng"] }

@@ -224,7 +224,7 @@ async fn library_albums_returns_a_page_with_the_next_offset() {
 
     let page = endpoints::library_albums(&transport, 0).await.unwrap();
 
-    assert!(!page.items.is_empty());
+    assert_ne!(page.items.len(), 0);
     assert_eq!(page.next_offset, Some(5));
 }
 
@@ -238,7 +238,7 @@ async fn library_artists_returns_a_page_with_the_next_offset() {
 
     let page = endpoints::library_artists(&transport, 0).await.unwrap();
 
-    assert!(!page.items.is_empty());
+    assert_ne!(page.items.len(), 0);
     assert_eq!(page.next_offset, Some(5));
 }
 
@@ -252,7 +252,7 @@ async fn library_songs_sends_the_offset() {
 
     let page = endpoints::library_songs(&transport, 50).await.unwrap();
 
-    assert!(!page.items.is_empty());
+    assert_ne!(page.items.len(), 0);
 }
 
 #[tokio::test]
@@ -319,5 +319,5 @@ async fn recommendations_returns_the_groups() {
 
     let groups = endpoints::recommendations(&transport).await.unwrap();
 
-    assert!(!groups.is_empty());
+    assert_ne!(groups.len(), 0);
 }
