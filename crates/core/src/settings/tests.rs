@@ -26,6 +26,7 @@ fn defaults_match_the_schema_table() {
     assert!((settings.volume() - 1.0).abs() < f64::EPSILON);
     assert!(!settings.quit_on_close());
     assert!(settings.show_notifications());
+    assert!(!settings.background_denied());
     assert!(settings.check_updates());
     assert_eq!(settings.last_update_check(), 0);
     assert_eq!(settings.api_cache_max_mb(), 256);
@@ -44,6 +45,19 @@ fn setters_store_values() {
     assert_eq!(settings.window_width(), 800);
     assert!(settings.window_maximized());
     assert_eq!(settings.last_update_check(), 1_700_000_000);
+}
+
+#[test]
+fn background_denied_flag_can_be_set_and_cleared() {
+    let settings = test_settings();
+    settings
+        .set_background_denied(true)
+        .expect("key is writable");
+    assert!(settings.background_denied());
+    settings
+        .set_background_denied(false)
+        .expect("key is writable");
+    assert!(!settings.background_denied());
 }
 
 #[test]

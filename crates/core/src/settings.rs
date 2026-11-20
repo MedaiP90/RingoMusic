@@ -16,6 +16,7 @@ const WINDOW_MAXIMIZED: &str = "window-maximized";
 const VOLUME: &str = "volume";
 const QUIT_ON_CLOSE: &str = "quit-on-close";
 const SHOW_NOTIFICATIONS: &str = "show-notifications";
+const BACKGROUND_DENIED: &str = "background-denied";
 const CHECK_UPDATES: &str = "check-updates";
 const LAST_UPDATE_CHECK: &str = "last-update-check";
 const API_CACHE_MAX_MB: &str = "api-cache-max-mb";
@@ -145,6 +146,25 @@ impl Settings {
         Self::write(
             SHOW_NOTIFICATIONS,
             self.inner.set_boolean(SHOW_NOTIFICATIONS, value),
+        )
+    }
+
+    /// Whether the background portal refused the permission and the user was
+    /// not told yet.
+    #[must_use]
+    pub fn background_denied(&self) -> bool {
+        self.inner.boolean(BACKGROUND_DENIED)
+    }
+
+    /// Sets whether the background portal refused the permission.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the key cannot be written.
+    pub fn set_background_denied(&self, value: bool) -> Result<()> {
+        Self::write(
+            BACKGROUND_DENIED,
+            self.inner.set_boolean(BACKGROUND_DENIED, value),
         )
     }
 

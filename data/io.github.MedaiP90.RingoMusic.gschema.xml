@@ -36,6 +36,11 @@ Copyright (C) 2026 RingoMusic contributors
       <summary>Show notifications</summary>
       <description>If true, the application shows a notification when the track changes while the window is closed.</description>
     </key>
+    <key name="background-denied" type="b">
+      <default>false</default>
+      <summary>Background permission was refused</summary>
+      <description>Set to true when the background portal refused to let the application run in the background. The application shows a message at the next start and sets the key to false.</description>
+    </key>
     <key name="check-updates" type="b">
       <default>true</default>
       <summary>Check for updates</summary>

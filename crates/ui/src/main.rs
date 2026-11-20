@@ -3,8 +3,10 @@
 
 //! Desktop application for the Apple Music player.
 
+mod background;
 mod debug_play;
 mod main_window;
+mod notification;
 mod services;
 
 use std::cell::RefCell;
@@ -13,10 +15,13 @@ use std::rc::Rc;
 use anyhow::Context;
 use relm4::RelmApp;
 use relm4::adw;
+use relm4::gtk::gio::ActionEntry;
 use relm4::gtk::prelude::*;
+use ringo_core::paths::PackageFormat;
+use ringo_core::settings::Settings;
 use tracing_subscriber::EnvFilter;
 
-use crate::main_window::MainWindow;
+use crate::main_window::{Init, MainWindow};
 use crate::services::Services;
 
 /// Application ID. It is also the name of the desktop file.
@@ -44,6 +49,7 @@ fn main() -> anyhow::Result<()> {
     debug_play::spawn(core.clone());
 
     let app = adw::Application::builder().application_id(APP_ID).build();
+    app.connect_startup(register_quit_action);
     // The core stops the engine. The application waits for it, so no engine process stays.
     let services = Rc::new(RefCell::new(Some(services)));
     app.connect_shutdown(move |_| {
@@ -51,8 +57,23 @@ fn main() -> anyhow::Result<()> {
             services.shutdown();
         }
     });
-    RelmApp::from_app(app).run::<MainWindow>(core);
+    let init = Init {
+        core,
+        settings: Settings::new(),
+        package: PackageFormat::detect(),
+    };
+    RelmApp::from_app(app).run::<MainWindow>(init);
     Ok(())
+}
+
+/// Adds `app.quit` with `Ctrl+Q`. It always quits, also when the window is hidden.
+/// The shutdown handler then saves the state.
+fn register_quit_action(app: &adw::Application) {
+    let quit = ActionEntry::builder("quit")
+        .activate(|app: &adw::Application, _, _| app.quit())
+        .build();
+    app.add_action_entries([quit]);
+    app.set_accels_for_action("app.quit", &["<Ctrl>q"]);
 }
 
 /// Sets up logging from `RUST_LOG`. The default level is `info`.

@@ -20,6 +20,9 @@ relm4 = { version = "0.11", features = ["libadwaita", "gnome_48"] }
 tokio.workspace = true
 tracing.workspace = true
 tracing-subscriber.workspace = true
+ashpd = { version = "0.14", default-features = false, features = ["tokio", "background"] }
+# `gettext-system` uses the gettext of glibc. No source build.
+gettext-rs = { version = "0.7", features = ["gettext-system"] }
 
 [lints]
 workspace = true
