@@ -14,6 +14,7 @@ pub fn build() -> adw::Banner {
     let banner = adw::Banner::new(&gettext(
         "No network connection. Some content is not available.",
     ));
+    banner.add_css_class("offline");
     NetworkMonitor::default()
         .bind_property("network-available", &banner, "revealed")
         .sync_create()

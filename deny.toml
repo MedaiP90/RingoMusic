@@ -9,6 +9,7 @@ allow = [
   "MIT",
   "BSD-2-Clause",
   "BSD-3-Clause",
+  "CDLA-Permissive-2.0", # webpki-root-certs, the root certificate data of reqwest
   "ISC",
   "Unicode-3.0",
   "Zlib",

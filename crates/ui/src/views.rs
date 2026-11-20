@@ -3,5 +3,6 @@
 
 //! One module for each view. The view components replace the empty pages.
 
+pub mod home;
 pub mod search;
 pub mod section_page;

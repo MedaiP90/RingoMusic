@@ -1,0 +1,8 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 RingoMusic contributors */
+
+/* The offline banner uses the warning colors, not the accent colors. */
+banner.offline > revealer > widget {
+  background-color: var(--warning-bg-color);
+  color: var(--warning-fg-color);
+}

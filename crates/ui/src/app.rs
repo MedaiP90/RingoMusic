@@ -23,6 +23,7 @@ use crate::gate::{self, Gate};
 use crate::item_actions::{self, SongCatalog};
 use crate::section::Section;
 use crate::services::AppServices;
+use crate::views::home::{HomeInit, HomeInput, HomeView};
 use crate::views::search::{SearchInit, SearchInput, SearchView};
 use crate::views::section_page;
 use crate::widgets::player_bar::{PlayerBar, PlayerBarInit};
@@ -201,7 +202,15 @@ impl SimpleComponent for App {
         let search_input = search.sender().clone();
         // Like the gate, the search view lives as long as its widget.
         search.detach_runtime();
-        let content_stack = build_content_stack(&split_view, &search_page);
+        let mut home = HomeView::builder().launch(HomeInit {
+            services: services.clone(),
+            split_view: split_view.clone(),
+        });
+        let home_page = home.widget().clone();
+        register_refresh(&root, home.sender());
+        // The home view also lives as long as its widget.
+        home.detach_runtime();
+        let content_stack = build_content_stack(&split_view, &home_page, &search_page);
         let sidebar_list = sidebar::build_list();
         connect_sidebar(&sidebar_list, &split_view, &sender);
 
@@ -222,7 +231,7 @@ impl SimpleComponent for App {
 
     fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
-            Input::SectionSelected(section) => self.section = section,
+            Input::SectionSelected(section) => self.select(section),
             Input::SummaryChanged(summary) => self.follow(&summary),
             Input::Raise => self.window.present(),
             Input::QuitRequested => self.quit(),
@@ -254,11 +263,20 @@ impl App {
         self.sign_in_failed = summary.sign_in_failed;
     }
 
+    /// Makes `section` the current one. The refresh action works on the home page only.
+    fn select(&mut self, section: Section) {
+        self.section = section;
+        let refresh = self.window.lookup_action("refresh");
+        if let Some(refresh) = refresh.and_then(|action| action.downcast::<SimpleAction>().ok()) {
+            refresh.set_enabled(section == Section::Home);
+        }
+    }
+
     /// Selects the search section and puts the cursor in the search entry.
     fn show_search(&mut self) {
         let row = self.sidebar_list.row_at_index(Section::Search.row_index());
         self.sidebar_list.select_row(row.as_ref());
-        self.section = Section::Search;
+        self.select(Section::Search);
         self.split_view.set_show_content(true);
         self.search.emit(SearchInput::Focus);
     }
@@ -345,18 +363,29 @@ fn register_window_actions(
     });
 }
 
-/// Builds the stack with the navigation stack of each section. The search
-/// section shows `search_page`. The others show an empty page.
+/// Adds the `win.refresh` action. It sends a refresh to the home view.
+fn register_refresh(window: &adw::ApplicationWindow, home: &relm4::Sender<HomeInput>) {
+    let input = home.clone();
+    let refresh = ActionEntry::builder("refresh")
+        .activate(move |_: &adw::ApplicationWindow, _, _| input.emit(HomeInput::Refresh))
+        .build();
+    window.add_action_entries([refresh]);
+    relm4::main_application().set_accels_for_action("win.refresh", &["F5"]);
+}
+
+/// Builds the stack with the navigation stack of each section. The home and
+/// search sections show their pages. The others show an empty page.
 fn build_content_stack(
     split_view: &adw::NavigationSplitView,
+    home_page: &adw::ToolbarView,
     search_page: &adw::ToolbarView,
 ) -> gtk::Stack {
     let stack = gtk::Stack::new();
     for section in Section::ALL {
-        let page = if section == Section::Search {
-            section_page::wrap(section, search_page)
-        } else {
-            section_page::build(section, split_view)
+        let page = match section {
+            Section::Home => section_page::wrap(section, home_page),
+            Section::Search => section_page::wrap(section, search_page),
+            _ => section_page::build(section, split_view),
         };
         stack.add_named(&page, Some(section.id()));
     }
