@@ -7,7 +7,8 @@
 use std::time::Duration;
 
 use ringo_am_api::models::{
-    Album, Artist, Artwork, ContentRating, PlayParams, Playlist, Relationship, ResourceRef, Song,
+    Album, Artist, Artwork, ContentRating, LibraryAlbum, LibraryArtist, LibraryPlaylist,
+    LibrarySong, PlayParams, Playlist, Relationship, ResourceRef, Song,
 };
 use ringo_core::queue::QueueItem;
 use ringo_engine::ItemId;
@@ -51,6 +52,30 @@ impl From<&Song> for SongItem {
             explicit: attributes.content_rating == Some(ContentRating::Explicit),
             album_id: relationships.and_then(|links| first_id(links.albums.as_ref())),
             artist_id: relationships.and_then(|links| first_id(links.artists.as_ref())),
+        }
+    }
+}
+
+impl From<&LibrarySong> for SongItem {
+    /// A library song plays with its library ID. The API sends no links to
+    /// the album or the artist, so the go-to entries stay off.
+    fn from(song: &LibrarySong) -> Self {
+        let attributes = &song.attributes;
+        let id = playable_id(attributes.play_params.as_ref(), song.id.as_str());
+        Self {
+            queue: QueueItem {
+                id: ItemId::new(id),
+                title: attributes.name.clone(),
+                artist: attributes.artist_name.clone().unwrap_or_default(),
+                album: attributes.album_name.clone().unwrap_or_default(),
+                duration: Duration::from_millis(u64::from(
+                    attributes.duration_millis.unwrap_or_default(),
+                )),
+                artwork_template: template_of(attributes.artwork.as_ref()),
+            },
+            explicit: attributes.content_rating == Some(ContentRating::Explicit),
+            album_id: None,
+            artist_id: None,
         }
     }
 }
@@ -124,6 +149,45 @@ impl From<&Playlist> for TileItem {
     }
 }
 
+impl From<&LibraryAlbum> for TileItem {
+    fn from(album: &LibraryAlbum) -> Self {
+        let attributes = &album.attributes;
+        Self {
+            kind: TileKind::Album,
+            id: album.id.to_string(),
+            title: attributes.name.clone(),
+            subtitle: attributes.artist_name.clone().unwrap_or_default(),
+            artwork_template: template_of(attributes.artwork.as_ref()),
+        }
+    }
+}
+
+impl From<&LibraryArtist> for TileItem {
+    /// The API sends no artwork for a library artist.
+    fn from(artist: &LibraryArtist) -> Self {
+        Self {
+            kind: TileKind::Artist,
+            id: artist.id.to_string(),
+            title: artist.attributes.name.clone(),
+            subtitle: String::new(),
+            artwork_template: None,
+        }
+    }
+}
+
+impl From<&LibraryPlaylist> for TileItem {
+    fn from(playlist: &LibraryPlaylist) -> Self {
+        let attributes = &playlist.attributes;
+        Self {
+            kind: TileKind::Playlist,
+            id: playlist.id.to_string(),
+            title: attributes.name.clone(),
+            subtitle: String::new(),
+            artwork_template: template_of(attributes.artwork.as_ref()),
+        }
+    }
+}
+
 /// The ID that the player needs: the one in the play parameters, if any.
 fn playable_id(params: Option<&PlayParams>, fallback: &str) -> String {
     params.map_or_else(|| fallback.to_owned(), |params| params.id.clone())
@@ -190,6 +254,22 @@ mod tests {
     #[test]
     fn song_item_has_no_link_ids_without_relationships() {
         let item = SongItem::from(&song(json!(null)));
+        assert_eq!((item.album_id, item.artist_id), (None, None));
+    }
+
+    #[test]
+    fn library_song_item_plays_with_its_library_id() {
+        let song: LibrarySong = serde_json::from_value(json!({
+            "id": "i.abc",
+            "type": "library-songs",
+            "attributes": {
+                "name": "Creep",
+                "playParams": { "id": "i.abc", "kind": "song", "isLibrary": true }
+            }
+        }))
+        .expect("the test song is valid");
+        let item = SongItem::from(&song);
+        assert_eq!(item.id(), "i.abc");
         assert_eq!((item.album_id, item.artist_id), (None, None));
     }
 

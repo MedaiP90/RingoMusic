@@ -114,7 +114,7 @@ fn build_tile(item: &TileItem) -> (gtk::Button, ArtworkImage) {
     (button, image)
 }
 
-fn text_label(text: &str, css_classes: &[&str]) -> gtk::Label {
+pub fn text_label(text: &str, css_classes: &[&str]) -> gtk::Label {
     gtk::Label::builder()
         .label(text)
         .xalign(0.0)

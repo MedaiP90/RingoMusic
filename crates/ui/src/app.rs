@@ -24,6 +24,7 @@ use crate::item_actions::{self, SongCatalog};
 use crate::section::Section;
 use crate::services::AppServices;
 use crate::views::home::{HomeInit, HomeInput, HomeView};
+use crate::views::library::{LibraryInit, LibraryKind, LibraryView};
 use crate::views::search::{SearchInit, SearchInput, SearchView};
 use crate::views::section_page;
 use crate::widgets::player_bar::{PlayerBar, PlayerBarInit};
@@ -195,7 +196,7 @@ impl SimpleComponent for App {
         let split_view = adw::NavigationSplitView::new();
         let mut search = SearchView::builder().launch(SearchInit {
             services: services.clone(),
-            catalog,
+            catalog: catalog.clone(),
             split_view: split_view.clone(),
         });
         let search_page = search.widget().clone();
@@ -210,7 +211,10 @@ impl SimpleComponent for App {
         register_refresh(&root, home.sender());
         // The home view also lives as long as its widget.
         home.detach_runtime();
-        let content_stack = build_content_stack(&split_view, &home_page, &search_page);
+        let library_pages =
+            LibraryKind::ALL.map(|kind| launch_library(kind, &services, &catalog, &split_view));
+        let content_stack =
+            build_content_stack(&split_view, &home_page, &search_page, &library_pages);
         let sidebar_list = sidebar::build_list();
         connect_sidebar(&sidebar_list, &split_view, &sender);
 
@@ -373,18 +377,42 @@ fn register_refresh(window: &adw::ApplicationWindow, home: &relm4::Sender<HomeIn
     relm4::main_application().set_accels_for_action("win.refresh", &["F5"]);
 }
 
-/// Builds the stack with the navigation stack of each section. The home and
-/// search sections show their pages. The others show an empty page.
+/// Starts the page of a library list. Like the gate, the page lives as long
+/// as its widget.
+fn launch_library(
+    kind: LibraryKind,
+    services: &AppServices,
+    catalog: &SongCatalog,
+    split_view: &adw::NavigationSplitView,
+) -> (LibraryKind, adw::ToolbarView) {
+    let mut view = LibraryView::builder().launch(LibraryInit {
+        kind,
+        services: services.clone(),
+        catalog: catalog.clone(),
+        split_view: split_view.clone(),
+    });
+    let page = view.widget().clone();
+    view.detach_runtime();
+    (kind, page)
+}
+
+/// Builds the stack with the navigation stack of each section. The queue
+/// section shows an empty page until its view exists.
 fn build_content_stack(
     split_view: &adw::NavigationSplitView,
     home_page: &adw::ToolbarView,
     search_page: &adw::ToolbarView,
+    library_pages: &[(LibraryKind, adw::ToolbarView)],
 ) -> gtk::Stack {
     let stack = gtk::Stack::new();
     for section in Section::ALL {
-        let page = match section {
-            Section::Home => section_page::wrap(section, home_page),
-            Section::Search => section_page::wrap(section, search_page),
+        let library_page = library_pages
+            .iter()
+            .find(|(kind, _)| kind.section() == section);
+        let page = match (section, library_page) {
+            (_, Some((_, page))) => section_page::wrap(section, page),
+            (Section::Home, None) => section_page::wrap(section, home_page),
+            (Section::Search, None) => section_page::wrap(section, search_page),
             _ => section_page::build(section, split_view),
         };
         stack.add_named(&page, Some(section.id()));

@@ -14,6 +14,7 @@ mod item_actions;
 mod menu;
 mod network_banner;
 mod notification;
+mod paged;
 mod playback_actions;
 mod section;
 mod services;
