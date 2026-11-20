@@ -1,0 +1,364 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 RingoMusic contributors
+
+//! Typed requests to the Apple Music API.
+//!
+//! Each function sends one request through an [`ApiTransport`] and parses the
+//! response. Catalog functions take the storefront, for example `it`. Functions
+//! that return a [`Page`] take the `offset` of the page. Start with `0`, then
+//! use [`Page::next_offset`].
+
+use serde::de::DeserializeOwned;
+use serde_json::Value;
+
+use crate::models::{
+    Album, AlbumId, ApiPage, Artist, ArtistId, LibraryAlbum, LibraryArtist, LibraryPlaylist,
+    LibraryPlaylistId, LibrarySearchResults, LibrarySong, Playlist, PlaylistId, Recommendation,
+    Resource, SearchResults, Song, SongId,
+};
+use crate::{ApiTransport, Error, PAGE_SIZE, Page, Result};
+
+/// Kind of resource in a catalog search.
+#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq)]
+pub enum CatalogSearchType {
+    /// Songs.
+    Songs,
+    /// Albums.
+    Albums,
+    /// Artists.
+    Artists,
+    /// Playlists.
+    Playlists,
+}
+
+impl CatalogSearchType {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Songs => "songs",
+            Self::Albums => "albums",
+            Self::Artists => "artists",
+            Self::Playlists => "playlists",
+        }
+    }
+}
+
+/// Kind of resource in a library search.
+#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq)]
+pub enum LibrarySearchType {
+    /// Songs.
+    Songs,
+    /// Albums.
+    Albums,
+    /// Artists.
+    Artists,
+    /// Playlists.
+    Playlists,
+}
+
+impl LibrarySearchType {
+    fn as_str(self) -> &'static str {
+        match self {
+            Self::Songs => "library-songs",
+            Self::Albums => "library-albums",
+            Self::Artists => "library-artists",
+            Self::Playlists => "library-playlists",
+        }
+    }
+}
+
+/// Searches the catalog. The result includes the top results.
+///
+/// `limit` is the maximum number of results for each type. Apple accepts
+/// values from 1 to 25 and rejects larger values.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if `term` is empty or `types` is empty.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn search(
+    transport: &impl ApiTransport,
+    storefront: &str,
+    term: &str,
+    types: &[CatalogSearchType],
+    limit: u32,
+) -> Result<SearchResults> {
+    let term = check_term(term)?;
+    let types = join_types(types.iter().map(|kind| kind.as_str()))?;
+    let path = format!("/v1/catalog/{}/search", segment("storefront", storefront)?);
+    let limit = limit.to_string();
+    let query = [
+        ("term", term),
+        ("types", &types),
+        ("limit", &limit),
+        ("with", "topResults"),
+    ];
+    let envelope: SearchEnvelope<SearchResults> = fetch(transport, &path, &query).await?;
+    Ok(envelope.results)
+}
+
+/// Searches the library of the user.
+///
+/// `limit` is the maximum number of results for each type. Apple accepts
+/// values from 1 to 25 and rejects larger values.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if `term` is empty or `types` is empty.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn library_search(
+    transport: &impl ApiTransport,
+    term: &str,
+    types: &[LibrarySearchType],
+    limit: u32,
+) -> Result<LibrarySearchResults> {
+    let term = check_term(term)?;
+    let types = join_types(types.iter().map(|kind| kind.as_str()))?;
+    let limit = limit.to_string();
+    let query = [("term", term), ("types", &types), ("limit", &limit)];
+    let envelope: SearchEnvelope<LibrarySearchResults> =
+        fetch(transport, "/v1/me/library/search", &query).await?;
+    Ok(envelope.results)
+}
+
+/// Gets one catalog song.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if an argument is empty.
+/// Returns [`Error::EmptyResponse`] if the song does not exist.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn song(transport: &impl ApiTransport, storefront: &str, id: &SongId) -> Result<Song> {
+    let path = catalog_path(storefront, "songs", id.as_str())?;
+    first(fetch(transport, &path, &[]).await?)
+}
+
+/// Gets one catalog album with its tracks.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if an argument is empty.
+/// Returns [`Error::EmptyResponse`] if the album does not exist.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn album(transport: &impl ApiTransport, storefront: &str, id: &AlbumId) -> Result<Album> {
+    let path = catalog_path(storefront, "albums", id.as_str())?;
+    first(fetch(transport, &path, &[("include", "tracks")]).await?)
+}
+
+/// Gets one catalog artist with the views `top-songs` and `full-albums`.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if an argument is empty.
+/// Returns [`Error::EmptyResponse`] if the artist does not exist.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn artist(
+    transport: &impl ApiTransport,
+    storefront: &str,
+    id: &ArtistId,
+) -> Result<Artist> {
+    let path = catalog_path(storefront, "artists", id.as_str())?;
+    first(fetch(transport, &path, &[("views", "top-songs,full-albums")]).await?)
+}
+
+/// Gets one catalog playlist with its first tracks. Use [`playlist_tracks`]
+/// for the next tracks.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if an argument is empty.
+/// Returns [`Error::EmptyResponse`] if the playlist does not exist.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn playlist(
+    transport: &impl ApiTransport,
+    storefront: &str,
+    id: &PlaylistId,
+) -> Result<Playlist> {
+    let path = catalog_path(storefront, "playlists", id.as_str())?;
+    first(fetch(transport, &path, &[("include", "tracks")]).await?)
+}
+
+/// Gets one page of the tracks of a catalog playlist.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if an argument is empty.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn playlist_tracks(
+    transport: &impl ApiTransport,
+    storefront: &str,
+    id: &PlaylistId,
+    offset: u32,
+) -> Result<Page<Resource>> {
+    let path = format!(
+        "{}/tracks",
+        catalog_path(storefront, "playlists", id.as_str())?
+    );
+    fetch_page(transport, &path, offset).await
+}
+
+/// Gets one page of the playlists in the library.
+///
+/// # Errors
+///
+/// Returns an error if the request fails or the response is not valid.
+pub async fn library_playlists(
+    transport: &impl ApiTransport,
+    offset: u32,
+) -> Result<Page<LibraryPlaylist>> {
+    fetch_page(transport, "/v1/me/library/playlists", offset).await
+}
+
+/// Gets one page of the albums in the library.
+///
+/// # Errors
+///
+/// Returns an error if the request fails or the response is not valid.
+pub async fn library_albums(
+    transport: &impl ApiTransport,
+    offset: u32,
+) -> Result<Page<LibraryAlbum>> {
+    fetch_page(transport, "/v1/me/library/albums", offset).await
+}
+
+/// Gets one page of the artists in the library.
+///
+/// # Errors
+///
+/// Returns an error if the request fails or the response is not valid.
+pub async fn library_artists(
+    transport: &impl ApiTransport,
+    offset: u32,
+) -> Result<Page<LibraryArtist>> {
+    fetch_page(transport, "/v1/me/library/artists", offset).await
+}
+
+/// Gets one page of the songs in the library.
+///
+/// # Errors
+///
+/// Returns an error if the request fails or the response is not valid.
+pub async fn library_songs(
+    transport: &impl ApiTransport,
+    offset: u32,
+) -> Result<Page<LibrarySong>> {
+    fetch_page(transport, "/v1/me/library/songs", offset).await
+}
+
+/// Gets one library playlist with its first tracks. Use
+/// [`library_playlist_tracks`] for the next tracks.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if the ID is empty.
+/// Returns [`Error::EmptyResponse`] if the playlist does not exist.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn library_playlist(
+    transport: &impl ApiTransport,
+    id: &LibraryPlaylistId,
+) -> Result<LibraryPlaylist> {
+    let path = library_playlist_path(id)?;
+    first(fetch(transport, &path, &[("include", "tracks")]).await?)
+}
+
+/// Gets one page of the tracks of a library playlist.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if the ID is empty.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn library_playlist_tracks(
+    transport: &impl ApiTransport,
+    id: &LibraryPlaylistId,
+    offset: u32,
+) -> Result<Page<Resource>> {
+    let path = format!("{}/tracks", library_playlist_path(id)?);
+    fetch_page(transport, &path, offset).await
+}
+
+/// Gets the recommendations of the user.
+///
+/// # Errors
+///
+/// Returns an error if the request fails or the response is not valid.
+pub async fn recommendations(transport: &impl ApiTransport) -> Result<Vec<Recommendation>> {
+    let page: ApiPage<Recommendation> = fetch(transport, "/v1/me/recommendations", &[]).await?;
+    Ok(page.data.into_vec())
+}
+
+/// Search responses wrap the results in a `results` object.
+#[derive(serde::Deserialize)]
+struct SearchEnvelope<T> {
+    results: T,
+}
+
+/// Sends a request and parses the response into `T`.
+async fn fetch<T: DeserializeOwned>(
+    transport: &impl ApiTransport,
+    path: &str,
+    query: &[(&str, &str)],
+) -> Result<T> {
+    let value: Value = transport.get(path, query).await?;
+    serde_json::from_value(value).map_err(Error::Parse)
+}
+
+/// Sends a list request for the page at `offset`.
+async fn fetch_page<T: DeserializeOwned>(
+    transport: &impl ApiTransport,
+    path: &str,
+    offset: u32,
+) -> Result<Page<T>> {
+    let limit = PAGE_SIZE.to_string();
+    let offset = offset.to_string();
+    let page: ApiPage<T> =
+        fetch(transport, path, &[("limit", &limit), ("offset", &offset)]).await?;
+    Ok(page.into())
+}
+
+/// Takes the one resource of a detail response.
+fn first<T>(page: ApiPage<T>) -> Result<T> {
+    page.data.into_iter().next().ok_or(Error::EmptyResponse)
+}
+
+fn catalog_path(storefront: &str, kind: &str, id: &str) -> Result<String> {
+    let storefront = segment("storefront", storefront)?;
+    let id = segment("ID", id)?;
+    Ok(format!("/v1/catalog/{storefront}/{kind}/{id}"))
+}
+
+fn library_playlist_path(id: &LibraryPlaylistId) -> Result<String> {
+    let id = segment("ID", id.as_str())?;
+    Ok(format!("/v1/me/library/playlists/{id}"))
+}
+
+/// Checks a value that goes into the path. It must not be empty or change the
+/// structure of the path.
+fn segment<'a>(name: &str, value: &'a str) -> Result<&'a str> {
+    if value.is_empty() || value.contains(['/', '?', '#']) {
+        return Err(invalid(format!(
+            "the {name} is empty or has a bad character"
+        )));
+    }
+    Ok(value)
+}
+
+/// Checks the search term. Returns it without the surrounding spaces.
+fn check_term(term: &str) -> Result<&str> {
+    let term = term.trim();
+    if term.is_empty() {
+        return Err(invalid("the search term is empty".to_owned()));
+    }
+    Ok(term)
+}
+
+/// Joins the search types for the `types` parameter.
+fn join_types<'a>(types: impl Iterator<Item = &'a str>) -> Result<String> {
+    let types: Vec<&str> = types.collect();
+    if types.is_empty() {
+        return Err(invalid("the list of search types is empty".to_owned()));
+    }
+    Ok(types.join(","))
+}
+
+fn invalid(message: String) -> Error {
+    Error::InvalidInput { message }
+}

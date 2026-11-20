@@ -87,3 +87,15 @@ ringo-cli api-get /v1/me/recommendations > $F/recommendations.json
 | `library_search.json` | `/v1/me/library/search` with `types=library-songs,...` |
 | `recommendations.json` | `/v1/me/recommendations` |
 | `catalog_search_broken_item.json` | `catalog_search.json` with one damaged item |
+
+## Hand-made files
+
+These files come from the recorded files above. They are cut to a few items
+and have a `next` link, so the pagination tests have a second page.
+
+| File | Request |
+|---|---|
+| `catalog_playlist_tracks.json` | `/v1/catalog/{storefront}/playlists/{id}/tracks` |
+| `library_playlist.json` | `/v1/me/library/playlists/p.example1` with `include=tracks` |
+| `library_playlist_tracks.json` | `/v1/me/library/playlists/p.example1/tracks` |
+| `empty_data.json` | Any detail request for an unknown ID: `{"data": []}` |

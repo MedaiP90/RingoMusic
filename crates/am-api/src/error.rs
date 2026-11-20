@@ -8,6 +8,21 @@ pub enum Error {
     /// The transport could not get a response.
     #[error("API request failed")]
     Transport(#[from] TransportError),
+
+    /// A request argument is not valid. No request was sent.
+    #[error("invalid request: {message}")]
+    InvalidInput {
+        /// Description of the problem.
+        message: String,
+    },
+
+    /// The response does not have the expected shape.
+    #[error("cannot parse the API response")]
+    Parse(#[source] serde_json::Error),
+
+    /// The response has no resource, for example for an unknown ID.
+    #[error("the API response has no resource")]
+    EmptyResponse,
 }
 
 /// Result type of the API client.
