@@ -15,6 +15,7 @@ mod event;
 mod item_id;
 mod playback_engine;
 mod sidecar;
+mod sidecar_transport;
 mod supervisor;
 
 pub use config::EngineConfig;
@@ -23,6 +24,7 @@ pub use item_id::ItemId;
 pub use playback_engine::PlaybackEngine;
 pub use rpc::RpcConnection;
 pub use sidecar::SidecarEngine;
+pub use sidecar_transport::SidecarTransport;
 
 /// Error of the engine client.
 #[derive(Debug, thiserror::Error)]

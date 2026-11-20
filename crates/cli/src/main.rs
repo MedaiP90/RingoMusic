@@ -8,11 +8,12 @@ mod event_json;
 mod play;
 mod search;
 
-use std::collections::BTreeMap;
+use std::sync::Arc;
 
 use anyhow::{Context, Result, bail};
 use clap::{Parser, Subcommand};
-use ringo_engine::{EngineConfig, EngineEvent, PlaybackEngine, SidecarEngine};
+use ringo_am_api::ApiTransport;
+use ringo_engine::{EngineConfig, EngineEvent, PlaybackEngine, SidecarEngine, SidecarTransport};
 use serde_json::Value;
 use tokio::signal;
 use tokio::sync::broadcast::{self, error::RecvError};
@@ -75,7 +76,7 @@ async fn main() -> Result<()> {
     init_tracing();
     let config = EngineConfig::from_env_or_default(data_dir::engine_data_dir()?)
         .context("cannot configure the engine (see --help for the development setup)")?;
-    let engine = SidecarEngine::start(config).context("cannot start the engine")?;
+    let engine = Arc::new(SidecarEngine::start(config).context("cannot start the engine")?);
     // The runtime has one thread, so no event is lost between `start` and `subscribe`.
     let events = engine.events();
 
@@ -98,7 +99,7 @@ fn init_tracing() {
 
 /// Runs one command against the engine.
 async fn run(
-    engine: &SidecarEngine,
+    engine: &Arc<SidecarEngine>,
     command: Command,
     mut events: broadcast::Receiver<EngineEvent>,
 ) -> Result<()> {
@@ -106,6 +107,8 @@ async fn run(
         return print_events(&mut events).await;
     }
     wait_until_ready(&mut events).await?;
+    let transport = SidecarTransport::new(Arc::clone(engine));
+    let engine: &SidecarEngine = engine;
     match command {
         Command::Status => print_status(engine).await,
         Command::Signin => {
@@ -113,9 +116,9 @@ async fn run(
             print_status(engine).await
         }
         Command::Signout => Ok(engine.sign_out().await?),
-        Command::Search { term } => search_catalog(engine, &term).await,
+        Command::Search { term } => search_catalog(engine, &transport, &term).await,
         Command::ApiGet { path, params } => {
-            let response = api_get(engine, &path, &params).await?;
+            let response = api_get(engine, &transport, &path, &params).await?;
             println!("{}", serde_json::to_string_pretty(&response)?);
             Ok(())
         }
@@ -162,19 +165,34 @@ async fn print_status(engine: &SidecarEngine) -> Result<()> {
     Ok(())
 }
 
-async fn search_catalog(engine: &SidecarEngine, term: &str) -> Result<()> {
+async fn search_catalog(
+    engine: &SidecarEngine,
+    transport: &impl ApiTransport,
+    term: &str,
+) -> Result<()> {
     let params = [
         format!("term={term}"),
         "types=songs,albums,artists".to_owned(),
         "limit=10".to_owned(),
     ];
-    let response = api_get(engine, "/v1/catalog/{storefront}/search", &params).await?;
+    let response = api_get(
+        engine,
+        transport,
+        "/v1/catalog/{storefront}/search",
+        &params,
+    )
+    .await?;
     search::print_table(&search::rows(&response));
     Ok(())
 }
 
-/// Sends `api.get`. Fills `{storefront}` in the path and parses `key=value` pairs.
-async fn api_get(engine: &SidecarEngine, path: &str, params: &[String]) -> Result<Value> {
+/// Sends a GET request. Fills `{storefront}` in the path and parses `key=value` pairs.
+async fn api_get(
+    engine: &SidecarEngine,
+    transport: &impl ApiTransport,
+    path: &str,
+    params: &[String],
+) -> Result<Value> {
     let query = parse_params(params)?;
     let path = if path.contains("{storefront}") {
         let status = engine.auth_status().await?;
@@ -182,14 +200,15 @@ async fn api_get(engine: &SidecarEngine, path: &str, params: &[String]) -> Resul
     } else {
         path.to_owned()
     };
-    Ok(engine.api_get(&path, query).await?)
+    Ok(transport.get(&path, &query).await?)
 }
 
-fn parse_params(params: &[String]) -> Result<BTreeMap<String, String>> {
+/// Splits each `key=value` pair at the first `=`.
+fn parse_params(params: &[String]) -> Result<Vec<(&str, &str)>> {
     params
         .iter()
         .map(|param| match param.split_once('=') {
-            Some((key, value)) => Ok((key.to_owned(), value.to_owned())),
+            Some(pair) => Ok(pair),
             None => bail!("query parameter '{param}' is not in the form key=value"),
         })
         .collect()
@@ -201,10 +220,9 @@ mod tests {
 
     #[test]
     fn parse_params_splits_at_the_first_equals_sign() {
-        let params = parse_params(&["term=a=b".to_owned(), "limit=10".to_owned()])
-            .expect("params are valid");
-        assert_eq!(params["term"], "a=b");
-        assert_eq!(params["limit"], "10");
+        let input = ["term=a=b".to_owned(), "limit=10".to_owned()];
+        let params = parse_params(&input).expect("params are valid");
+        assert_eq!(params, [("term", "a=b"), ("limit", "10")]);
     }
 
     #[test]
