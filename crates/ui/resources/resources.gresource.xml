@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-License-Identifier: GPL-3.0-or-later
+  Copyright (C) 2026 RingoMusic contributors
+-->
+<!-- No file needs the bundle yet. Add `style.css` here only if a rule is necessary. -->
+<gresources>
+  <gresource prefix="/io/github/MedaiP90/RingoMusic"/>
+</gresources>
