@@ -5,5 +5,6 @@
 
 pub mod home;
 pub mod library;
+pub mod phase;
 pub mod search;
 pub mod section_page;

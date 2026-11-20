@@ -13,6 +13,8 @@ use ringo_am_api::models::{
 use ringo_core::queue::QueueItem;
 use ringo_engine::ItemId;
 
+use crate::name_filter::NameFilter;
+
 /// A song for a song row.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SongItem {
@@ -30,6 +32,11 @@ impl SongItem {
     /// The ID of the song.
     pub fn id(&self) -> &str {
         self.queue.id.as_str()
+    }
+
+    /// Tells if the title or the artist matches `filter`.
+    pub fn matches(&self, filter: &NameFilter) -> bool {
+        filter.matches(&[&self.queue.title, &self.queue.artist])
     }
 }
 
@@ -109,6 +116,13 @@ pub struct TileItem {
     /// The artist of an album, or the curator of a playlist. Empty for an artist.
     pub subtitle: String,
     pub artwork_template: Option<String>,
+}
+
+impl TileItem {
+    /// Tells if the title matches `filter`.
+    pub fn matches(&self, filter: &NameFilter) -> bool {
+        filter.matches(&[&self.title])
+    }
 }
 
 impl From<&Album> for TileItem {

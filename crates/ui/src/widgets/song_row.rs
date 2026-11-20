@@ -14,6 +14,7 @@ use relm4::typed_view::list::RelmListItem;
 
 use crate::item::SongItem;
 use crate::item_actions::{ADD_TO_QUEUE, OPEN_ALBUM, OPEN_ARTIST, PLAY_ITEM, PLAY_NEXT};
+use crate::name_filter::NameFilter;
 use crate::widgets::artwork_image::ArtworkImage;
 use crate::widgets::player_bar::format_time;
 
@@ -33,6 +34,11 @@ pub struct SongRow {
 impl SongRow {
     pub fn new(item: SongItem) -> Self {
         Self { item }
+    }
+
+    /// Tells if the song matches `filter`.
+    pub fn matches(&self, filter: &NameFilter) -> bool {
+        self.item.matches(filter)
     }
 }
 

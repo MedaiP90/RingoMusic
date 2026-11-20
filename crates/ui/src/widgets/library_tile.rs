@@ -10,6 +10,7 @@ use relm4::typed_view::grid::RelmGridItem;
 use relm4::typed_view::list::RelmListItem;
 
 use crate::item::{TileItem, TileKind};
+use crate::name_filter::NameFilter;
 use crate::widgets::artwork_image::ArtworkImage;
 use crate::widgets::tile::text_label;
 
@@ -28,6 +29,11 @@ pub struct GridTile {
 impl GridTile {
     pub fn new(item: TileItem) -> Self {
         Self { item }
+    }
+
+    /// Tells if the item matches `filter`.
+    pub fn matches(&self, filter: &NameFilter) -> bool {
+        self.item.matches(filter)
     }
 }
 
@@ -90,6 +96,11 @@ impl ArtistRow {
     pub fn new(item: TileItem) -> Self {
         debug_assert_eq!(item.kind, TileKind::Artist, "the row shows artists");
         Self { item }
+    }
+
+    /// Tells if the artist matches `filter`.
+    pub fn matches(&self, filter: &NameFilter) -> bool {
+        self.item.matches(filter)
     }
 }
 

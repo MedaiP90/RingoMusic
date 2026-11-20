@@ -17,6 +17,7 @@ use tracing::{debug, warn};
 
 use crate::item::TileItem;
 use crate::services::{ApiClient, AppServices};
+use crate::views::phase::Phase;
 use crate::views::section_page;
 use crate::widgets::tile::TileRow;
 
@@ -57,29 +58,6 @@ fn tile_of(resource: &Resource) -> Option<TileItem> {
         | Resource::Unknown => {
             debug!(?resource, "skipped a recommended resource without a tile");
             None
-        }
-    }
-}
-
-/// What the view shows.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-enum Phase {
-    /// The page was not shown yet. It looks like `Loading`.
-    Idle,
-    Loading,
-    Empty,
-    Failed,
-    Content,
-}
-
-impl Phase {
-    /// Name of the stack page.
-    fn page(self) -> &'static str {
-        match self {
-            Self::Idle | Self::Loading => "loading",
-            Self::Empty => "empty",
-            Self::Failed => "failed",
-            Self::Content => "content",
         }
     }
 }
@@ -344,6 +322,6 @@ mod tests {
     fn group_without_a_title_gets_a_default_title() {
         let group = TileGroup::of(&recommendation(None, &json!([album("1")])))
             .expect("the group has tiles");
-        assert!(!group.title.is_empty());
+        assert_ne!(group.title, "");
     }
 }

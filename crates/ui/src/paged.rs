@@ -38,6 +38,11 @@ impl PageCursor {
         Some((self.generation, offset))
     }
 
+    /// Tells if a page is left to load.
+    pub fn has_more(&self) -> bool {
+        self.next_offset.is_some()
+    }
+
     /// Records a loaded page. Returns `false` if the load is stale.
     pub fn finish(&mut self, generation: u64, next_offset: Option<u32>) -> bool {
         if generation != self.generation {
@@ -101,6 +106,15 @@ mod tests {
     #[test]
     fn begin_returns_the_first_offset_after_a_reset() {
         assert_eq!(started().begin(), Some((1, 0)));
+    }
+
+    #[test]
+    fn has_more_is_false_after_the_last_page() {
+        let mut cursor = started();
+        assert!(cursor.has_more());
+        cursor.begin();
+        cursor.finish(1, None);
+        assert!(!cursor.has_more());
     }
 
     #[test]

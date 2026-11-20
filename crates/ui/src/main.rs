@@ -12,6 +12,7 @@ mod gate;
 mod item;
 mod item_actions;
 mod menu;
+mod name_filter;
 mod network_banner;
 mod notification;
 mod paged;

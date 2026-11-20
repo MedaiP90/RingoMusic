@@ -24,9 +24,11 @@ use tracing::warn;
 
 use crate::item::{SongItem, TileItem};
 use crate::item_actions::SongCatalog;
+use crate::name_filter::NameFilter;
 use crate::paged::{self, PageCursor};
 use crate::section::Section;
 use crate::services::{ApiClient, AppServices};
+use crate::views::phase::Phase;
 use crate::views::section_page;
 use crate::widgets::library_tile::{ArtistRow, GridTile};
 use crate::widgets::song_row::{self, SongRow};
@@ -71,29 +73,6 @@ pub enum Entry {
     Song(SongItem),
 }
 
-/// What the view shows.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-enum Phase {
-    /// The page was not shown yet. It looks like `Loading`.
-    Idle,
-    Loading,
-    Empty,
-    Failed,
-    Content,
-}
-
-impl Phase {
-    /// Name of the stack page.
-    fn page(self) -> &'static str {
-        match self {
-            Self::Idle | Self::Loading => "loading",
-            Self::Empty => "empty",
-            Self::Failed => "failed",
-            Self::Content => "content",
-        }
-    }
-}
-
 /// The list widget of a page, with the items that it shows.
 enum Content {
     Tiles {
@@ -112,12 +91,14 @@ enum Content {
 
 impl Content {
     /// Makes an empty list for `kind`. A press on an item sends its position.
-    fn new(kind: LibraryKind, sender: &ComponentSender<LibraryView>) -> Self {
+    fn new(kind: LibraryKind, filter: &NameFilter, sender: &ComponentSender<LibraryView>) -> Self {
         let input = sender.input_sender().clone();
         let activated = move |position| input.emit(LibraryInput::Activated(position));
         match kind {
             LibraryKind::Playlists | LibraryKind::Albums => {
-                let view = TypedGridView::<GridTile, gtk::SingleSelection>::new();
+                let mut view = TypedGridView::<GridTile, gtk::SingleSelection>::new();
+                let filter = filter.clone();
+                view.add_filter(move |tile| tile.matches(&filter));
                 view.view.set_single_click_activate(true);
                 view.view
                     .connect_activate(move |_, position| activated(position));
@@ -127,7 +108,9 @@ impl Content {
                 }
             }
             LibraryKind::Artists => {
-                let view = TypedListView::<ArtistRow, gtk::SingleSelection>::new();
+                let mut view = TypedListView::<ArtistRow, gtk::SingleSelection>::new();
+                let filter = filter.clone();
+                view.add_filter(move |row| row.matches(&filter));
                 view.view.set_single_click_activate(true);
                 view.view
                     .connect_activate(move |_, position| activated(position));
@@ -137,7 +120,9 @@ impl Content {
                 }
             }
             LibraryKind::Songs => {
-                let view = TypedListView::<SongRow, gtk::SingleSelection>::new();
+                let mut view = TypedListView::<SongRow, gtk::SingleSelection>::new();
+                let filter = filter.clone();
+                view.add_filter(move |row| row.matches(&filter));
                 view.view.set_show_separators(true);
                 view.view
                     .connect_activate(move |_, position| activated(position));
@@ -163,6 +148,25 @@ impl Content {
         match self {
             Self::Tiles { items, .. } | Self::Artists { items, .. } => items.is_empty(),
             Self::Songs { items, .. } => items.is_empty(),
+        }
+    }
+
+    /// Applies the changed term of the filter to the list.
+    fn refilter(&self) {
+        match self {
+            Self::Tiles { view, .. } => view.notify_filter_changed(0),
+            Self::Artists { view, .. } => view.notify_filter_changed(0),
+            Self::Songs { view, .. } => view.notify_filter_changed(0),
+        };
+    }
+
+    /// Number of items that the filter shows.
+    fn visible_count(&self, filter: &NameFilter) -> usize {
+        match self {
+            Self::Tiles { items, .. } | Self::Artists { items, .. } => {
+                items.iter().filter(|item| item.matches(filter)).count()
+            }
+            Self::Songs { items, .. } => items.iter().filter(|song| song.matches(filter)).count(),
         }
     }
 
@@ -209,13 +213,14 @@ impl Content {
         }
     }
 
-    /// Runs the action of the item at `position`: it opens a tile, and it
-    /// plays the loaded songs from a song.
-    fn activate(&self, position: u32, core: &CoreHandle) {
+    /// Runs the action of the shown item at `position`: it opens a tile, and
+    /// it plays the shown songs from a song.
+    fn activate(&self, position: u32, filter: &NameFilter, core: &CoreHandle) {
         let index = usize::try_from(position).unwrap_or(usize::MAX);
         match self {
             Self::Tiles { items, .. } | Self::Artists { items, .. } => {
-                let Some(item) = items.get(index) else {
+                let item = items.iter().filter(|item| item.matches(filter)).nth(index);
+                let Some(item) = item else {
                     return;
                 };
                 let target = item.id.to_variant();
@@ -226,7 +231,14 @@ impl Content {
                     warn!(%error, "cannot open the library item");
                 }
             }
-            Self::Songs { items, .. } => play_from(items, index, core),
+            Self::Songs { items, .. } => {
+                let shown: Vec<SongItem> = items
+                    .iter()
+                    .filter(|song| song.matches(filter))
+                    .cloned()
+                    .collect();
+                play_from(&shown, index, core);
+            }
         }
     }
 }
@@ -261,8 +273,10 @@ pub enum LibraryInput {
     NearEnd,
     /// A load ended. The number tells which list it was for.
     Loaded(u64, Option<Page<Entry>>),
-    /// The user activated the item at the position.
+    /// The user activated the shown item at the position.
     Activated(u32),
+    /// The user changed the text of the filter entry.
+    FilterChanged(String),
 }
 
 /// A library page.
@@ -272,6 +286,7 @@ pub struct LibraryView {
     core: CoreHandle,
     catalog: SongCatalog,
     phase: Phase,
+    filter: NameFilter,
     cursor: PageCursor,
     pending: Option<JoinHandle<()>>,
     content: Content,
@@ -287,6 +302,14 @@ impl SimpleComponent for LibraryView {
         adw::ToolbarView {
             add_top_bar = &adw::HeaderBar {
                 pack_start: &back_button,
+
+                #[wrap(Some)]
+                set_title_widget = &adw::Clamp {
+                    set_maximum_size: 480,
+
+                    #[wrap(Some)]
+                    set_child = &filter_entry.clone() -> gtk::SearchEntry {},
+                },
             },
 
             #[wrap(Some)]
@@ -305,6 +328,12 @@ impl SimpleComponent for LibraryView {
                     set_icon_name: Some(model.kind.section().icon_name()),
                     set_title: &gettext("Your library is empty"),
                     set_description: Some(&gettext("Add music to your library to see it here.")),
+                },
+
+                add_named[Some(Phase::NoMatches.page())] = &adw::StatusPage {
+                    set_icon_name: Some("edit-find-symbolic"),
+                    set_title: &gettext("No Matches"),
+                    set_description: Some(&gettext("Try a different name.")),
                 },
 
                 add_named[Some(Phase::Failed.page())] = &adw::StatusPage {
@@ -339,7 +368,9 @@ impl SimpleComponent for LibraryView {
             split_view,
         } = init;
         let back_button = section_page::back_button(&split_view);
-        let content = Content::new(kind, &sender);
+        let filter = NameFilter::default();
+        let content = Content::new(kind, &filter, &sender);
+        let filter_entry = build_filter_entry(&sender);
         let scrolled = gtk::ScrolledWindow::builder()
             .hscrollbar_policy(gtk::PolicyType::Never)
             .child(&content.widget())
@@ -356,6 +387,7 @@ impl SimpleComponent for LibraryView {
             core: services.core().clone(),
             catalog,
             phase: Phase::Idle,
+            filter,
             cursor: PageCursor::default(),
             pending: None,
             content,
@@ -377,8 +409,16 @@ impl SimpleComponent for LibraryView {
                     self.load_next(&sender);
                 }
             }
-            LibraryInput::Loaded(generation, page) => self.finish(generation, page),
-            LibraryInput::Activated(position) => self.content.activate(position, &self.core),
+            LibraryInput::Loaded(generation, page) => self.finish(generation, page, &sender),
+            LibraryInput::Activated(position) => {
+                self.content.activate(position, &self.filter, &self.core);
+            }
+            LibraryInput::FilterChanged(term) => {
+                self.filter.set(&term);
+                self.content.refilter();
+                self.refresh_phase();
+                self.load_for_filter(&sender);
+            }
         }
     }
 }
@@ -410,9 +450,14 @@ impl LibraryView {
 
     /// Shows the end of a load: the new items, or the failure. A failure of a
     /// later page keeps the items. The next scroll tries the page again.
-    fn finish(&mut self, generation: u64, page: Option<Page<Entry>>) {
+    fn finish(
+        &mut self,
+        generation: u64,
+        page: Option<Page<Entry>>,
+        sender: &ComponentSender<Self>,
+    ) {
         let Some(page) = page else {
-            if self.cursor.fail(generation) && self.content.is_empty() {
+            if self.cursor.fail(generation) && self.phase == Phase::Loading {
                 self.phase = Phase::Failed;
             }
             return;
@@ -421,12 +466,52 @@ impl LibraryView {
             return;
         }
         self.content.append(page.items, &self.catalog);
+        self.refresh_phase();
+        self.load_for_filter(sender);
+    }
+
+    /// Sets the phase from the items, the filter, and the pages that are left.
+    /// The phase stays `Loading` while the filter hides all loaded items and
+    /// more pages can still bring a match.
+    fn refresh_phase(&mut self) {
+        if matches!(self.phase, Phase::Idle | Phase::Failed) {
+            return;
+        }
         self.phase = if self.content.is_empty() {
             Phase::Empty
-        } else {
+        } else if self.content.visible_count(&self.filter) > 0 {
             Phase::Content
+        } else if self.cursor.has_more() {
+            Phase::Loading
+        } else {
+            Phase::NoMatches
         };
     }
+
+    /// While a filter is set, loads all pages: a match can be on a page that
+    /// is not loaded yet.
+    fn load_for_filter(&mut self, sender: &ComponentSender<Self>) {
+        let waiting = matches!(
+            self.phase,
+            Phase::Loading | Phase::Content | Phase::NoMatches
+        );
+        if self.filter.is_active() && waiting {
+            self.load_next(sender);
+        }
+    }
+}
+
+/// Builds the entry that filters the list by name.
+fn build_filter_entry(sender: &ComponentSender<LibraryView>) -> gtk::SearchEntry {
+    let entry = gtk::SearchEntry::builder()
+        .hexpand(true)
+        .placeholder_text(gettext("Filter by name"))
+        .build();
+    let input = sender.input_sender().clone();
+    entry.connect_search_changed(move |entry| {
+        input.emit(LibraryInput::FilterChanged(entry.text().to_string()));
+    });
+    entry
 }
 
 /// Gets one page of the list of `kind`. Returns `None` if the request fails.
