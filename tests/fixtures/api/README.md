@@ -32,7 +32,7 @@ F=tests/fixtures/api
 
 ```sh
 ringo-cli api-get '/v1/catalog/{storefront}/search' term=radiohead types=songs,albums,artists,playlists limit=5 > $F/catalog_search.json
-ringo-cli api-get '/v1/catalog/{storefront}/songs/1440935467' > $F/catalog_song.json
+ringo-cli api-get '/v1/catalog/{storefront}/songs/1097861769' > $F/catalog_song.json
 ringo-cli api-get '/v1/catalog/{storefront}/albums/1097861387' include=tracks > $F/catalog_album.json
 ringo-cli api-get '/v1/catalog/{storefront}/artists/657515' views=top-songs,full-albums > $F/catalog_artist.json
 ringo-cli api-get '/v1/catalog/{storefront}/playlists/pl.f4d106fed2bd41149aaacabb233eb5eb' include=tracks > $F/catalog_playlist.json
@@ -65,7 +65,7 @@ ringo-cli api-get /v1/me/recommendations > $F/recommendations.json
 | File | Request |
 |---|---|
 | `catalog_search.json` | `/v1/catalog/{storefront}/search` |
-| `catalog_song.json` | `/v1/catalog/{storefront}/songs/1440935467` |
+| `catalog_song.json` | `/v1/catalog/{storefront}/songs/1097861769` |
 | `catalog_album.json` | `/v1/catalog/{storefront}/albums/1097861387` with `include=tracks` |
 | `catalog_artist.json` | `/v1/catalog/{storefront}/artists/657515` with `views=top-songs,full-albums` |
 | `catalog_playlist.json` | `/v1/catalog/{storefront}/playlists/pl.f4d106fed2bd41149aaacabb233eb5eb` with `include=tracks` |

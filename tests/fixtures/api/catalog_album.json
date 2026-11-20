@@ -1,0 +1,698 @@
+{
+  "data": [
+    {
+      "attributes": {
+        "artistName": "Radiohead",
+        "artwork": {
+          "bgColor": "fefeff",
+          "hasP3": false,
+          "height": 4000,
+          "textColor1": "031623",
+          "textColor2": "332b2c",
+          "textColor3": "35454f",
+          "textColor4": "5b5556",
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+          "width": 4000
+        },
+        "audioTraits": [
+          "lossless",
+          "lossy-stereo"
+        ],
+        "copyright": "℗ 1997 XL Recordings Ltd",
+        "editorialNotes": {
+          "short": "Una sporca dozzina di tracce, a cavallo tra paura, dissoluzione e ottimismo.",
+          "standard": "Per quanto altrettanto audaci, innovativi e nervosi, pochi album sono stati in grado di colpire l’immaginario collettivo quanto <i>OK Computer</i>. Un trionfo che, oltre ad annunciare una nuova frontiera nell’esplorazione del rock, esprimeva in maniera articolata il nascente interesse (e la preoccupazione) di fine millennio verso i nostri giocattoli tecnologici. In 12 canzoni sul filo tra terrore e oblio, Thom Yorke appare talmente alienato dalla società che gli gira intorno da desiderare di essere rapito da una civiltà aliena, in modo da poter descrivere il mondo che gli piacerebbe vedere [“the world as I’d love to see it”]. Ridisponendo i suoni del rock’n’roll con ambizione classica, il disco rimane un ciclo di brani dall’inquietante magnetismo, che si rivela una delle espressioni più radicali e necessarie del genere.<br /><br />\nNonostante la carica di angoscia, <i>OK Computer</i> è in fin dei conti un atto di speranza rispetto alla convinzione che l’inesorabile strada del progresso non debba per forza comportare una perdita totale di purezza. Il rimedio al ritmo vertiginoso impresso a ogni cosa è in realtà piuttosto semplice: “Idiot, slow down” [“Rallenta, idiota”], recitano gli ultimi versi di ‘The Tourist’, traccia che conclude la scaletta. Nei decenni trascorsi dal momento in cui il lavoro ha investito i Radiohead del ruolo di nuovi portabandiera del rock, i timori e i disagi che incarnava – cioè quelli relativi a un isolamento sempre più spinto – non hanno fatto che crescere. Le risposte e la fiducia che offriva come appiglio sono però ancora intatte.",
+          "tagline": "I 100 migliori album in evidenza"
+        },
+        "genreNames": [
+          "Alternativa",
+          "Musica",
+          "Elettronica",
+          "Pop",
+          "Britpop",
+          "Rock",
+          "Alternativa adulti"
+        ],
+        "isCompilation": false,
+        "isComplete": true,
+        "isMasteredForItunes": false,
+        "isPrerelease": false,
+        "isSingle": false,
+        "name": "OK Computer",
+        "playParams": {
+          "id": "1097861387",
+          "kind": "album"
+        },
+        "recordLabel": "XL Recordings",
+        "releaseDate": "1997-05-21",
+        "trackCount": 12,
+        "upc": "634904078164",
+        "url": "https://music.apple.com/it/album/ok-computer/1097861387"
+      },
+      "href": "/v1/catalog/it/albums/1097861387",
+      "id": "1097861387",
+      "relationships": {
+        "artists": {
+          "data": [
+            {
+              "href": "/v1/catalog/it/artists/657515",
+              "id": "657515",
+              "type": "artists"
+            }
+          ],
+          "href": "/v1/catalog/it/albums/1097861387/artists"
+        },
+        "tracks": {
+          "data": [
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 287880,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9701274",
+                "name": "Airbag",
+                "playParams": {
+                  "id": "1097861769",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/f1/ed/05/f1ed0562-876c-a84a-c4ff-70613135b818/mzaf_1686513799735580152.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 1,
+                "url": "https://music.apple.com/it/album/airbag/1097861387?i=1097861769"
+              },
+              "href": "/v1/catalog/it/songs/1097861769",
+              "id": "1097861769",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 387213,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9701376",
+                "name": "Paranoid Android",
+                "playParams": {
+                  "id": "1097861770",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/67/6c/04/676c04b5-624a-6101-2d63-dc9c971e2a4e/mzaf_14148414942735566986.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 2,
+                "url": "https://music.apple.com/it/album/paranoid-android/1097861387?i=1097861770"
+              },
+              "href": "/v1/catalog/it/songs/1097861770",
+              "id": "1097861770",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 267693,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9701377",
+                "name": "Subterranean Homesick Alien",
+                "playParams": {
+                  "id": "1097861832",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/df/df/e2/dfdfe241-6d58-6a34-fc81-a453a5326761/mzaf_14618573923673134756.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 3,
+                "url": "https://music.apple.com/it/album/subterranean-homesick-alien/1097861387?i=1097861832"
+              },
+              "href": "/v1/catalog/it/songs/1097861832",
+              "id": "1097861832",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 267187,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9701372",
+                "name": "Exit Music (For a Film)",
+                "playParams": {
+                  "id": "1097861833",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f9/12/e3/f912e3f3-41a6-28f7-251f-dffb260ff0a2/mzaf_564282739378755648.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 4,
+                "url": "https://music.apple.com/it/album/exit-music-for-a-film/1097861387?i=1097861833"
+              },
+              "href": "/v1/catalog/it/songs/1097861833",
+              "id": "1097861833",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 299560,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9701374",
+                "name": "Let Down",
+                "playParams": {
+                  "id": "1097861834",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/cd/65/58/cd6558df-2ba2-6f8e-25a0-d2db94494f74/mzaf_13027322608015064266.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 5,
+                "url": "https://music.apple.com/it/album/let-down/1097861387?i=1097861834"
+              },
+              "href": "/v1/catalog/it/songs/1097861834",
+              "id": "1097861834",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 264067,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9701368",
+                "name": "Karma Police",
+                "playParams": {
+                  "id": "1097861836",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/46/21/35/46213520-da4a-1806-0c59-5ca6ad008b4e/mzaf_6176861975179434589.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 6,
+                "url": "https://music.apple.com/it/album/karma-police/1097861387?i=1097861836"
+              },
+              "href": "/v1/catalog/it/songs/1097861836",
+              "id": "1097861836",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 117333,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": false,
+                "isrc": "GBAYE9701373",
+                "name": "Fitter Happier",
+                "playParams": {
+                  "id": "1097861838",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/94/d3/e7/94d3e7b7-114d-eec6-c49f-dbfacda39f4d/mzaf_16212809807809660895.plus.aac.p.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 7,
+                "url": "https://music.apple.com/it/album/fitter-happier/1097861387?i=1097861838"
+              },
+              "href": "/v1/catalog/it/songs/1097861838",
+              "id": "1097861838",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 230627,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9701371",
+                "name": "Electioneering",
+                "playParams": {
+                  "id": "1097861839",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c7/5d/c8/c75dc855-dd12-b6dd-2b7a-0803e0aac773/mzaf_3507661173012039322.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 8,
+                "url": "https://music.apple.com/it/album/electioneering/1097861387?i=1097861839"
+              },
+              "href": "/v1/catalog/it/songs/1097861839",
+              "id": "1097861839",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 285200,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9701370",
+                "name": "Climbing Up the Walls",
+                "playParams": {
+                  "id": "1097861841",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/4b/fc/ec/4bfcec15-2b59-ac96-dfef-65938884e9f6/mzaf_17949002791776707549.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 9,
+                "url": "https://music.apple.com/it/album/climbing-up-the-walls/1097861387?i=1097861841"
+              },
+              "href": "/v1/catalog/it/songs/1097861841",
+              "id": "1097861841",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 229120,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9700386",
+                "name": "No Surprises",
+                "playParams": {
+                  "id": "1097861842",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f0/2a/fa/f02afaad-0a7f-9ceb-1236-55ef3d388061/mzaf_13028138173967297756.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 10,
+                "url": "https://music.apple.com/it/album/no-surprises/1097861387?i=1097861842"
+              },
+              "href": "/v1/catalog/it/songs/1097861842",
+              "id": "1097861842",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 258813,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9701375",
+                "name": "Lucky",
+                "playParams": {
+                  "id": "1097861843",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3e/b0/76/3eb076b1-25e9-5b07-dbf3-d654c2c902ba/mzaf_7353492076867229701.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 11,
+                "url": "https://music.apple.com/it/album/lucky/1097861387?i=1097861843"
+              },
+              "href": "/v1/catalog/it/songs/1097861843",
+              "id": "1097861843",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 326533,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9701378",
+                "name": "The Tourist",
+                "playParams": {
+                  "id": "1097861845",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/52/84/2b/52842b8e-a190-3cfd-fc8a-863c67705ed7/mzaf_5058577492250219138.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 12,
+                "url": "https://music.apple.com/it/album/the-tourist/1097861387?i=1097861845"
+              },
+              "href": "/v1/catalog/it/songs/1097861845",
+              "id": "1097861845",
+              "type": "songs"
+            }
+          ],
+          "href": "/v1/catalog/it/albums/1097861387/tracks"
+        }
+      },
+      "type": "albums"
+    }
+  ]
+}

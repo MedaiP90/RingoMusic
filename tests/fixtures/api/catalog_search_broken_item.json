@@ -1,0 +1,1217 @@
+{
+  "meta": {
+    "metrics": {
+      "dataSetId": "14f49ace-25f3-4f06-ac9d-1292cc90ac9a"
+    },
+    "results": {
+      "order": [
+        "songs",
+        "albums",
+        "playlists",
+        "artists"
+      ],
+      "rawOrder": [
+        "songs",
+        "albums",
+        "playlists",
+        "artists"
+      ]
+    }
+  },
+  "results": {
+    "albums": {
+      "data": [
+        {
+          "attributes": {
+            "artistName": "Radiohead",
+            "artwork": {
+              "bgColor": "1e1807",
+              "hasP3": false,
+              "height": 4000,
+              "textColor1": "d0c741",
+              "textColor2": "e9872e",
+              "textColor3": "aca436",
+              "textColor4": "c07126",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/dd/50/c7/dd50c790-99ac-d3d0-5ab8-e3891fb8fd52/634904032463.png/{w}x{h}bb.jpg",
+              "width": 4000
+            },
+            "audioTraits": [
+              "lossless",
+              "lossy-stereo"
+            ],
+            "copyright": "℗ 2007 LLLP LLP under exclusive license to XL Recordings Ltd",
+            "genreNames": [
+              "Alternativa",
+              "Musica",
+              "Rock",
+              "Rock progressive/Art-rock",
+              "Alternativa adulti"
+            ],
+            "isCompilation": false,
+            "isComplete": true,
+            "isMasteredForItunes": false,
+            "isPrerelease": false,
+            "isSingle": false,
+            "name": "In Rainbows",
+            "playParams": {
+              "id": "1109714933",
+              "kind": "album"
+            },
+            "recordLabel": "XL Recordings",
+            "releaseDate": "2007-10-10",
+            "trackCount": 10,
+            "upc": "634904032463",
+            "url": "https://music.apple.com/it/album/in-rainbows/1109714933"
+          },
+          "href": "/v1/catalog/it/albums/1109714933",
+          "id": "1109714933",
+          "type": "albums"
+        },
+        {
+          "attributes": {
+            "artistName": "Radiohead",
+            "artwork": {
+              "bgColor": "fefeff",
+              "hasP3": false,
+              "height": 4000,
+              "textColor1": "031623",
+              "textColor2": "332b2c",
+              "textColor3": "35454f",
+              "textColor4": "5b5556",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+              "width": 4000
+            },
+            "audioTraits": [
+              "lossless",
+              "lossy-stereo"
+            ],
+            "copyright": "℗ 1997 XL Recordings Ltd",
+            "editorialNotes": {
+              "short": "Una sporca dozzina di tracce, a cavallo tra paura, dissoluzione e ottimismo.",
+              "standard": "Per quanto altrettanto audaci, innovativi e nervosi, pochi album sono stati in grado di colpire l’immaginario collettivo quanto <i>OK Computer</i>. Un trionfo che, oltre ad annunciare una nuova frontiera nell’esplorazione del rock, esprimeva in maniera articolata il nascente interesse (e la preoccupazione) di fine millennio verso i nostri giocattoli tecnologici. In 12 canzoni sul filo tra terrore e oblio, Thom Yorke appare talmente alienato dalla società che gli gira intorno da desiderare di essere rapito da una civiltà aliena, in modo da poter descrivere il mondo che gli piacerebbe vedere [“the world as I’d love to see it”]. Ridisponendo i suoni del rock’n’roll con ambizione classica, il disco rimane un ciclo di brani dall’inquietante magnetismo, che si rivela una delle espressioni più radicali e necessarie del genere.<br /><br />\nNonostante la carica di angoscia, <i>OK Computer</i> è in fin dei conti un atto di speranza rispetto alla convinzione che l’inesorabile strada del progresso non debba per forza comportare una perdita totale di purezza. Il rimedio al ritmo vertiginoso impresso a ogni cosa è in realtà piuttosto semplice: “Idiot, slow down” [“Rallenta, idiota”], recitano gli ultimi versi di ‘The Tourist’, traccia che conclude la scaletta. Nei decenni trascorsi dal momento in cui il lavoro ha investito i Radiohead del ruolo di nuovi portabandiera del rock, i timori e i disagi che incarnava – cioè quelli relativi a un isolamento sempre più spinto – non hanno fatto che crescere. Le risposte e la fiducia che offriva come appiglio sono però ancora intatte.",
+              "tagline": "I 100 migliori album in evidenza"
+            },
+            "genreNames": [
+              "Alternativa",
+              "Musica",
+              "Elettronica",
+              "Pop",
+              "Britpop",
+              "Rock",
+              "Alternativa adulti"
+            ],
+            "isCompilation": false,
+            "isComplete": true,
+            "isMasteredForItunes": false,
+            "isPrerelease": false,
+            "isSingle": false,
+            "name": "OK Computer",
+            "playParams": {
+              "id": "1097861387",
+              "kind": "album"
+            },
+            "recordLabel": "XL Recordings",
+            "releaseDate": "1997-05-21",
+            "trackCount": 12,
+            "upc": "634904078164",
+            "url": "https://music.apple.com/it/album/ok-computer/1097861387"
+          },
+          "href": "/v1/catalog/it/albums/1097861387",
+          "id": "1097861387",
+          "type": "albums"
+        },
+        {
+          "attributes": {
+            "artistName": "Radiohead",
+            "artwork": {
+              "bgColor": "030101",
+              "hasP3": false,
+              "height": 4000,
+              "textColor1": "fccbbf",
+              "textColor2": "fec29a",
+              "textColor3": "caa399",
+              "textColor4": "cc9b7b",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/1b/a9/5c/1ba95cac-b245-d386-63fb-6b857aa9dce8/634904078065.png/{w}x{h}bb.jpg",
+              "width": 4000
+            },
+            "audioTraits": [
+              "lossless",
+              "lossy-stereo"
+            ],
+            "copyright": "℗ 1995 XL Recordings Ltd",
+            "genreNames": [
+              "Alternativa",
+              "Musica",
+              "Rock",
+              "Alternativa adulti",
+              "Pop",
+              "Britpop"
+            ],
+            "isCompilation": false,
+            "isComplete": true,
+            "isMasteredForItunes": false,
+            "isPrerelease": false,
+            "isSingle": false,
+            "name": "The Bends",
+            "playParams": {
+              "id": "1097862703",
+              "kind": "album"
+            },
+            "recordLabel": "XL Recordings",
+            "releaseDate": "1995-03-08",
+            "trackCount": 12,
+            "upc": "634904078065",
+            "url": "https://music.apple.com/it/album/the-bends/1097862703"
+          },
+          "href": "/v1/catalog/it/albums/1097862703",
+          "id": "1097862703",
+          "type": "albums"
+        },
+        {
+          "attributes": {
+            "artistName": "Radiohead",
+            "artwork": {
+              "bgColor": "cecdd2",
+              "hasP3": false,
+              "height": 1400,
+              "textColor1": "0c0a09",
+              "textColor2": "171616",
+              "textColor3": "333131",
+              "textColor4": "3c3b3b",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/b7/f2/5d/b7f25d91-4320-47c8-146a-6f84d5bc7e78/cover.jpg/{w}x{h}bb.jpg",
+              "width": 1400
+            },
+            "audioTraits": [
+              "lossless",
+              "lossy-stereo"
+            ],
+            "copyright": "℗ 2016 LLLP LLP under exclusive license to XL Recordings Ltd",
+            "editorialNotes": {
+              "short": "Rock multiforme, melodie distorte e una bellezza quasi spettrale.",
+              "standard": "Il nono album dei Radiohead è un'irresistibile e singolare raccolta di rock multiforme, melodie distorte e una bellezza quasi spettrale. Con reminiscenze dei loro lavori precedenti, come il distante rantolio di ‘Daydreaming’, il potente crescendo di ‘Ful Stop’ e i favolosi accordi di Jonny Greenwood, <i>A Moon Shaped Pool</i> è al contempo familiare e magnificamente elusivo, proprio come il suo indimenticabile brano di chiusura. ‘True Love Waits’, uno dei brani più amati dal vivo fin da metà degli anni ’90, è stato reinterpretato in studio come una meditazione al pianoforte che, sempre più raffinata, cresce fino a librarsi delicatamente in volo."
+            },
+            "genreNames": [
+              "Alternativa",
+              "Musica",
+              "Rock",
+              "Rock progressive/Art-rock",
+              "Alternativa adulti"
+            ],
+            "isCompilation": false,
+            "isComplete": true,
+            "isMasteredForItunes": true,
+            "isPrerelease": false,
+            "isSingle": false,
+            "name": "A Moon Shaped Pool",
+            "playParams": {
+              "id": "1111577743",
+              "kind": "album"
+            },
+            "recordLabel": "XL Recordings",
+            "releaseDate": "2016-05-08",
+            "trackCount": 11,
+            "upc": "634904079055",
+            "url": "https://music.apple.com/it/album/a-moon-shaped-pool/1111577743"
+          },
+          "href": "/v1/catalog/it/albums/1111577743",
+          "id": "1111577743",
+          "type": "albums"
+        },
+        {
+          "attributes": {
+            "artistName": "Radiohead",
+            "artwork": {
+              "bgColor": "0a0a08",
+              "hasP3": false,
+              "height": 4000,
+              "textColor1": "e2eaee",
+              "textColor2": "d3d2d1",
+              "textColor3": "b7bdc0",
+              "textColor4": "abaaa8",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/bd/8e/13/bd8e1358-b367-a689-cb84-cebd0b067dc4/634904078263.png/{w}x{h}bb.jpg",
+              "width": 4000
+            },
+            "audioTraits": [
+              "lossless",
+              "lossy-stereo"
+            ],
+            "copyright": "℗ 2000 XL Recordings Ltd",
+            "editorialNotes": {
+              "short": "Un bis avveniristico per cavalcare un’avanguardia irreversibile.",
+              "standard": "In seguito all’uscita di <i>OK Computer</i> nel 1997, Thom Yorke aveva iniziato a mettere in discussione l’idea di fare parte di un gruppo rock in senso tradizionale. Tra tensioni, grida e momenti di follia, i Radiohead si stavano completamente liberando delle regole, e <i>Kid A</i> divenne il secondo atto della loro personale rivoluzione discografica.<br /><br />\nCon le sue sequenze disorientanti e linee vocali che si ripiegano in ogni direzione come un disegno di Escher, ‘Everything In Its Right Place’ è contemporaneamente provocatoria e strategica, una strizzata d’occhio da parte della band che era passata da ‘Creep’ a queste sonorità inquietanti e inafferrabili. Ma è solo l’inizio. Il basso implacabile e i fiati ululanti di ‘The National Anthem’, i tremiti operistici di ‘Motion Picture Soundtrack’, le rifrazioni chitarristiche e le balbettanti tortuosità di ‘In Limbo’: sempre ancorate a un motivo portante, per quanto offuscato, tutte le tracce rappresentano per la formazione un nuovo spazio da esplorare in un terreno sconosciuto.",
+              "tagline": "I 100 migliori album in evidenza"
+            },
+            "genreNames": [
+              "Alternativa",
+              "Musica",
+              "Rock",
+              "Rock progressive/Art-rock",
+              "Elettronica",
+              "Alternativa adulti"
+            ],
+            "isCompilation": false,
+            "isComplete": true,
+            "isMasteredForItunes": false,
+            "isPrerelease": false,
+            "isSingle": false,
+            "name": "Kid A",
+            "playParams": {
+              "id": "1097862870",
+              "kind": "album"
+            },
+            "recordLabel": "XL Recordings",
+            "releaseDate": "2000-10-02",
+            "trackCount": 11,
+            "upc": "634904078263",
+            "url": "https://music.apple.com/it/album/kid-a/1097862870"
+          },
+          "href": "/v1/catalog/it/albums/1097862870",
+          "id": "1097862870",
+          "type": "albums"
+        }
+      ],
+      "href": "/v1/catalog/it/search?limit=5&term=radiohead&types=albums",
+      "next": "/v1/catalog/it/search?offset=5&term=radiohead&types=albums"
+    },
+    "artists": {
+      "data": [
+        {
+          "attributes": {
+            "artwork": {
+              "bgColor": "131313",
+              "defaultCropCode": "bb",
+              "hasP3": true,
+              "height": 1050,
+              "textColor1": "eba140",
+              "textColor2": "e29438",
+              "textColor3": "c08437",
+              "textColor4": "b87a31",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}bb.jpg",
+              "width": 1050
+            },
+            "genreNames": [
+              "Alternativa"
+            ],
+            "name": "Radiohead",
+            "url": "https://music.apple.com/it/artist/radiohead/657515"
+          },
+          "href": "/v1/catalog/it/artists/657515",
+          "id": "657515",
+          "relationships": {
+            "albums": {
+              "data": [
+                {
+                  "href": "/v1/catalog/it/albums/1097861387",
+                  "id": "1097861387",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1109714933",
+                  "id": "1109714933",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1097862703",
+                  "id": "1097862703",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1111577743",
+                  "id": "1111577743",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1097862870",
+                  "id": "1097862870",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1097864180",
+                  "id": "1097864180",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1239489060",
+                  "id": "1239489060",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1097863576",
+                  "id": "1097863576",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1109714965",
+                  "id": "1109714965",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1097862062",
+                  "id": "1097862062",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1113546075",
+                  "id": "1113546075",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1160370310",
+                  "id": "1160370310",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1581785974",
+                  "id": "1581785974",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1446881820",
+                  "id": "1446881820",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1828175826",
+                  "id": "1828175826",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1111495817",
+                  "id": "1111495817",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1110448315",
+                  "id": "1110448315",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1097873905",
+                  "id": "1097873905",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1114686637",
+                  "id": "1114686637",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1112408383",
+                  "id": "1112408383",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1112425223",
+                  "id": "1112425223",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1166533619",
+                  "id": "1166533619",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1167367262",
+                  "id": "1167367262",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1143391524",
+                  "id": "1143391524",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1573936428",
+                  "id": "1573936428",
+                  "type": "albums"
+                }
+              ],
+              "href": "/v1/catalog/it/artists/657515/albums",
+              "next": "/v1/catalog/it/artists/657515/albums?offset=25"
+            }
+          },
+          "type": "artists"
+        },
+        {
+          "attributes": {
+            "artwork": {
+              "bgColor": "00167a",
+              "defaultCropCode": "bb",
+              "hasP3": true,
+              "height": 1120,
+              "textColor1": "dbb799",
+              "textColor2": "cfa687",
+              "textColor3": "af9793",
+              "textColor4": "a68984",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages221/v4/3e/1c/8d/3e1c8ddf-90c9-bba3-e0e5-d0020666f239/ami_U003aidentity_U003aedd7ff071086cf77813db2cc769437ab-2026-10-05T16-03-39.015Z_cropped.png/{w}x{h}bb.jpg",
+              "width": 1120
+            },
+            "genreNames": [
+              "Pop"
+            ],
+            "name": "Ed O'Brien",
+            "url": "https://music.apple.com/it/artist/ed-obrien/156334706"
+          },
+          "href": "/v1/catalog/it/artists/156334706",
+          "id": "156334706",
+          "relationships": {
+            "albums": {
+              "data": [
+                {
+                  "href": "/v1/catalog/it/albums/1497027406",
+                  "id": "1497027406",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1874551790",
+                  "id": "1874551790",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1485662267",
+                  "id": "1485662267",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1481658878",
+                  "id": "1481658878",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/6779681120",
+                  "id": "6779681120",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1503504925",
+                  "id": "1503504925",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1501759164",
+                  "id": "1501759164",
+                  "type": "albums"
+                }
+              ],
+              "href": "/v1/catalog/it/artists/156334706/albums"
+            }
+          },
+          "type": "artists"
+        },
+        {
+          "attributes": {
+            "artwork": {
+              "bgColor": "fbfbf8",
+              "defaultCropCode": "bb",
+              "hasP3": true,
+              "height": 2400,
+              "textColor1": "060606",
+              "textColor2": "221f1f",
+              "textColor3": "373736",
+              "textColor4": "4d4b4a",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages221/v4/b0/09/53/b00953ca-d77a-7d08-d4d4-298c84aa17f4/ami-identity-40cfd6ea230d3f9c15908a64b4bd5cd0-2026-03-24T10-32-45.159Z_cropped.png/{w}x{h}bb.jpg",
+              "width": 2400
+            },
+            "classicalUrl": "https://classical.music.apple.com/it/artist/39753073",
+            "genreNames": [
+              "Alternativa"
+            ],
+            "name": "Thom Yorke",
+            "url": "https://music.apple.com/it/artist/thom-yorke/39753073"
+          },
+          "href": "/v1/catalog/it/artists/39753073",
+          "id": "39753073",
+          "relationships": {
+            "albums": {
+              "data": [
+                {
+                  "href": "/v1/catalog/it/albums/1467347588",
+                  "id": "1467347588",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/161162568",
+                  "id": "161162568",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1262568019",
+                  "id": "1262568019",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1491639343",
+                  "id": "1491639343",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1432203897",
+                  "id": "1432203897",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1781311112",
+                  "id": "1781311112",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1543063860",
+                  "id": "1543063860",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1739085957",
+                  "id": "1739085957",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1573936428",
+                  "id": "1573936428",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1573936428",
+                  "id": "1573936428",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1808724470",
+                  "id": "1808724470",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1359323269",
+                  "id": "1359323269",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1611250715",
+                  "id": "1611250715",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1315250174",
+                  "id": "1315250174",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1359514429",
+                  "id": "1359514429",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1450893351",
+                  "id": "1450893351",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1779070642",
+                  "id": "1779070642",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/6776564981",
+                  "id": "6776564981",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1473038290",
+                  "id": "1473038290",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1165273470",
+                  "id": "1165273470",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1500803901",
+                  "id": "1500803901",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1141338877",
+                  "id": "1141338877",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1726653479",
+                  "id": "1726653479",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1611262677",
+                  "id": "1611262677",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1675649672",
+                  "id": "1675649672",
+                  "type": "albums"
+                }
+              ],
+              "href": "/v1/catalog/it/artists/39753073/albums",
+              "next": "/v1/catalog/it/artists/39753073/albums?offset=25"
+            }
+          },
+          "type": "artists"
+        },
+        {
+          "attributes": {
+            "artwork": {
+              "bgColor": "322e2d",
+              "defaultCropCode": "bb",
+              "hasP3": false,
+              "height": 1441,
+              "textColor1": "f2ecee",
+              "textColor2": "e8e7e8",
+              "textColor3": "ccc6c8",
+              "textColor4": "c4c2c3",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/Features116/v4/a3/91/39/a39139a9-c39c-93c0-4415-1cdf72fc9f8c/pr_source.png/{w}x{h}bb.jpg",
+              "width": 1441
+            },
+            "classicalUrl": "https://classical.music.apple.com/it/artist/5787786",
+            "genreNames": [
+              "Colonne sonore"
+            ],
+            "name": "Jonny Greenwood",
+            "url": "https://music.apple.com/it/artist/jonny-greenwood/5787786"
+          },
+          "href": "/v1/catalog/it/artists/5787786",
+          "id": "5787786",
+          "relationships": {
+            "albums": {
+              "data": [
+                {
+                  "href": "/v1/catalog/it/albums/1593686283",
+                  "id": "1593686283",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1329073218",
+                  "id": "1329073218",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1810703158",
+                  "id": "1810703158",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1839519399",
+                  "id": "1839519399",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/269735676",
+                  "id": "269735676",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1675277614",
+                  "id": "1675277614",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1589217718",
+                  "id": "1589217718",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/556481944",
+                  "id": "556481944",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1790728742",
+                  "id": "1790728742",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/948498056",
+                  "id": "948498056",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1790725950",
+                  "id": "1790725950",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/909831274",
+                  "id": "909831274",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1874339638",
+                  "id": "1874339638",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/6835791692",
+                  "id": "6835791692",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/415596657",
+                  "id": "415596657",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1378214266",
+                  "id": "1378214266",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1476977652",
+                  "id": "1476977652",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1592683245",
+                  "id": "1592683245",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1449615925",
+                  "id": "1449615925",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1790728924",
+                  "id": "1790728924",
+                  "type": "albums"
+                },
+                {
+                  "href": "/v1/catalog/it/albums/1590160431",
+                  "id": "1590160431",
+                  "type": "albums"
+                }
+              ],
+              "href": "/v1/catalog/it/artists/5787786/albums"
+            }
+          },
+          "type": "artists"
+        }
+      ],
+      "href": "/v1/catalog/it/search?limit=5&term=radiohead&types=artists"
+    },
+    "playlists": {
+      "data": [
+        {
+          "attributes": {
+            "artwork": {
+              "bgColor": "131313",
+              "hasP3": false,
+              "height": 1080,
+              "textColor1": "eba140",
+              "textColor2": "e29438",
+              "textColor3": "c08437",
+              "textColor4": "b87a31",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPESS05.jpg?l=it-IT",
+              "width": 1080
+            },
+            "audioTraits": [],
+            "curatorName": "Apple Music Alternative",
+            "description": {
+              "short": "L'opera sorprendente di un fenomeno che ha trasceso il rock.",
+              "standard": "Affreschi post-moderni e ritratti di interiorità spezzate decorano la galleria di capolavori dei Radiohead. Apostati del britpop, discepoli del prog più atmosferico, pionieri di uno stile che incorpora elettronica e jazz, i musicisti dell'Oxfordshire sono architetti di impressioni sonore e liriche tanto profonde quanto eteree, enigmatiche come un incantesimo ma vibranti come una ballata popolare. In un continuo cammino di evoluzione del proprio stile, la band ha sfidato barriere intellettuali e di genere, creando momenti di sospensione ma anche strappi elettrici dal forte impatto emotivo."
+            },
+            "editorialNotes": {
+              "name": "Radiohead: brani essenziali",
+              "short": "L'opera sorprendente di un fenomeno che ha trasceso il rock.",
+              "standard": "Affreschi post-moderni e ritratti di interiorità spezzate decorano la galleria di capolavori dei Radiohead. Apostati del britpop, discepoli del prog più atmosferico, pionieri di uno stile che incorpora elettronica e jazz, i musicisti dell'Oxfordshire sono architetti di impressioni sonore e liriche tanto profonde quanto eteree, enigmatiche come un incantesimo ma vibranti come una ballata popolare. In un continuo cammino di evoluzione del proprio stile, la band ha sfidato barriere intellettuali e di genere, creando momenti di sospensione ma anche strappi elettrici dal forte impatto emotivo."
+            },
+            "editorialPlaylistKind": "artist-franchise",
+            "hasCollaboration": false,
+            "isChart": false,
+            "lastModifiedDate": "2026-11-17T21:58:06Z",
+            "name": "Radiohead: brani essenziali",
+            "playParams": {
+              "id": "pl.fdc21e2843764a8a99076ad5b6c40f4d",
+              "kind": "playlist",
+              "versionHash": "f575b28995b6a90577a51964568687eca5f56196b676edae54c29121ae80b4c8"
+            },
+            "playlistType": "editorial",
+            "supportsSing": false,
+            "url": "https://music.apple.com/it/playlist/radiohead-brani-essenziali/pl.fdc21e2843764a8a99076ad5b6c40f4d"
+          },
+          "href": "/v1/catalog/it/playlists/pl.fdc21e2843764a8a99076ad5b6c40f4d",
+          "id": "pl.fdc21e2843764a8a99076ad5b6c40f4d",
+          "type": "playlists"
+        },
+        {
+          "attributes": {
+            "artwork": {
+              "bgColor": "131313",
+              "hasP3": false,
+              "height": 1080,
+              "textColor1": "eba140",
+              "textColor2": "e29438",
+              "textColor3": "c08437",
+              "textColor4": "b87a31",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPINS04.jpg?l=it-IT",
+              "width": 1080
+            },
+            "audioTraits": [],
+            "curatorName": "Apple Music Alternative",
+            "description": {
+              "short": "Ibridazioni artificiali e ipnosi nel loro invito a sorprendere.",
+              "standard": "La lezione universale dei Radiohead è smarrirsi nella sperimentazione. La band ha dato modelli non solo a chi come i Coldplay e gli alt-J ha provato a mutare i codici del rock, innestandovi elementi sintetici, metri spezzati o altri spunti d'avanguardia, ma ha influenzato anche figure di confine dell'elettronica come The Knife, a caccia di melodie sospese nel sogno."
+            },
+            "editorialNotes": {
+              "name": "Ispirati ai Radiohead",
+              "short": "Ibridazioni artificiali e ipnosi nel loro invito a sorprendere.",
+              "standard": "La lezione universale dei Radiohead è smarrirsi nella sperimentazione. La band ha dato modelli non solo a chi come i Coldplay e gli alt-J ha provato a mutare i codici del rock, innestandovi elementi sintetici, metri spezzati o altri spunti d'avanguardia, ma ha influenzato anche figure di confine dell'elettronica come The Knife, a caccia di melodie sospese nel sogno."
+            },
+            "editorialPlaylistKind": "artist-franchise",
+            "hasCollaboration": false,
+            "isChart": false,
+            "lastModifiedDate": "2023-01-27T20:34:58Z",
+            "name": "Ispirati ai Radiohead",
+            "playParams": {
+              "id": "pl.b1038cbbb76547a1b3ebdf6c5ddee8ec",
+              "kind": "playlist",
+              "versionHash": "2cdbe7c271760f97732d735556e4e587463fd2eaaaef7010d274b9643cd7cc1c"
+            },
+            "playlistType": "editorial",
+            "supportsSing": false,
+            "url": "https://music.apple.com/it/playlist/ispirati-ai-radiohead/pl.b1038cbbb76547a1b3ebdf6c5ddee8ec"
+          },
+          "href": "/v1/catalog/it/playlists/pl.b1038cbbb76547a1b3ebdf6c5ddee8ec",
+          "id": "pl.b1038cbbb76547a1b3ebdf6c5ddee8ec",
+          "type": "playlists"
+        },
+        {
+          "attributes": {
+            "artwork": {
+              "bgColor": "131313",
+              "hasP3": false,
+              "height": 1080,
+              "textColor1": "eba140",
+              "textColor2": "e29438",
+              "textColor3": "c08437",
+              "textColor4": "b87a31",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPCHL03.jpg?l=it-IT",
+              "width": 1080
+            },
+            "audioTraits": [],
+            "curatorName": "Apple Music Alternative",
+            "editorialPlaylistKind": "artist-franchise",
+            "hasCollaboration": false,
+            "isChart": false,
+            "lastModifiedDate": "2023-04-11T13:54:48Z",
+            "name": "Radiohead: Chill",
+            "playParams": {
+              "id": "pl.c1b72602d9f24dc9adb6e0bfd1e70573",
+              "kind": "playlist",
+              "versionHash": "23c4f9698e25d38daa59b769c8186227a9e500fb647d1e99fcd8ab43cd8ce460"
+            },
+            "playlistType": "editorial",
+            "supportsSing": false,
+            "url": "https://music.apple.com/it/playlist/radiohead-chill/pl.c1b72602d9f24dc9adb6e0bfd1e70573"
+          },
+          "href": "/v1/catalog/it/playlists/pl.c1b72602d9f24dc9adb6e0bfd1e70573",
+          "id": "pl.c1b72602d9f24dc9adb6e0bfd1e70573",
+          "type": "playlists"
+        },
+        {
+          "attributes": {
+            "artwork": {
+              "bgColor": "131313",
+              "hasP3": false,
+              "height": 1080,
+              "textColor1": "eba140",
+              "textColor2": "e29438",
+              "textColor3": "c08437",
+              "textColor4": "b87a31",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPINF04.jpg?l=it-IT",
+              "width": 1080
+            },
+            "audioTraits": [],
+            "curatorName": "Apple Music Alternative",
+            "description": {
+              "short": "Una formazione sperimentale, al passo con elettronica e rock.",
+              "standard": "Nel suono dei Radiohead si sono raccolti decenni di slanci fra popolare e avanguardia: con la malinconia elettrica dei Pixies e il prog più empatico la band ha costruito chitarre ambientali e melodie inquiete ispirate da krautrock, new wave e persino dal lavoro di Brian Eno come solista e produttore. Cresciuti ascoltando The Smiths, hanno colto stimoli da techno, hard bop e geni del sampling."
+            },
+            "editorialNotes": {
+              "name": "Radiohead: influenze",
+              "short": "Una formazione sperimentale, al passo con elettronica e rock.",
+              "standard": "Nel suono dei Radiohead si sono raccolti decenni di slanci fra popolare e avanguardia: con la malinconia elettrica dei Pixies e il prog più empatico la band ha costruito chitarre ambientali e melodie inquiete ispirate da krautrock, new wave e persino dal lavoro di Brian Eno come solista e produttore. Cresciuti ascoltando The Smiths, hanno colto stimoli da techno, hard bop e geni del sampling."
+            },
+            "editorialPlaylistKind": "artist-franchise",
+            "hasCollaboration": false,
+            "isChart": false,
+            "lastModifiedDate": "2023-06-07T01:06:28Z",
+            "name": "Radiohead: influenze",
+            "playParams": {
+              "id": "pl.1631c4a4658f43b88cc409c4ebb9c8fb",
+              "kind": "playlist",
+              "versionHash": "e8bcea51cb659cd764c3807ccfe36f42d0e8e0977ca08d3de2bacbef1ca7165b"
+            },
+            "playlistType": "editorial",
+            "supportsSing": false,
+            "url": "https://music.apple.com/it/playlist/radiohead-influenze/pl.1631c4a4658f43b88cc409c4ebb9c8fb"
+          },
+          "href": "/v1/catalog/it/playlists/pl.1631c4a4658f43b88cc409c4ebb9c8fb",
+          "id": "pl.1631c4a4658f43b88cc409c4ebb9c8fb",
+          "type": "playlists"
+        },
+        {
+          "attributes": {
+            "artwork": {
+              "bgColor": "131313",
+              "hasP3": false,
+              "height": 1080,
+              "textColor1": "eba140",
+              "textColor2": "e29438",
+              "textColor3": "c08437",
+              "textColor4": "b87a31",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPDC04.jpg?l=it-IT",
+              "width": 1080
+            },
+            "audioTraits": [],
+            "curatorName": "Apple Music Alternative",
+            "editorialPlaylistKind": "artist-franchise",
+            "hasCollaboration": false,
+            "isChart": false,
+            "lastModifiedDate": "2022-11-30T03:01:24Z",
+            "name": "Radiohead: Deep Cuts ",
+            "playParams": {
+              "id": "pl.20b70a5a1efb4db982a127453fb385b2",
+              "kind": "playlist",
+              "versionHash": "dcacebbe677c0c1bbcd1f108d75bb9fceacdff0542a5980e773e9ee8a4bb9277"
+            },
+            "playlistType": "editorial",
+            "supportsSing": false,
+            "url": "https://music.apple.com/it/playlist/radiohead-deep-cuts/pl.20b70a5a1efb4db982a127453fb385b2"
+          },
+          "href": "/v1/catalog/it/playlists/pl.20b70a5a1efb4db982a127453fb385b2",
+          "id": "pl.20b70a5a1efb4db982a127453fb385b2",
+          "type": "playlists"
+        }
+      ],
+      "href": "/v1/catalog/it/search?limit=5&term=radiohead&types=playlists",
+      "next": "/v1/catalog/it/search?offset=5&term=radiohead&types=playlists"
+    },
+    "songs": {
+      "data": [
+        {
+          "attributes": "broken",
+          "href": "/v1/catalog/it/songs/1097862231",
+          "type": "songs"
+        },
+        {
+          "attributes": {
+            "albumArtistName": "Radiohead",
+            "albumName": "OK Computer",
+            "artistName": "Radiohead",
+            "artwork": {
+              "bgColor": "fefeff",
+              "hasP3": false,
+              "height": 4000,
+              "textColor1": "031623",
+              "textColor2": "332b2c",
+              "textColor3": "35454f",
+              "textColor4": "5b5556",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+              "width": 4000
+            },
+            "audioLocale": "en-US",
+            "audioTraits": [
+              "lossless",
+              "lossy-stereo"
+            ],
+            "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+            "discNumber": 1,
+            "durationInMillis": 299560,
+            "genreNames": [
+              "Alternativa",
+              "Musica"
+            ],
+            "hasLyrics": true,
+            "hasTimeSyncedLyrics": true,
+            "isAppleDigitalMaster": false,
+            "isMasteredForItunes": false,
+            "isVocalAttenuationAllowed": true,
+            "isrc": "GBAYE9701374",
+            "name": "Let Down",
+            "playParams": {
+              "id": "1097861834",
+              "kind": "song"
+            },
+            "previews": [
+              {
+                "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/cd/65/58/cd6558df-2ba2-6f8e-25a0-d2db94494f74/mzaf_13027322608015064266.plus.aac.ep.m4a"
+              }
+            ],
+            "releaseDate": "1997-05-21",
+            "trackNumber": 5,
+            "url": "https://music.apple.com/it/album/let-down/1097861387?i=1097861834"
+          },
+          "href": "/v1/catalog/it/songs/1097861834",
+          "id": "1097861834",
+          "type": "songs"
+        },
+        {
+          "attributes": {
+            "albumArtistName": "Radiohead",
+            "albumName": "The Bends",
+            "artistName": "Radiohead",
+            "artwork": {
+              "bgColor": "030101",
+              "hasP3": false,
+              "height": 4000,
+              "textColor1": "fccbbf",
+              "textColor2": "fec29a",
+              "textColor3": "caa399",
+              "textColor4": "cc9b7b",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/1b/a9/5c/1ba95cac-b245-d386-63fb-6b857aa9dce8/634904078065.png/{w}x{h}bb.jpg",
+              "width": 4000
+            },
+            "audioLocale": "en-US",
+            "audioTraits": [
+              "lossless",
+              "lossy-stereo"
+            ],
+            "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+            "discNumber": 1,
+            "durationInMillis": 253853,
+            "genreNames": [
+              "Alternativa",
+              "Musica"
+            ],
+            "hasLyrics": true,
+            "hasTimeSyncedLyrics": true,
+            "isAppleDigitalMaster": false,
+            "isMasteredForItunes": false,
+            "isVocalAttenuationAllowed": true,
+            "isrc": "GBAYE9400061",
+            "name": "Street Spirit (Fade Out)",
+            "playParams": {
+              "id": "1097863295",
+              "kind": "song"
+            },
+            "previews": [
+              {
+                "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/48/aa/31/48aa31f7-77d8-e958-a5ae-e53f18632b81/mzaf_13209801293252912685.plus.aac.ep.m4a"
+              }
+            ],
+            "releaseDate": "1995-03-08",
+            "trackNumber": 12,
+            "url": "https://music.apple.com/it/album/street-spirit-fade-out/1097862703?i=1097863295"
+          },
+          "href": "/v1/catalog/it/songs/1097863295",
+          "id": "1097863295",
+          "type": "songs"
+        },
+        {
+          "attributes": {
+            "albumArtistName": "Radiohead",
+            "albumName": "OK Computer",
+            "artistName": "Radiohead",
+            "artwork": {
+              "bgColor": "fefeff",
+              "hasP3": false,
+              "height": 4000,
+              "textColor1": "031623",
+              "textColor2": "332b2c",
+              "textColor3": "35454f",
+              "textColor4": "5b5556",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+              "width": 4000
+            },
+            "audioLocale": "en-US",
+            "audioTraits": [
+              "lossless",
+              "lossy-stereo"
+            ],
+            "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+            "discNumber": 1,
+            "durationInMillis": 229120,
+            "genreNames": [
+              "Alternativa",
+              "Musica"
+            ],
+            "hasLyrics": true,
+            "hasTimeSyncedLyrics": true,
+            "isAppleDigitalMaster": false,
+            "isMasteredForItunes": false,
+            "isVocalAttenuationAllowed": true,
+            "isrc": "GBAYE9700386",
+            "name": "No Surprises",
+            "playParams": {
+              "id": "1097861842",
+              "kind": "song"
+            },
+            "previews": [
+              {
+                "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f0/2a/fa/f02afaad-0a7f-9ceb-1236-55ef3d388061/mzaf_13028138173967297756.plus.aac.ep.m4a"
+              }
+            ],
+            "releaseDate": "1997-05-21",
+            "trackNumber": 10,
+            "url": "https://music.apple.com/it/album/no-surprises/1097861387?i=1097861842"
+          },
+          "href": "/v1/catalog/it/songs/1097861842",
+          "id": "1097861842",
+          "type": "songs"
+        },
+        {
+          "attributes": {
+            "albumArtistName": "Radiohead",
+            "albumName": "OK Computer",
+            "artistName": "Radiohead",
+            "artwork": {
+              "bgColor": "fefeff",
+              "hasP3": false,
+              "height": 4000,
+              "textColor1": "031623",
+              "textColor2": "332b2c",
+              "textColor3": "35454f",
+              "textColor4": "5b5556",
+              "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+              "width": 4000
+            },
+            "audioLocale": "en-US",
+            "audioTraits": [
+              "lossless",
+              "lossy-stereo"
+            ],
+            "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+            "discNumber": 1,
+            "durationInMillis": 264067,
+            "genreNames": [
+              "Alternativa",
+              "Musica"
+            ],
+            "hasLyrics": true,
+            "hasTimeSyncedLyrics": true,
+            "isAppleDigitalMaster": false,
+            "isMasteredForItunes": false,
+            "isVocalAttenuationAllowed": true,
+            "isrc": "GBAYE9701368",
+            "name": "Karma Police",
+            "playParams": {
+              "id": "1097861836",
+              "kind": "song"
+            },
+            "previews": [
+              {
+                "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/46/21/35/46213520-da4a-1806-0c59-5ca6ad008b4e/mzaf_6176861975179434589.plus.aac.ep.m4a"
+              }
+            ],
+            "releaseDate": "1997-05-21",
+            "trackNumber": 6,
+            "url": "https://music.apple.com/it/album/karma-police/1097861387?i=1097861836"
+          },
+          "href": "/v1/catalog/it/songs/1097861836",
+          "id": "1097861836",
+          "type": "songs"
+        }
+      ],
+      "href": "/v1/catalog/it/search?limit=5&term=radiohead&types=songs",
+      "next": "/v1/catalog/it/search?offset=5&term=radiohead&types=songs"
+    }
+  }
+}

@@ -1,0 +1,645 @@
+{
+  "data": [
+    {
+      "attributes": {
+        "display": {
+          "decorations": [],
+          "kind": "MusicCoverShelf"
+        },
+        "hasSeeAll": true,
+        "isGroupRecommendation": false,
+        "kind": "recently-played",
+        "nextUpdateDate": "2024-01-01T00:00:00Z",
+        "resourceTypes": [
+          "albums",
+          "playlists",
+          "stations"
+        ],
+        "title": {
+          "stringForDisplay": "Ascoltati di recente"
+        },
+        "version": 2
+      },
+      "href": "/v1/me/recommendations/example-1",
+      "id": "example-1",
+      "meta": {
+        "cachePolicy": {
+          "updateDate": "2024-01-01T00:00:00Z"
+        },
+        "metrics": {
+          "Platform": "MusicAPI",
+          "moduleType": "7",
+          "reco_additionalData": "{moduleType=7, Platform=MusicAPI}",
+          "reco_algoId": "2.0",
+          "reco_eligible": "0",
+          "reco_id": "00000000-0000-0000-0000-000000000000",
+          "reco_timeStamp": "0"
+        }
+      },
+      "relationships": {
+        "contents": {
+          "data": [
+            {
+              "attributes": {
+                "artistName": "Example Artist 1",
+                "artwork": {
+                  "bgColor": "1a1815",
+                  "hasP3": false,
+                  "height": 600,
+                  "textColor1": "f4d579",
+                  "textColor2": "94cf5f",
+                  "textColor3": "c8af65",
+                  "textColor4": "7caa50",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/5a/9b/94/5a9b9411-5dbd-dae1-33e8-bedd2dc130f6/mzi.aougedhg.jpg/{w}x{h}bb.jpg",
+                  "width": 600
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ Example Label",
+                "genreNames": [
+                  "Worldwide",
+                  "Musica",
+                  "Europa",
+                  "Parodia musicale",
+                  "Rock",
+                  "Cantautori"
+                ],
+                "isCompilation": true,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "Example Album 1",
+                "playParams": {
+                  "id": "269015097",
+                  "kind": "album"
+                },
+                "recordLabel": "Example Label",
+                "releaseDate": "2003-07-07",
+                "trackCount": 26,
+                "upc": "828765392129",
+                "url": "https://music.apple.com/it/example/1"
+              },
+              "href": "/v1/catalog/it/albums/269015097",
+              "id": "269015097",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Example Artist 2",
+                "artwork": {
+                  "bgColor": "959595",
+                  "hasP3": false,
+                  "height": 1500,
+                  "textColor1": "090505",
+                  "textColor2": "070606",
+                  "textColor3": "252222",
+                  "textColor4": "232322",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/dc/bb/17/dcbb172e-dac8-886d-2943-84d15b59479e/05099951059859.jpg/{w}x{h}bb.jpg",
+                  "width": 1500
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ Example Label",
+                "genreNames": [
+                  "Pop",
+                  "Musica",
+                  "Britpop",
+                  "Rock",
+                  "Worldwide",
+                  "Europa",
+                  "Crooner",
+                  "Standard",
+                  "Pop tradizionale",
+                  "Jazz",
+                  "Musica classica",
+                  "Opera"
+                ],
+                "isCompilation": true,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "Example Album 2",
+                "playParams": {
+                  "id": "712911098",
+                  "kind": "album"
+                },
+                "recordLabel": "Example Label",
+                "releaseDate": "2007-01-01",
+                "trackCount": 48,
+                "upc": "05099951059859",
+                "url": "https://music.apple.com/it/example/2"
+              },
+              "href": "/v1/catalog/it/albums/712911098",
+              "id": "712911098",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Example Artist 3",
+                "artwork": {
+                  "bgColor": "3f020d",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "eaa0cf",
+                  "textColor2": "e879b8",
+                  "textColor3": "c880a8",
+                  "textColor4": "c66196",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music114/v4/3d/e5/ce/3de5cef0-83f1-4320-73e2-b32eae427634/190295559199.jpg/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ Example Label",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Rock",
+                  "Rock progressive/Art-rock"
+                ],
+                "isCompilation": false,
+                "isComplete": false,
+                "isMasteredForItunes": true,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "Example Album 3",
+                "playParams": {
+                  "id": "1440779866",
+                  "kind": "album"
+                },
+                "recordLabel": "Example Label",
+                "releaseDate": "2018-11-09",
+                "trackCount": 21,
+                "upc": "190295559199",
+                "url": "https://music.apple.com/it/example/3"
+              },
+              "href": "/v1/catalog/it/albums/1440779866",
+              "id": "1440779866",
+              "type": "albums"
+            }
+          ],
+          "href": "/v1/me/recommendations/example-1/contents"
+        }
+      },
+      "type": "personal-recommendation"
+    },
+    {
+      "attributes": {
+        "display": {
+          "decorations": [],
+          "kind": "MusicNotesHeroShelf"
+        },
+        "hasSeeAll": false,
+        "isGroupRecommendation": false,
+        "kind": "music-recommendations",
+        "nextUpdateDate": "2024-01-01T00:00:00Z",
+        "resourceTypes": [
+          "playlists"
+        ],
+        "title": {
+          "stringForDisplay": "Playlist per te"
+        },
+        "version": 2
+      },
+      "href": "/v1/me/recommendations/example-2",
+      "id": "example-2",
+      "meta": {
+        "cachePolicy": {
+          "updateDate": "2024-01-01T00:00:00Z"
+        },
+        "metrics": {
+          "Platform": "MusicAPI",
+          "moduleType": "6",
+          "reco_additionalData": "{moduleType=6, Platform=MusicAPI}",
+          "reco_algoId": "2.0",
+          "reco_eligible": "0",
+          "reco_id": "00000000-0000-0000-0000-000000000000",
+          "reco_timeStamp": "0"
+        }
+      },
+      "relationships": {
+        "contents": {
+          "data": [
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "f2002e",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "ffffff",
+                  "textColor2": "ffffff",
+                  "textColor3": "420c15",
+                  "textColor4": "420e18",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Features/v4/33/59/99/335999e8-2abb-f61b-1309-a866901b3793/7ee3ec3a-98b0-4abf-b989-ec1f4165ecfb.png/{w}x{h}cc.jpg",
+                  "width": 4320
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music per Utente",
+                "curatorSocialHandle": "example_curator",
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2024-01-01T00:00:00Z",
+                "name": "Example Playlist 1",
+                "playParams": {
+                  "id": "pl.pm-01ed408c735a7f330b741002d4ba9b9b",
+                  "kind": "playlist",
+                  "versionHash": "63d5d13e67c9287395ea6c89f95dac17ca43bd3e4c09cdc0662c336a8eff8ce4"
+                },
+                "playlistType": "personal-mix",
+                "supportsSing": false,
+                "url": "https://music.apple.com/it/example/1"
+              },
+              "href": "/v1/catalog/it/playlists/pl.pm-01ed408c735a7f330b741002d4ba9b9b",
+              "id": "pl.pm-01ed408c735a7f330b741002d4ba9b9b",
+              "type": "playlists"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "cb6900",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "ffffff",
+                  "textColor2": "ffffff",
+                  "textColor3": "3a2209",
+                  "textColor4": "3a2206",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Features/v4/f3/d4/d3/f3d4d3b0-75d2-0f3e-ccfe-a0c7e960c4b1/6e39a314-e12d-43c8-8932-579cd0bc363b.png/{w}x{h}cc.jpg",
+                  "width": 4320
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music per Utente",
+                "curatorSocialHandle": "example_curator",
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2024-01-01T00:00:00Z",
+                "name": "Example Playlist 2",
+                "playParams": {
+                  "id": "pl.pm-01ed408c735a7f333793c57142d9bf88",
+                  "kind": "playlist",
+                  "versionHash": "7c3f1c053a59ae62f5ec36210c877a38e8455cd456da31fb4ebb5e8968cefc7f"
+                },
+                "playlistType": "personal-mix",
+                "supportsSing": false,
+                "url": "https://music.apple.com/it/example/2"
+              },
+              "href": "/v1/catalog/it/playlists/pl.pm-01ed408c735a7f333793c57142d9bf88",
+              "id": "pl.pm-01ed408c735a7f333793c57142d9bf88",
+              "type": "playlists"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "4f07db",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "ffffff",
+                  "textColor2": "ffffff",
+                  "textColor3": "d392ea",
+                  "textColor4": "cf74db",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Features/v4/47/ba/9c/47ba9c5a-0af7-fb76-459d-f2519751cb79/68e22397-6c09-477b-87f2-9f146ed92470.png/{w}x{h}cc.jpg",
+                  "width": 4320
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music per Utente",
+                "curatorSocialHandle": "example_curator",
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2024-01-01T00:00:00Z",
+                "name": "Example Playlist 3",
+                "playParams": {
+                  "id": "pl.pm-01ed408c735a7f33d9a62ec4c01acc43",
+                  "kind": "playlist",
+                  "versionHash": "c80c7e6588c713c40b1f57cb6c06b9068a86c5c4b9b1d7cca1b048bc4a39277c"
+                },
+                "playlistType": "personal-mix",
+                "supportsSing": false,
+                "url": "https://music.apple.com/it/example/3"
+              },
+              "href": "/v1/catalog/it/playlists/pl.pm-01ed408c735a7f33d9a62ec4c01acc43",
+              "id": "pl.pm-01ed408c735a7f33d9a62ec4c01acc43",
+              "type": "playlists"
+            }
+          ],
+          "href": "/v1/me/recommendations/example-2/contents"
+        }
+      },
+      "type": "personal-recommendation"
+    },
+    {
+      "attributes": {
+        "display": {
+          "decorations": [],
+          "kind": "MusicCoverShelf"
+        },
+        "hasSeeAll": false,
+        "isGroupRecommendation": false,
+        "kind": "music-recommendations",
+        "nextUpdateDate": "2024-01-01T00:00:00Z",
+        "resourceTypes": [
+          "stations"
+        ],
+        "title": {
+          "stringForDisplay": "Stazioni per te"
+        },
+        "version": 2
+      },
+      "href": "/v1/me/recommendations/example-3",
+      "id": "example-3",
+      "meta": {
+        "cachePolicy": {
+          "updateDate": "2024-01-01T00:00:00Z"
+        },
+        "metrics": {
+          "Platform": "MusicAPI",
+          "moduleType": "20",
+          "reco_additionalData": "{moduleType=20, Platform=MusicAPI}",
+          "reco_algoId": "2.0",
+          "reco_eligible": "0",
+          "reco_id": "00000000-0000-0000-0000-000000000000",
+          "reco_timeStamp": "0"
+        }
+      },
+      "relationships": {
+        "contents": {
+          "data": [
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "f61b3d",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "ffffff",
+                  "textColor2": "ffffff",
+                  "textColor3": "430c12",
+                  "textColor4": "430c17",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Features/v4/e9/31/64/e93164c8-bff1-a5d9-1ad9-99ff0042a5c1/412b88f3-3259-4c12-8d9c-98b28c6371d4.png/{w}x{h}sr.jpg",
+                  "width": 4320
+                },
+                "isLive": false,
+                "kind": "user",
+                "mediaKind": "audio",
+                "name": "Example Station 1",
+                "playParams": {
+                  "format": "tracks",
+                  "hasDrm": false,
+                  "id": "ra.u-72fe1985a5b20ec21abb70ff757aa95f",
+                  "kind": "radioStation",
+                  "mediaType": 0,
+                  "stationHash": "CgoIByIGCNOy16ZBEAE"
+                },
+                "radioUrl": "itsradio://music.apple.com/it/station/ra.u-72fe1985a5b20ec21abb70ff757aa95f",
+                "requiresSubscription": true,
+                "url": "https://music.apple.com/it/example/1"
+              },
+              "href": "/v1/catalog/it/stations/ra.u-72fe1985a5b20ec21abb70ff757aa95f",
+              "id": "ra.u-72fe1985a5b20ec21abb70ff757aa95f",
+              "type": "stations"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "451793",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "ffffff",
+                  "textColor2": "ffffff",
+                  "textColor3": "72c1e4",
+                  "textColor4": "5dc0e2",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Features/v4/21/37/6d/21376d86-9cd3-8a84-59ae-7bd4714d70ca/9e12fd03-9adc-444e-b787-b0208f0148bf.png/{w}x{h}sr.jpg",
+                  "width": 4320
+                },
+                "isLive": false,
+                "kind": "discovery",
+                "mediaKind": "audio",
+                "name": "Example Station 2",
+                "playParams": {
+                  "format": "tracks",
+                  "hasDrm": false,
+                  "id": "ra.q-GAI6IDcyZmUxOTg1YTViMjBlYzIxYWJiNzBmZjc1N2FhOTVm",
+                  "kind": "radioStation",
+                  "mediaType": 0,
+                  "stationHash": "CgwIByIICNOy16ZBGAIQAQ"
+                },
+                "radioUrl": "itsradio://music.apple.com/it/station/ra.q-GAI6IDcyZmUxOTg1YTViMjBlYzIxYWJiNzBmZjc1N2FhOTVm",
+                "requiresSubscription": true,
+                "url": "https://music.apple.com/it/example/2"
+              },
+              "href": "/v1/catalog/it/stations/ra.q-GAI6IDcyZmUxOTg1YTViMjBlYzIxYWJiNzBmZjc1N2FhOTVm",
+              "id": "ra.q-GAI6IDcyZmUxOTg1YTViMjBlYzIxYWJiNzBmZjc1N2FhOTVm",
+              "type": "stations"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "b82613",
+                  "hasP3": false,
+                  "height": 817,
+                  "textColor1": "f7e9e7",
+                  "textColor2": "fed19b",
+                  "textColor3": "ebc2bd",
+                  "textColor4": "f0af80",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages221/v4/2b/52/f7/2b52f7c1-88a1-49f7-f19f-eee6d091f0e8/ami-identity-5a2e54a7f0f888250f96b1b92553a486-2026-07-01T23-22-13.417Z_cropped.png/{w}x{h}AM.RSMA04.jpg?imgLeft=Features124%2Fv4%2Fe7%2F08%2F64%2Fe7086473-5a5a-611a-0110-20f458c26196%2Fpr_source.png&imgRight=AMCArtistImages211%2Fv4%2F8a%2F49%2F84%2F8a498443-718e-40c0-404e-d1380c2352b7%2Fami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png",
+                  "width": 817
+                },
+                "isLive": false,
+                "kind": "artistSeeded",
+                "mediaKind": "audio",
+                "name": "Example Station 3",
+                "playParams": {
+                  "format": "tracks",
+                  "hasDrm": false,
+                  "id": "ra.1093360",
+                  "kind": "radioStation",
+                  "mediaType": 0,
+                  "stationHash": "CgcIARoD8N1CEAE"
+                },
+                "radioUrl": "itsradio://music.apple.com/it/station/ra.1093360",
+                "requiresSubscription": true,
+                "url": "https://music.apple.com/it/example/3"
+              },
+              "href": "/v1/catalog/it/stations/ra.1093360",
+              "id": "ra.1093360",
+              "type": "stations"
+            }
+          ],
+          "href": "/v1/me/recommendations/example-3/contents"
+        }
+      },
+      "type": "personal-recommendation"
+    },
+    {
+      "attributes": {
+        "display": {
+          "decorations": [],
+          "kind": "MusicCoverShelf"
+        },
+        "hasSeeAll": false,
+        "isGroupRecommendation": false,
+        "kind": "music-recommendations",
+        "nextUpdateDate": "2024-01-01T00:00:00Z",
+        "resourceTypes": [
+          "albums",
+          "playlists"
+        ],
+        "title": {
+          "contentIds": [
+            "5468295"
+          ],
+          "stringForDisplay": "Ai fan di Example Artist piace"
+        },
+        "version": 2
+      },
+      "href": "/v1/me/recommendations/example-4",
+      "id": "example-4",
+      "meta": {
+        "cachePolicy": {
+          "updateDate": "2024-01-01T00:00:00Z"
+        },
+        "metrics": {
+          "Platform": "MusicAPI",
+          "moduleType": "15",
+          "reco_additionalData": "{moduleType=15, Platform=MusicAPI}",
+          "reco_algoId": "2.0",
+          "reco_eligible": "0",
+          "reco_id": "00000000-0000-0000-0000-000000000000",
+          "reco_timeStamp": "0"
+        }
+      },
+      "relationships": {
+        "contents": {
+          "data": [
+            {
+              "attributes": {
+                "artistName": "Example Artist 1",
+                "artwork": {
+                  "bgColor": "071c19",
+                  "hasP3": false,
+                  "height": 1500,
+                  "textColor1": "c4d4d9",
+                  "textColor2": "c0cec7",
+                  "textColor3": "9eafb2",
+                  "textColor4": "9baba4",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/a2/43/7c/a2437c3f-a027-e136-779d-29970cf6e646/00883958010358.jpg/{w}x{h}bb.jpg",
+                  "width": 1500
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ Example Label",
+                "genreNames": [
+                  "Dance",
+                  "Musica",
+                  "Elettronica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "Example Album 1",
+                "playParams": {
+                  "id": "715929515",
+                  "kind": "album"
+                },
+                "recordLabel": "Example Label",
+                "releaseDate": "2012-01-01",
+                "trackCount": 2,
+                "upc": "00883958010358",
+                "url": "https://music.apple.com/it/example/1"
+              },
+              "href": "/v1/catalog/it/albums/715929515",
+              "id": "715929515",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "131313",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "eba140",
+                  "textColor2": "e29438",
+                  "textColor3": "c08437",
+                  "textColor4": "b87a31",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPESS05.jpg?l=it-IT",
+                  "width": 1080
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music Alternative",
+                "editorialPlaylistKind": "artist-franchise",
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2024-01-01T00:00:00Z",
+                "name": "Example Playlist 2",
+                "playParams": {
+                  "id": "pl.fdc21e2843764a8a99076ad5b6c40f4d",
+                  "kind": "playlist",
+                  "versionHash": "f575b28995b6a90577a51964568687eca5f56196b676edae54c29121ae80b4c8"
+                },
+                "playlistType": "editorial",
+                "supportsSing": false,
+                "url": "https://music.apple.com/it/example/2"
+              },
+              "href": "/v1/catalog/it/playlists/pl.fdc21e2843764a8a99076ad5b6c40f4d",
+              "id": "pl.fdc21e2843764a8a99076ad5b6c40f4d",
+              "type": "playlists"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "000000",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "cda561",
+                  "textColor2": "d38d4f",
+                  "textColor3": "a4844e",
+                  "textColor4": "a9703f",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages221/v4/4b/5d/b2/4b5db26b-da7d-af1d-50a4-b3cfc133d773/ami-identity-633ffe096a09d49a5897b472da31d004-2025-09-11T17-35-59.719Z_cropped.png/{w}x{h}SC.FPESS05.jpg?l=it-IT",
+                  "width": 1080
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music Alternative",
+                "editorialPlaylistKind": "artist-franchise",
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2024-01-01T00:00:00Z",
+                "name": "Example Playlist 3",
+                "playParams": {
+                  "id": "pl.8e5bf1dcd88f496abb40a90b863c31c3",
+                  "kind": "playlist",
+                  "versionHash": "41a2ace4c1be001b03043a427c18c477cd752b4bbf9c0e5c9ee657d7a567883c"
+                },
+                "playlistType": "editorial",
+                "supportsSing": false,
+                "url": "https://music.apple.com/it/example/3"
+              },
+              "href": "/v1/catalog/it/playlists/pl.8e5bf1dcd88f496abb40a90b863c31c3",
+              "id": "pl.8e5bf1dcd88f496abb40a90b863c31c3",
+              "type": "playlists"
+            }
+          ],
+          "href": "/v1/me/recommendations/example-4/contents"
+        }
+      },
+      "type": "personal-recommendation"
+    }
+  ],
+  "meta": {
+    "metrics": {
+      "Platform": "MusicAPI",
+      "reco_additionalData": "{Platform=MusicAPI}",
+      "reco_algoId": "default",
+      "reco_eligible": "0",
+      "reco_id": "00000000-0000-0000-0000-000000000000",
+      "reco_timeStamp": "0"
+    }
+  }
+}
