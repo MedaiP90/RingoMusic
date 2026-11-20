@@ -1,0 +1,3 @@
+{"supervisor":"restarted"}
+{"method":"engine.hello","params":{"proto":1,"engine_version":"0.1.0","electron":"41.0.0"}}
+{"method":"engine.ready"}

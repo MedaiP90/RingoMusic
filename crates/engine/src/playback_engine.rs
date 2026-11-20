@@ -43,6 +43,29 @@ pub trait PlaybackEngine: Send + Sync {
     /// Returns an error if the engine is not ready or does not answer.
     async fn set_queue(&self, items: Vec<ItemId>, start: usize) -> Result<()>;
 
+    /// Inserts items after the current item. The current item keeps playing.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the engine is not ready or does not answer.
+    async fn play_next(&self, items: Vec<ItemId>) -> Result<()>;
+
+    /// Adds items at the end of the queue. The current item keeps playing.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the engine is not ready or does not answer, or if
+    /// the engine cannot add the items.
+    async fn play_later(&self, items: Vec<ItemId>) -> Result<()>;
+
+    /// Removes the item at `index` from the queue. The current item cannot be removed.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the engine is not ready, does not answer, or
+    /// cannot remove the item.
+    async fn remove(&self, index: usize) -> Result<()>;
+
     /// Starts or resumes playback.
     ///
     /// # Errors

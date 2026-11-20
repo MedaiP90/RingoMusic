@@ -9,16 +9,22 @@ rust-version.workspace = true
 [lints]
 workspace = true
 
+[features]
+# Adds `MockEngine`, a scripted engine for tests.
+mock = []
+
 [dependencies]
 ringo-am-api = { path = "../am-api" }
 ringo-engine = { path = "../engine" }
 async-trait.workspace = true
-rand = { workspace = true, features = ["thread_rng"] }
+rand = { workspace = true, features = ["std", "std_rng", "thread_rng"] }
 rusqlite.workspace = true
+serde.workspace = true
 serde_json.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
 tracing.workspace = true
 
 [dev-dependencies]
-rand = { workspace = true, features = ["std", "std_rng"] }
+# Enables the `mock` feature for the integration tests.
+ringo-core = { path = ".", features = ["mock"] }

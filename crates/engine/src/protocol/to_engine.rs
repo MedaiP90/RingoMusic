@@ -26,6 +26,28 @@ pub enum ToEngine {
         /// Kind of the IDs in `items`.
         kind: QueueKind,
     },
+    /// Inserts items after the current item. The current item keeps playing.
+    #[serde(rename = "player.playNext")]
+    PlayerPlayNext {
+        /// Catalog or library IDs, in play order.
+        items: Vec<String>,
+        /// Kind of the IDs in `items`.
+        kind: QueueKind,
+    },
+    /// Adds items at the end of the queue. The current item keeps playing.
+    #[serde(rename = "player.playLater")]
+    PlayerPlayLater {
+        /// Catalog or library IDs, in play order.
+        items: Vec<String>,
+        /// Kind of the IDs in `items`.
+        kind: QueueKind,
+    },
+    /// Removes the item at `index` from the queue. The current item cannot be removed.
+    #[serde(rename = "player.remove")]
+    PlayerRemove {
+        /// Index in the queue that the engine plays.
+        index: u32,
+    },
     /// Starts or resumes playback.
     #[serde(rename = "player.play")]
     PlayerPlay,

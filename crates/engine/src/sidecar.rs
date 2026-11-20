@@ -122,6 +122,29 @@ impl PlaybackEngine for SidecarEngine {
         .await
     }
 
+    async fn play_next(&self, items: Vec<ItemId>) -> Result<()> {
+        self.command(ToEngine::PlayerPlayNext {
+            items: items.into_iter().map(ItemId::into_string).collect(),
+            kind: QueueKind::Songs,
+        })
+        .await
+    }
+
+    async fn play_later(&self, items: Vec<ItemId>) -> Result<()> {
+        self.command(ToEngine::PlayerPlayLater {
+            items: items.into_iter().map(ItemId::into_string).collect(),
+            kind: QueueKind::Songs,
+        })
+        .await
+    }
+
+    async fn remove(&self, index: usize) -> Result<()> {
+        let index = u32::try_from(index).map_err(|_| Error::InvalidMessage {
+            detail: format!("queue index {index} is too large"),
+        })?;
+        self.command(ToEngine::PlayerRemove { index }).await
+    }
+
     async fn play(&self) -> Result<()> {
         self.command(ToEngine::PlayerPlay).await
     }

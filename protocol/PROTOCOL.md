@@ -56,6 +56,8 @@ A notification has no `id` and gets no response.
 | `auth.signIn` | none | `null`. Shows the window. The user signs in with the site's own Sign In button. Returns when `auth.changed` reports `authorized: true`, or fails with `cancelled` if the user closes the window. Returns at once if already authorized. |
 | `auth.signOut` | none | `null`. Drops the MusicKit token and clears the cookies of the session. The page would sign in again from the Apple ID cookies without the clear. Other storage stays, because it holds the device identity. |
 | `player.setQueue` | `{ items, start_index, kind }` | `null`. `kind` is `songs`. IDs can be catalog IDs or library IDs (`i.…`). |
+| `player.playNext`, `player.playLater` | `{ items, kind }` | `null`. Insert after the current item, or at the end. The current item keeps playing. |
+| `player.remove` | `{ index }` | `null`. Removes the item at `index` of the engine queue. Rust never removes the current item. |
 | `player.play`, `player.pause`, `player.stop` | none | `null` |
 | `player.next`, `player.previous` | none | `null` |
 | `player.seek` | `{ position_ms }` | `null` |
@@ -68,7 +70,7 @@ A notification has no `id` and gets no response.
 
 **Unverified:** library song IDs (`i.…`) in `setQueue({ songs })` need a test with a real account. Result: pending.
 
-Rust owns the queue order, including shuffle. The engine never shuffles. `player.setQueue` always gets the full ordered list.
+Rust owns the queue order, including shuffle. The engine never shuffles. `player.setQueue` always gets the full ordered list. During playback, Rust changes only the upcoming items with `player.playNext`, `player.playLater`, and `player.remove`, so the current song does not stop. These methods use `queue.remove`, `playNext`, and `playLater` of MusicKit.
 
 ## Notifications (engine → Rust)
 

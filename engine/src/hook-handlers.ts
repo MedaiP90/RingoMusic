@@ -35,6 +35,18 @@ export function createHandlers(music: MusicKitInstance): HandlerMap {
       music.shuffleMode = SHUFFLE_OFF;
       return null;
     },
+    'player.playNext': async ({ items }) => {
+      await music.playNext({ songs: items });
+      return null;
+    },
+    'player.playLater': async ({ items }) => {
+      await music.playLater({ songs: items });
+      return null;
+    },
+    'player.remove': ({ index }) => {
+      music.queue.remove(index);
+      return null;
+    },
     'player.play': async () => {
       await music.play();
       return null;

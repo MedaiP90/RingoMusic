@@ -70,7 +70,8 @@ pub enum EngineEvent {
 
 impl EngineEvent {
     /// Converts a notification. Returns `None` for notifications that are not events.
-    pub(crate) fn from_notification(notification: FromEngine) -> Option<Self> {
+    #[must_use]
+    pub fn from_notification(notification: FromEngine) -> Option<Self> {
         let event = match notification {
             FromEngine::EngineHello { .. } | FromEngine::EngineLog { .. } => return None,
             FromEngine::EngineReady => Self::Ready,

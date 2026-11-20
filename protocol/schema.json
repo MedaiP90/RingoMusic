@@ -920,6 +920,102 @@
           ]
         },
         {
+          "description": "Inserts items after the current item. The current item keeps playing.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.playNext"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "description": "Catalog or library IDs, in play order.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "kind": {
+                  "description": "Kind of the IDs in `items`.",
+                  "$ref": "#/$defs/QueueKind"
+                }
+              },
+              "required": [
+                "items",
+                "kind"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Adds items at the end of the queue. The current item keeps playing.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.playLater"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "description": "Catalog or library IDs, in play order.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "kind": {
+                  "description": "Kind of the IDs in `items`.",
+                  "$ref": "#/$defs/QueueKind"
+                }
+              },
+              "required": [
+                "items",
+                "kind"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Removes the item at `index` from the queue. The current item cannot be removed.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.remove"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Index in the queue that the engine plays.",
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "index"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
           "description": "Starts or resumes playback.",
           "type": "object",
           "properties": {
@@ -1218,6 +1314,102 @@
                 "items",
                 "start_index",
                 "kind"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Inserts items after the current item. The current item keeps playing.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.playNext"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "description": "Catalog or library IDs, in play order.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "kind": {
+                  "description": "Kind of the IDs in `items`.",
+                  "$ref": "#/$defs/QueueKind"
+                }
+              },
+              "required": [
+                "items",
+                "kind"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Adds items at the end of the queue. The current item keeps playing.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.playLater"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "items": {
+                  "description": "Catalog or library IDs, in play order.",
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "kind": {
+                  "description": "Kind of the IDs in `items`.",
+                  "$ref": "#/$defs/QueueKind"
+                }
+              },
+              "required": [
+                "items",
+                "kind"
+              ]
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
+          "description": "Removes the item at `index` from the queue. The current item cannot be removed.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "player.remove"
+            },
+            "params": {
+              "type": "object",
+              "properties": {
+                "index": {
+                  "description": "Index in the queue that the engine plays.",
+                  "type": "integer",
+                  "format": "uint32",
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "index"
               ]
             }
           },

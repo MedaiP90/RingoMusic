@@ -182,6 +182,41 @@ export type Request = {
       };
     }
   | {
+      method: "player.playNext";
+      params: {
+        /**
+         * Catalog or library IDs, in play order.
+         */
+        items: string[];
+        /**
+         * Kind of the IDs in `items`.
+         */
+        kind: "songs";
+      };
+    }
+  | {
+      method: "player.playLater";
+      params: {
+        /**
+         * Catalog or library IDs, in play order.
+         */
+        items: string[];
+        /**
+         * Kind of the IDs in `items`.
+         */
+        kind: "songs";
+      };
+    }
+  | {
+      method: "player.remove";
+      params: {
+        /**
+         * Index in the queue that the engine plays.
+         */
+        index: number;
+      };
+    }
+  | {
       method: "player.play";
     }
   | {
@@ -414,6 +449,41 @@ export interface ProtocolSchema {
            * Index in `items` of the first item to play.
            */
           start_index: number;
+        };
+      }
+    | {
+        method: "player.playNext";
+        params: {
+          /**
+           * Catalog or library IDs, in play order.
+           */
+          items: string[];
+          /**
+           * Kind of the IDs in `items`.
+           */
+          kind: "songs";
+        };
+      }
+    | {
+        method: "player.playLater";
+        params: {
+          /**
+           * Catalog or library IDs, in play order.
+           */
+          items: string[];
+          /**
+           * Kind of the IDs in `items`.
+           */
+          kind: "songs";
+        };
+      }
+    | {
+        method: "player.remove";
+        params: {
+          /**
+           * Index in the queue that the engine plays.
+           */
+          index: number;
         };
       }
     | {

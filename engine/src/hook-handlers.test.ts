@@ -68,6 +68,32 @@ void test('player.setQueue / valid params / should set the queue and turn shuffl
   assert.deepEqual(response, { jsonrpc: '2.0', id: 3, result: null });
 });
 
+void test('player.playNext, playLater, remove / valid params / should edit the upcoming items', async () => {
+  const calls: unknown[] = [];
+  const music = fakeMusic({
+    playNext: (options) => {
+      calls.push(['next', options]);
+      return Promise.resolve();
+    },
+    playLater: (options) => {
+      calls.push(['later', options]);
+      return Promise.resolve();
+    },
+    queue: { remove: (index) => calls.push(['remove', index]) },
+  });
+  const handlers = createHandlers(music);
+  const items = ['i.a', 'i.b'];
+  await dispatchRequest(handlers, { id: 1, method: 'player.playNext', params: { items, kind: 'songs' } });
+  await dispatchRequest(handlers, { id: 2, method: 'player.playLater', params: { items, kind: 'songs' } });
+  const response = await dispatchRequest(handlers, { id: 3, method: 'player.remove', params: { index: 4 } });
+  assert.deepEqual(calls, [
+    ['next', { songs: items }],
+    ['later', { songs: items }],
+    ['remove', 4],
+  ]);
+  assert.deepEqual(response, { jsonrpc: '2.0', id: 3, result: null });
+});
+
 void test('player.seek / position in ms / should call MusicKit with seconds', async () => {
   const seen: number[] = [];
   const music = fakeMusic({

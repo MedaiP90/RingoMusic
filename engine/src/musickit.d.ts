@@ -48,6 +48,9 @@ interface MusicKitInstance {
   api: { music: (path: string, query?: object) => Promise<{ data: unknown }> };
   unauthorize(): Promise<unknown>;
   setQueue(options: { songs: string[]; startWith?: number }): Promise<unknown>;
+  playNext(options: { songs: string[] }): Promise<unknown>;
+  playLater(options: { songs: string[] }): Promise<unknown>;
+  queue: { remove(index: number): unknown };
   play(): Promise<unknown>;
   pause(): unknown;
   stop(): unknown;

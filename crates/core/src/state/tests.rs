@@ -1,0 +1,294 @@
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026 RingoMusic contributors
+
+use std::time::Duration;
+
+use ringo_engine::protocol::{AuthStatus, PlaybackState, RepeatMode};
+use ringo_engine::{EngineEvent, ItemId};
+
+use super::*;
+use crate::queue::QueueItem;
+
+fn item(id: &str) -> QueueItem {
+    QueueItem {
+        id: ItemId::new(id),
+        title: format!("title {id}"),
+        artist: "artist".to_owned(),
+        album: "album".to_owned(),
+        duration: Duration::from_secs(180),
+        artwork_template: None,
+    }
+}
+
+fn items(ids: &[&str]) -> Vec<QueueItem> {
+    ids.iter().map(|id| item(id)).collect()
+}
+
+fn ids(ids: &[&str]) -> Vec<ItemId> {
+    ids.iter().map(|id| ItemId::new(*id)).collect()
+}
+
+/// State with a queue of `names` that starts at `start`.
+fn state_with(names: &[&str], start: usize) -> AppState {
+    let mut state = AppState::new();
+    let _ = update(
+        &mut state,
+        Message::ReplaceQueue {
+            items: items(names),
+            start,
+        },
+    );
+    state
+}
+
+fn current_id(state: &AppState) -> &str {
+    state
+        .queue
+        .current()
+        .expect("queue has a current item")
+        .id
+        .as_str()
+}
+
+fn event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
+    update(state, Message::Engine(event))
+}
+
+#[test]
+fn replace_queue_sets_queue_and_plays() {
+    let mut state = AppState::new();
+    let commands = update(
+        &mut state,
+        Message::ReplaceQueue {
+            items: items(&["a", "b", "c"]),
+            start: 1,
+        },
+    );
+    assert_eq!(
+        commands,
+        vec![
+            Command::SetQueue {
+                items: ids(&["a", "b", "c"]),
+                start: 1
+            },
+            Command::Play
+        ]
+    );
+    assert_eq!(current_id(&state), "b");
+}
+
+#[test]
+fn append_while_playing_syncs_upcoming_items() {
+    let mut state = state_with(&["a", "b"], 0);
+    let _ = event(
+        &mut state,
+        EngineEvent::State {
+            state: PlaybackState::Playing,
+        },
+    );
+    let commands = update(&mut state, Message::Append(items(&["c"])));
+    assert_eq!(
+        commands,
+        vec![Command::SyncUpcoming {
+            items: ids(&["a", "b", "c"]),
+            current: 0
+        }]
+    );
+}
+
+#[test]
+fn append_to_empty_queue_sets_queue_without_play() {
+    let mut state = AppState::new();
+    let commands = update(&mut state, Message::Append(items(&["a"])));
+    assert_eq!(
+        commands,
+        vec![Command::SetQueue {
+            items: ids(&["a"]),
+            start: 0
+        }]
+    );
+}
+
+#[test]
+fn remove_current_item_while_playing_sets_queue_and_plays() {
+    let mut state = state_with(&["a", "b", "c"], 1);
+    let _ = event(
+        &mut state,
+        EngineEvent::State {
+            state: PlaybackState::Playing,
+        },
+    );
+    let commands = update(&mut state, Message::Remove(1));
+    assert_eq!(
+        commands,
+        vec![
+            Command::SetQueue {
+                items: ids(&["a", "c"]),
+                start: 1
+            },
+            Command::Play
+        ]
+    );
+}
+
+#[test]
+fn remove_last_item_stops_playback() {
+    let mut state = state_with(&["a"], 0);
+    assert_eq!(update(&mut state, Message::Remove(0)), vec![Command::Stop]);
+}
+
+#[test]
+fn next_advances_and_calls_engine() {
+    let mut state = state_with(&["a", "b"], 0);
+    assert_eq!(update(&mut state, Message::Next), vec![Command::Next]);
+    assert_eq!(current_id(&state), "b");
+}
+
+#[test]
+fn next_at_end_without_repeat_does_nothing() {
+    let mut state = state_with(&["a", "b"], 1);
+    assert_eq!(update(&mut state, Message::Next), Vec::new());
+    assert_eq!(current_id(&state), "b");
+}
+
+#[test]
+fn next_with_repeat_one_restarts_the_current_item() {
+    let mut state = state_with(&["a", "b"], 0);
+    let _ = update(&mut state, Message::SetRepeat(RepeatMode::One));
+    assert_eq!(
+        update(&mut state, Message::Next),
+        vec![Command::Seek(Duration::ZERO)]
+    );
+    assert_eq!(current_id(&state), "a");
+}
+
+#[test]
+fn previous_at_start_restarts_the_current_item() {
+    let mut state = state_with(&["a", "b"], 0);
+    assert_eq!(
+        update(&mut state, Message::Previous),
+        vec![Command::Seek(Duration::ZERO)]
+    );
+}
+
+#[test]
+fn previous_goes_back_and_plays_the_item() {
+    let mut state = state_with(&["a", "b"], 1);
+    assert_eq!(
+        update(&mut state, Message::Previous),
+        vec![
+            Command::PlayItem {
+                id: ItemId::new("a")
+            },
+            Command::SyncUpcoming {
+                items: ids(&["a", "b"]),
+                current: 0
+            }
+        ]
+    );
+    assert_eq!(current_id(&state), "a");
+}
+
+#[test]
+fn set_volume_limits_the_value() {
+    let mut state = AppState::new();
+    assert_eq!(
+        update(&mut state, Message::SetVolume(1.7)),
+        vec![Command::SetVolume(1.0)]
+    );
+    assert!((state.playback.volume - 1.0).abs() < f32::EPSILON);
+}
+
+#[test]
+fn set_shuffle_with_same_seed_gives_same_order() {
+    let names = ["a", "b", "c", "d", "e", "f"];
+    let shuffled = || {
+        let mut state = state_with(&names, 0);
+        let _ = update(
+            &mut state,
+            Message::SetShuffle {
+                enabled: true,
+                seed: 3,
+            },
+        );
+        state.queue.playback_order()
+    };
+    assert_eq!(shuffled(), shuffled());
+}
+
+#[test]
+fn now_playing_event_moves_the_queue_and_resets_position() {
+    let mut state = state_with(&["a", "b"], 0);
+    let _ = event(
+        &mut state,
+        EngineEvent::Position {
+            position: Duration::from_secs(9),
+        },
+    );
+    let _ = event(
+        &mut state,
+        EngineEvent::NowPlaying {
+            id: ItemId::new("b"),
+            title: "title b".to_owned(),
+            artist: "artist".to_owned(),
+            album: "album".to_owned(),
+            duration: Duration::from_secs(180),
+            artwork_url: None,
+            queue_index: 1,
+        },
+    );
+    assert_eq!(current_id(&state), "b");
+    assert_eq!(state.playback.position, Duration::ZERO);
+    assert_eq!(state.now_playing.map(|now| now.id), Some(ItemId::new("b")));
+}
+
+#[test]
+fn ready_after_restart_sets_the_queue_again() {
+    let mut state = state_with(&["a", "b"], 1);
+    let _ = event(&mut state, EngineEvent::Restarted);
+    assert_eq!(state.engine, EngineStatus::Restarting);
+    let commands = event(&mut state, EngineEvent::Ready);
+    assert_eq!(state.engine, EngineStatus::Ready);
+    assert!(commands.contains(&Command::SetQueue {
+        items: ids(&["a", "b"]),
+        start: 1
+    }));
+    assert!(!commands.contains(&Command::Play));
+}
+
+#[test]
+fn first_ready_does_not_set_the_queue() {
+    let mut state = state_with(&["a"], 0);
+    let commands = event(&mut state, EngineEvent::Ready);
+    assert_eq!(
+        commands,
+        vec![
+            Command::RefreshAuth,
+            Command::SetVolume(1.0),
+            Command::SetRepeat(RepeatMode::None)
+        ]
+    );
+}
+
+#[test]
+fn auth_loaded_sets_signed_in_state() {
+    let mut state = AppState::new();
+    let status = AuthStatus {
+        authorized: true,
+        storefront: "it".to_owned(),
+    };
+    let _ = update(&mut state, Message::AuthLoaded(status));
+    assert_eq!(
+        state.auth,
+        AuthState::SignedIn {
+            storefront: "it".to_owned()
+        }
+    );
+}
+
+#[test]
+fn supervisor_events_set_the_engine_status() {
+    let mut state = AppState::new();
+    let _ = event(&mut state, EngineEvent::GaveUp);
+    assert_eq!(state.engine, EngineStatus::GaveUp);
+}

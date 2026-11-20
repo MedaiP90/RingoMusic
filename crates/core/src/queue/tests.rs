@@ -201,7 +201,7 @@ fn remove_only_item_empties_queue() {
     assert_eq!(queue.remove(0), QueueChange::Replaced);
 
     assert!(queue.current().is_none());
-    assert!(queue.items().is_empty());
+    assert_eq!(queue.items(), []);
 }
 
 #[test]
