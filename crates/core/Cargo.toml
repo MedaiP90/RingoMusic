@@ -8,3 +8,12 @@ rust-version.workspace = true
 
 [lints]
 workspace = true
+
+[dependencies]
+ringo-am-api = { path = "../am-api" }
+async-trait.workspace = true
+rusqlite.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
