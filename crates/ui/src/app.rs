@@ -28,6 +28,7 @@ use crate::section::Section;
 use crate::services::AppServices;
 use crate::views::home::{HomeInit, HomeInput, HomeView};
 use crate::views::library::{LibraryInit, LibraryKind, LibraryView};
+use crate::views::queue::{QueueInit, QueueView};
 use crate::views::search::{SearchInit, SearchInput, SearchView};
 use crate::views::section_page;
 use crate::widgets::player_bar::{PlayerBar, PlayerBarInit};
@@ -218,8 +219,21 @@ impl SimpleComponent for App {
         home.detach_runtime();
         let library_pages =
             LibraryKind::ALL.map(|kind| launch_library(kind, &services, &catalog, &split_view));
-        let content_stack =
-            build_content_stack(&split_view, &home_page, &search_page, &library_pages);
+        let mut queue = QueueView::builder().launch(QueueInit {
+            core: core.clone(),
+            window: root.clone(),
+            split_view: split_view.clone(),
+        });
+        let queue_page = queue.widget().clone();
+        // The queue view also lives as long as its widget.
+        queue.detach_runtime();
+        let content_stack = build_content_stack(
+            &split_view,
+            &home_page,
+            &search_page,
+            &queue_page,
+            &library_pages,
+        );
         detail_pages::register(
             &root,
             PageSources {
@@ -408,11 +422,12 @@ fn launch_library(
 }
 
 /// Builds the stack with the navigation stack of each section. The queue
-/// section shows an empty page until its view exists.
+/// sections without a view show an empty page.
 fn build_content_stack(
     split_view: &adw::NavigationSplitView,
     home_page: &adw::ToolbarView,
     search_page: &adw::ToolbarView,
+    queue_page: &adw::ToolbarView,
     library_pages: &[(LibraryKind, adw::ToolbarView)],
 ) -> gtk::Stack {
     let stack = gtk::Stack::new();
@@ -424,6 +439,7 @@ fn build_content_stack(
             (_, Some((_, page))) => section_page::wrap(section, page),
             (Section::Home, None) => section_page::wrap(section, home_page),
             (Section::Search, None) => section_page::wrap(section, search_page),
+            (Section::Queue, None) => section_page::wrap(section, queue_page),
             _ => section_page::build(section, split_view),
         };
         stack.add_named(&page, Some(section.id()));

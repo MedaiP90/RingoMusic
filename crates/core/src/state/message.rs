@@ -56,6 +56,19 @@ pub enum Message {
         /// New index of the item.
         to: usize,
     },
+    /// Moves an upcoming item in the playback order. Both positions must be
+    /// after the current item, so the current item keeps playing.
+    MoveUpcoming {
+        /// Playback position of the item.
+        from: usize,
+        /// New playback position of the item.
+        to: usize,
+    },
+    /// Plays the item at the index in the user order now. The current item
+    /// goes to the history.
+    JumpTo(usize),
+    /// Removes all items and stops playback.
+    ClearQueue,
     /// Turns shuffle on or off. `seed` starts the random order, so the
     /// result is the same for the same message.
     SetShuffle {

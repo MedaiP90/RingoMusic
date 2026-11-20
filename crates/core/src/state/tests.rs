@@ -149,6 +149,56 @@ fn remove_current_item_while_playing_sets_queue_and_plays() {
 }
 
 #[test]
+fn jump_to_plays_the_item_and_syncs_upcoming() {
+    let mut state = state_with(&["a", "b", "c"], 0);
+    let commands = update(&mut state, Message::JumpTo(2));
+    assert_eq!(
+        commands,
+        vec![
+            Command::PlayItem {
+                id: ItemId::new("c")
+            },
+            Command::SyncUpcoming {
+                items: ids(&["a", "b", "c"]),
+                current: 2
+            },
+            Command::Play
+        ]
+    );
+    assert_eq!(current_id(&state), "c");
+}
+
+#[test]
+fn jump_to_current_item_restarts_it() {
+    let mut state = state_with(&["a", "b"], 1);
+    assert_eq!(
+        update(&mut state, Message::JumpTo(1)),
+        vec![Command::Seek(Duration::ZERO)]
+    );
+    assert_eq!(update(&mut state, Message::JumpTo(9)), Vec::new());
+}
+
+#[test]
+fn move_upcoming_syncs_upcoming_without_stopping() {
+    let mut state = state_with(&["a", "b", "c"], 0);
+    let commands = update(&mut state, Message::MoveUpcoming { from: 2, to: 1 });
+    assert_eq!(
+        commands,
+        vec![Command::SyncUpcoming {
+            items: ids(&["a", "c", "b"]),
+            current: 0
+        }]
+    );
+}
+
+#[test]
+fn clear_queue_stops_playback() {
+    let mut state = state_with(&["a", "b"], 0);
+    assert_eq!(update(&mut state, Message::ClearQueue), vec![Command::Stop]);
+    assert!(state.queue.items().is_empty());
+}
+
+#[test]
 fn stop_message_stops_the_engine_and_keeps_the_queue() {
     let mut state = state_with(&["a", "b"], 0);
     assert_eq!(update(&mut state, Message::Stop), vec![Command::Stop]);

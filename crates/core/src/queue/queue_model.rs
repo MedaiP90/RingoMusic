@@ -266,6 +266,25 @@ impl Queue {
         QueueChange::UpcomingOnly
     }
 
+    /// Moves the upcoming item at playback position `from` to position `to`.
+    /// Both positions must be after the current item, so the current item
+    /// does not change. With shuffle on, only the shuffle order changes.
+    pub fn move_upcoming(&mut self, from: usize, to: usize) -> QueueChange {
+        let Some(current) = self.current_playback_index() else {
+            return QueueChange::None;
+        };
+        let len = self.items.len();
+        if from == to || from <= current || to <= current || from >= len || to >= len {
+            return QueueChange::None;
+        }
+        if let Some(order) = &mut self.shuffle {
+            let entry = order.remove(from);
+            order.insert(to, entry);
+            return QueueChange::UpcomingOnly;
+        }
+        self.move_item(from, to)
+    }
+
     /// Removes all items. The shuffle setting stays, the history stays.
     pub fn clear(&mut self) -> QueueChange {
         if self.items.is_empty() {
@@ -357,6 +376,13 @@ impl Queue {
             .collect();
         rest.shuffle(rng);
         self.current.into_iter().chain(rest).collect()
+    }
+
+    /// Returns the index in the user order of the item at `position` in the
+    /// playback order. `None` if `position` is not valid.
+    #[must_use]
+    pub fn index_at_position(&self, position: usize) -> Option<usize> {
+        (position < self.items.len()).then(|| self.index_at(position))
     }
 
     /// Returns the index of the item at `position` in the playback order.

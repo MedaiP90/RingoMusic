@@ -265,6 +265,52 @@ fn move_item_with_invalid_indexes_changes_nothing() {
 }
 
 #[test]
+fn move_upcoming_moves_after_current_item_only() {
+    let mut queue = queue(&["a", "b", "c", "d"], 1);
+
+    assert_eq!(queue.move_upcoming(3, 2), QueueChange::UpcomingOnly);
+
+    assert_eq!(user_order(&queue), ["a", "b", "d", "c"]);
+    assert_eq!(current_id(&queue), "b");
+    assert_eq!(queue.move_upcoming(2, 1), QueueChange::None);
+    assert_eq!(queue.move_upcoming(0, 3), QueueChange::None);
+    assert_eq!(queue.move_upcoming(2, 4), QueueChange::None);
+}
+
+#[test]
+fn move_upcoming_in_shuffle_mode_changes_playback_order_only() {
+    let mut queue = queue(&["a", "b", "c", "d", "e"], 2);
+    let _ = queue.set_shuffle(true, &mut rng());
+    let before = playback(&queue);
+    let user_before = user_order(&queue).join("");
+
+    assert_eq!(queue.move_upcoming(4, 0), QueueChange::None);
+    assert_eq!(queue.move_upcoming(0, 3), QueueChange::None);
+    assert_eq!(queue.move_upcoming(4, 3), QueueChange::UpcomingOnly);
+
+    let mut expected = before;
+    expected.swap(3, 4);
+    assert_eq!(playback(&queue), expected);
+    assert_eq!(user_order(&queue).join(""), user_before);
+    assert_eq!(current_id(&queue), "c");
+    assert_eq!(queue.current_playback_index(), Some(0));
+}
+
+#[test]
+fn index_at_position_maps_playback_position_to_user_index() {
+    let mut queue = queue(&["a", "b", "c"], 0);
+    let _ = queue.set_shuffle(true, &mut rng());
+
+    let ids = (0..3)
+        .map(|position| queue.index_at_position(position).expect("valid position"))
+        .map(|index| queue.items()[index].id.as_str().to_owned())
+        .collect::<Vec<_>>();
+
+    assert_eq!(ids, playback(&queue));
+    assert_eq!(queue.index_at_position(3), None);
+}
+
+#[test]
 fn clear_removes_items_and_keeps_shuffle_setting() {
     let mut queue = queue(&["a", "b"], 0);
     let _ = queue.set_shuffle(true, &mut rng());

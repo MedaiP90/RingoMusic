@@ -7,6 +7,7 @@ pub mod artwork_image;
 pub mod detail_header;
 pub mod library_tile;
 pub mod player_bar;
+pub mod queue_row;
 pub mod song_list;
 pub mod song_row;
 pub mod tile;

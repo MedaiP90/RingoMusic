@@ -22,6 +22,7 @@ pub fn update(state: &mut AppState, message: Message) -> Vec<Command> {
         Message::Stop => vec![Command::Stop],
         Message::Next => skip_forward(&mut state.queue),
         Message::Previous => skip_back(&mut state.queue),
+        Message::JumpTo(index) => jump_to(&mut state.queue, index),
         Message::Seek(position) => vec![Command::Seek(position)],
         Message::SetVolume(volume) => {
             let volume = volume.clamp(0.0, 1.0);
@@ -68,6 +69,8 @@ fn edit_queue(state: &mut AppState, message: Message) -> Vec<Command> {
         Message::PlayNext(items) => (queue.play_next(items), was_playing),
         Message::Remove(index) => (queue.remove(index), was_playing),
         Message::Move { from, to } => (queue.move_item(from, to), was_playing),
+        Message::MoveUpcoming { from, to } => (queue.move_upcoming(from, to), was_playing),
+        Message::ClearQueue => (queue.clear(), false),
         Message::SetShuffle { enabled, seed } => {
             let mut rng = StdRng::seed_from_u64(seed);
             (queue.set_shuffle(enabled, &mut rng), was_playing)
@@ -112,6 +115,20 @@ fn skip_forward(queue: &mut Queue) -> Vec<Command> {
         Some(position) if Some(position) == before => vec![Command::Seek(Duration::ZERO)],
         Some(_) => vec![Command::Next],
     }
+}
+
+/// The user picks an item of the queue. The current item restarts if it is
+/// the one picked. An invalid index does nothing.
+fn jump_to(queue: &mut Queue, index: usize) -> Vec<Command> {
+    if queue.current_index() == Some(index) {
+        return vec![Command::Seek(Duration::ZERO)];
+    }
+    if queue.jump_to(index).is_none() {
+        return Vec::new();
+    }
+    let mut commands = play_current(queue);
+    commands.push(Command::Play);
+    commands
 }
 
 /// The user skips back. At the start of the queue, the item restarts.
