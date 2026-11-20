@@ -1,0 +1,110 @@
+{
+  "data": [
+    {
+      "attributes": {
+        "albumArtistName": "Radiohead",
+        "albumName": "Pablo Honey",
+        "artistName": "Radiohead",
+        "artwork": {
+          "bgColor": "ded9d2",
+          "hasP3": false,
+          "height": 4000,
+          "textColor1": "0e0a03",
+          "textColor2": "3e2217",
+          "textColor3": "38332c",
+          "textColor4": "5e473c",
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/78/a4/ec/78a4ec7b-c6d6-c9c8-441b-660486e56a89/634904077969.png/{w}x{h}bb.jpg",
+          "width": 4000
+        },
+        "audioLocale": "en-US",
+        "audioTraits": [
+          "lossless",
+          "lossy-stereo"
+        ],
+        "composerName": "Albert Hammond, Colin Greenwood, Ed O'Brien, Jonny Greenwood, Mike Hazlewood, Phil Selway & Thom Yorke",
+        "contentRating": "explicit",
+        "discNumber": 1,
+        "durationInMillis": 238640,
+        "genreNames": [
+          "Alternativa",
+          "Musica"
+        ],
+        "hasLyrics": true,
+        "hasTimeSyncedLyrics": true,
+        "isAppleDigitalMaster": false,
+        "isMasteredForItunes": false,
+        "isVocalAttenuationAllowed": true,
+        "isrc": "GBAYE9200070",
+        "name": "Creep",
+        "playParams": {
+          "id": "1097862231",
+          "kind": "song"
+        },
+        "previews": [
+          {
+            "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/91/07/a1/9107a13f-9179-34a9-89d6-a9569777195c/mzaf_1751672288510867888.plus.aac.ep.m4a"
+          }
+        ],
+        "releaseDate": "1992-09-21",
+        "trackNumber": 2,
+        "url": "https://music.apple.com/it/album/creep/1097862062?i=1097862231"
+      },
+      "href": "/v1/catalog/it/songs/1097862231",
+      "id": "1097862231",
+      "type": "songs"
+    },
+    {
+      "attributes": {
+        "albumArtistName": "Radiohead",
+        "albumName": "OK Computer",
+        "artistName": "Radiohead",
+        "artwork": {
+          "bgColor": "fefeff",
+          "hasP3": false,
+          "height": 4000,
+          "textColor1": "031623",
+          "textColor2": "332b2c",
+          "textColor3": "35454f",
+          "textColor4": "5b5556",
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+          "width": 4000
+        },
+        "audioLocale": "en-US",
+        "audioTraits": [
+          "lossless",
+          "lossy-stereo"
+        ],
+        "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+        "discNumber": 1,
+        "durationInMillis": 299560,
+        "genreNames": [
+          "Alternativa",
+          "Musica"
+        ],
+        "hasLyrics": true,
+        "hasTimeSyncedLyrics": true,
+        "isAppleDigitalMaster": false,
+        "isMasteredForItunes": false,
+        "isVocalAttenuationAllowed": true,
+        "isrc": "GBAYE9701374",
+        "name": "Let Down",
+        "playParams": {
+          "id": "1097861834",
+          "kind": "song"
+        },
+        "previews": [
+          {
+            "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/cd/65/58/cd6558df-2ba2-6f8e-25a0-d2db94494f74/mzaf_13027322608015064266.plus.aac.ep.m4a"
+          }
+        ],
+        "releaseDate": "1997-05-21",
+        "trackNumber": 5,
+        "url": "https://music.apple.com/it/album/let-down/1097861387?i=1097861834"
+      },
+      "href": "/v1/catalog/it/songs/1097861834",
+      "id": "1097861834",
+      "type": "songs"
+    }
+  ],
+  "next": "/v1/catalog/it/artists/657515/view/top-songs?offset=2"
+}

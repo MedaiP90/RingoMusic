@@ -16,7 +16,7 @@ use tracing::warn;
 
 use crate::detail::{self, ArtistData};
 use crate::item::SongItem;
-use crate::item_actions::{self, SongCatalog};
+use crate::item_actions::{self, OPEN_ARTIST_ALBUMS, OPEN_ARTIST_SONGS, SongCatalog};
 use crate::services::{ApiClient, AppServices};
 use crate::views::detail_frame::DetailFrame;
 use crate::views::phase::Phase;
@@ -59,6 +59,9 @@ pub struct ArtistView {
     songs_section: gtk::Box,
     song_list: SongList,
     albums: TileGrid,
+    /// Open the pages with all top songs and all albums.
+    more_songs: gtk::Button,
+    more_albums: gtk::Button,
     pending: Option<JoinHandle<()>>,
 }
 
@@ -97,8 +100,11 @@ impl SimpleComponent for ArtistView {
         header.set_shuffle_visible(false);
         let input = sender.input_sender().clone();
         let song_list = SongList::new(move |position| input.emit(ArtistInput::PlaySong(position)));
-        let songs_section = build_songs_section(&song_list);
+        let more_songs = more_button(OPEN_ARTIST_SONGS);
+        let songs_section = build_songs_section(&song_list, &more_songs);
         let albums = TileGrid::new(&gettext("Albums"));
+        let more_albums = more_button(OPEN_ARTIST_ALBUMS);
+        albums.append_footer(&more_albums);
         let content = build_content(&header, &songs_section, &albums);
         let input = sender.input_sender().clone();
         let frame = DetailFrame::new(
@@ -126,6 +132,8 @@ impl SimpleComponent for ArtistView {
             songs_section,
             song_list,
             albums,
+            more_songs,
+            more_albums,
             pending: None,
         };
         model.reload(&sender);
@@ -185,6 +193,14 @@ impl ArtistView {
             .set_songs(self.top_songs.iter().map(|song| (song, Lead::Artwork)));
         self.songs_section.set_visible(!self.top_songs.is_empty());
         self.albums.set_items(&data.albums);
+        let target = item_actions::artist_list_target(&self.id, &data.name);
+        for (button, has_more) in [
+            (&self.more_songs, data.top_songs_next.is_some()),
+            (&self.more_albums, data.albums_next.is_some()),
+        ] {
+            button.set_action_target_value(Some(&target));
+            button.set_visible(has_more);
+        }
         let is_empty = self.top_songs.is_empty() && data.albums.is_empty();
         let phase = if is_empty {
             Phase::Empty
@@ -195,8 +211,21 @@ impl ArtistView {
     }
 }
 
-/// Builds the heading and the list of the top songs.
-fn build_songs_section(list: &SongList) -> gtk::Box {
+/// Builds a hidden Show More button that opens a page with all items. `show`
+/// gives it the target.
+fn more_button(action: &str) -> gtk::Button {
+    gtk::Button::builder()
+        .label(gettext("Show More"))
+        .halign(gtk::Align::Center)
+        .margin_top(6)
+        .css_classes(["pill"])
+        .action_name(action)
+        .visible(false)
+        .build()
+}
+
+/// Builds the heading, the list of the top songs, and the Show More button.
+fn build_songs_section(list: &SongList, more: &gtk::Button) -> gtk::Box {
     let section = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .spacing(6)
@@ -204,6 +233,7 @@ fn build_songs_section(list: &SongList) -> gtk::Box {
         .build();
     section.append(&heading(&gettext("Top Songs")));
     section.append(list.widget());
+    section.append(more);
     section
 }
 

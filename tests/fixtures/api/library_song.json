@@ -1,0 +1,54 @@
+{
+  "data": [
+    {
+      "attributes": {
+        "albumName": "Example Album 1",
+        "artistName": "Example Artist 1",
+        "artwork": {
+          "hasP3": false,
+          "height": 1200,
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/95/ab/72/95ab727c-93ff-d512-703a-8fc81827f5bd/ticket.zsbxxupu.jpg/{w}x{h}bb.jpg",
+          "width": 1200
+        },
+        "discNumber": 1,
+        "durationInMillis": 166000,
+        "genreNames": [
+          "Folk"
+        ],
+        "hasLyrics": true,
+        "name": "Example Song 1",
+        "playParams": {
+          "catalogId": "1784383605",
+          "id": "i.example1",
+          "isLibrary": true,
+          "kind": "song",
+          "reporting": true,
+          "reportingId": "1784383605"
+        },
+        "releaseDate": "2012-02-10",
+        "trackNumber": 4
+      },
+      "href": "/v1/me/library/songs/i.example1",
+      "id": "i.example1",
+      "type": "library-songs",
+      "relationships": {
+        "albums": {
+          "data": [
+            {
+              "id": "l.example1",
+              "type": "library-albums"
+            }
+          ]
+        },
+        "artists": {
+          "data": [
+            {
+              "id": "r.example1",
+              "type": "library-artists"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

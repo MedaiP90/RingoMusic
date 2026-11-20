@@ -9,16 +9,15 @@ use std::time::Duration;
 use ringo_am_api::endpoints;
 use ringo_am_api::models::{
     Album, AlbumId, Artist, ArtistId, LibraryAlbum, LibraryAlbumId, LibraryArtistId,
-    LibraryPlaylist, LibraryPlaylistId, Playlist, PlaylistId, Relationship, Resource,
+    LibraryPlaylist, LibraryPlaylistId, LibrarySongId, Playlist, PlaylistId, Relationship,
+    Resource, SongId,
 };
 use ringo_am_api::{Page, Result as ApiResult};
 use ringo_core::state::{AppState, AuthState};
 
-use crate::item::{SongItem, TileItem};
+use crate::item::{SongItem, TileItem, first_id};
+use crate::item_actions::SongLinks;
 use crate::services::ApiClient;
-
-/// Number of songs that the artist page shows.
-const TOP_SONGS_LIMIT: usize = 10;
 
 /// Number of pages of library albums that the artist page loads. A library
 /// artist with more albums is cut. The limit stops a loop that never ends.
@@ -96,14 +95,19 @@ impl AlbumData {
             .relationships
             .as_ref()
             .and_then(|links| links.tracks.as_ref());
+        let artist_id = album
+            .relationships
+            .as_ref()
+            .and_then(|links| links.artists.as_ref())
+            .and_then(|artists| artists.data.first())
+            .map(|artist| artist.id.clone());
         Self {
             title: attributes.name.clone(),
             artist: attributes.artist_name.clone().unwrap_or_default(),
-            // The API sends no link from a library album to its artist.
-            artist_id: None,
             year: year_of(attributes.release_date.as_deref()),
             artwork_template: attributes.artwork.as_ref().map(|art| art.url.clone()),
-            tracks: tracks_of(tracks, album.id.as_str(), None),
+            tracks: tracks_of(tracks, album.id.as_str(), artist_id.as_deref()),
+            artist_id,
         }
     }
 
@@ -128,23 +132,22 @@ pub struct ArtistData {
     pub artwork_template: Option<String>,
     /// Empty for a library artist: the API has no top songs for it.
     pub top_songs: Vec<SongItem>,
+    /// Offset of the next page of top songs, if the artist has more.
+    pub top_songs_next: Option<u32>,
     pub albums: Vec<TileItem>,
+    /// Offset of the next page of albums, if the artist has more.
+    pub albums_next: Option<u32>,
 }
 
 impl ArtistData {
     fn from_catalog(artist: &Artist) -> Self {
         let views = artist.views.as_ref();
-        let top_songs = views
-            .and_then(|views| views.top_songs.as_ref())
-            .map(|page| page.data.iter().take(TOP_SONGS_LIMIT))
-            .into_iter()
-            .flatten()
-            .map(SongItem::from)
-            .collect();
+        let songs = views
+            .and_then(|views| views.top_songs.clone())
+            .map_or_else(empty_page, Page::from);
         let albums = views
-            .and_then(|views| views.full_albums.as_ref())
-            .map(|page| page.data.iter().map(TileItem::from).collect())
-            .unwrap_or_default();
+            .and_then(|views| views.full_albums.clone())
+            .map_or_else(empty_page, Page::from);
         Self {
             name: artist.attributes.name.clone(),
             artwork_template: artist
@@ -152,9 +155,18 @@ impl ArtistData {
                 .artwork
                 .as_ref()
                 .map(|art| art.url.clone()),
-            top_songs,
-            albums,
+            top_songs: songs.items.iter().map(SongItem::from).collect(),
+            top_songs_next: songs.next_offset,
+            albums: albums.items.iter().map(TileItem::from).collect(),
+            albums_next: albums.next_offset,
         }
+    }
+}
+
+fn empty_page<T>() -> Page<T> {
+    Page {
+        items: Vec::new(),
+        next_offset: None,
     }
 }
 
@@ -255,7 +267,70 @@ async fn load_library_artist(api: &ApiClient, id: &str) -> ApiResult<ArtistData>
         name,
         artwork_template: None,
         top_songs: Vec::new(),
+        top_songs_next: None,
         albums,
+        albums_next: None,
+    })
+}
+
+/// Loads the album and the artist of a song, for the links of the player.
+/// `id` is a catalog ID or a library ID.
+///
+/// # Errors
+///
+/// Returns an error if the request fails or the song does not exist.
+pub async fn load_song_links(api: &ApiClient, storefront: &str, id: &str) -> ApiResult<SongLinks> {
+    let (albums, artists) = if is_library_id(id) {
+        let song = endpoints::library_song(api, &LibrarySongId::from(id.to_owned())).await?;
+        song.relationships
+            .map(|links| (links.albums, links.artists))
+    } else {
+        let song = endpoints::song(api, storefront, &SongId::from(id.to_owned())).await?;
+        song.relationships
+            .map(|links| (links.albums, links.artists))
+    }
+    .unwrap_or_default();
+    Ok(SongLinks {
+        album_id: first_id(albums.as_ref()),
+        artist_id: first_id(artists.as_ref()),
+    })
+}
+
+/// Loads the page of top songs of a catalog artist at `offset`.
+///
+/// # Errors
+///
+/// Returns an error if the request fails.
+pub async fn load_artist_top_songs(
+    api: &ApiClient,
+    storefront: &str,
+    id: &str,
+    offset: u32,
+) -> ApiResult<Page<SongItem>> {
+    let id = ArtistId::from(id.to_owned());
+    let page = endpoints::artist_top_songs(api, storefront, &id, offset).await?;
+    Ok(Page {
+        items: page.items.iter().map(SongItem::from).collect(),
+        next_offset: page.next_offset,
+    })
+}
+
+/// Loads the page of albums of a catalog artist at `offset`.
+///
+/// # Errors
+///
+/// Returns an error if the request fails.
+pub async fn load_artist_albums(
+    api: &ApiClient,
+    storefront: &str,
+    id: &str,
+    offset: u32,
+) -> ApiResult<Page<TileItem>> {
+    let id = ArtistId::from(id.to_owned());
+    let page = endpoints::artist_full_albums(api, storefront, &id, offset).await?;
+    Ok(Page {
+        items: page.items.iter().map(TileItem::from).collect(),
+        next_offset: page.next_offset,
     })
 }
 

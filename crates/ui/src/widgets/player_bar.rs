@@ -4,6 +4,8 @@
 //! Player bar: the current song, the transport buttons, the seek bar, the
 //! volume, and the shuffle and repeat buttons.
 
+use std::collections::HashSet;
+use std::sync::Arc;
 use std::time::Duration;
 
 use gettextrs::gettext;
@@ -21,8 +23,10 @@ use ringo_core::state::{AppState, Message};
 use ringo_engine::protocol::{PlaybackState, RepeatMode};
 use tracing::warn;
 
-use crate::item_actions::{OPEN_ALBUM, SongCatalog};
+use crate::detail;
+use crate::item_actions::{OPEN_ALBUM, OPEN_ARTIST, SongCatalog, SongLinks};
 use crate::playback_actions::{self as shortcuts, ActionState, PlaybackActions};
+use crate::services::ApiClient;
 use crate::widgets::artwork_image::ArtworkImage;
 
 /// Size of the artwork in pixels.
@@ -38,6 +42,8 @@ pub struct BarState {
     song_id: Option<String>,
     /// Album of the current song, if the engine or a view knows it.
     album_id: Option<String>,
+    /// Artist of the current song, if a view knows it.
+    artist_id: Option<String>,
     /// Template of the artwork URL.
     artwork: Option<String>,
     duration: Duration,
@@ -79,6 +85,7 @@ impl BarState {
                 .now_playing
                 .as_ref()
                 .and_then(|track| track.album_id.clone()),
+            artist_id: None,
             artwork: artwork.clone(),
             duration,
             position: Duration::from_secs(state.playback.position.as_secs()),
@@ -90,11 +97,19 @@ impl BarState {
         }
     }
 
-    /// Takes the album from the views when the engine did not send one.
-    fn fill_album(&mut self, catalog: &SongCatalog) {
-        if self.album_id.is_none() {
-            self.album_id = self.song_id.as_deref().and_then(|id| catalog.album_id(id));
-        }
+    /// Takes the album and the artist from the catalog. The engine sends only
+    /// the album, and not always, so its album is the last choice.
+    fn fill_links(&mut self, catalog: &SongCatalog) {
+        let Some(song_id) = self.song_id.as_deref() else {
+            return;
+        };
+        self.album_id = catalog.album_id(song_id).or_else(|| self.album_id.take());
+        self.artist_id = catalog.artist_id(song_id);
+    }
+
+    /// Tells if the album or the artist of the song is still unknown.
+    fn lacks_links(&self) -> bool {
+        self.song_id.is_some() && (self.album_id.is_none() || self.artist_id.is_none())
     }
 
     fn action_state(&self) -> ActionState {
@@ -115,6 +130,8 @@ pub struct PlayerBarInit {
     pub window: adw::ApplicationWindow,
     /// The songs that the views showed. Their albums fill the gaps of the engine.
     pub catalog: SongCatalog,
+    /// Finds the album and the artist of a song that no view showed.
+    pub api: Arc<ApiClient>,
 }
 
 /// Player bar model.
@@ -124,6 +141,10 @@ pub struct PlayerBar {
     settings: Settings,
     core: CoreHandle,
     catalog: SongCatalog,
+    api: Arc<ApiClient>,
+    window: adw::ApplicationWindow,
+    /// IDs of the songs whose links were asked for. Each song is asked once.
+    asked_links: HashSet<String>,
     artwork: ArtworkImage,
     /// The user holds the seek bar. Position updates wait until the release.
     dragging: bool,
@@ -146,6 +167,12 @@ pub enum PlayerBarInput {
     VolumeMoved(f64),
     /// The volume popover closed. The bar shows the volume again.
     VolumePopoverClosed,
+    /// The user pressed the cover.
+    OpenAlbum,
+    /// The user pressed the artist.
+    OpenArtist,
+    /// The API gave the album and the artist of a song.
+    LinksLoaded(String, SongLinks),
 }
 
 #[relm4::component(pub)]
@@ -161,48 +188,62 @@ impl SimpleComponent for PlayerBar {
             #[watch]
             set_visible: model.state.has_queue,
 
-            #[local_ref]
-            artwork_widget -> gtk::Image {},
+            // The cover opens the album of the song. Without an album ID, it does
+            // nothing and the pointer stays an arrow. It is never greyed out.
+            gtk::Button {
+                add_css_class: "flat",
+                add_css_class: "artwork-button",
+                set_valign: gtk::Align::Center,
+                set_sensitive: true,
+                #[watch]
+                set_can_target: model.state.album_id.is_some(),
+                #[watch]
+                set_cursor_from_name: model.state.album_id.as_ref().map(|_| "pointer"),
+                connect_clicked[sender] => move |_| sender.input(PlayerBarInput::OpenAlbum),
+
+                #[local_ref]
+                #[wrap(Some)]
+                set_child = &artwork_widget -> gtk::Image {},
+            },
 
             gtk::Box {
                 set_orientation: gtk::Orientation::Vertical,
                 set_valign: gtk::Align::Center,
                 set_width_request: 220,
 
-                // The title opens the album of the song. Without an album ID, it is
-                // plain text.
+                gtk::Label {
+                    set_halign: gtk::Align::Start,
+                    set_xalign: 0.0,
+                    set_ellipsize: EllipsizeMode::End,
+                    set_max_width_chars: 24,
+                    add_css_class: "heading",
+                    #[watch]
+                    set_label: &model.state.title,
+                    #[watch]
+                    set_tooltip_text: Some(&model.state.title),
+                },
+
+                // The artist opens the artist page when a view knows its ID.
                 gtk::Button {
                     set_halign: gtk::Align::Start,
                     add_css_class: "flat",
                     add_css_class: "title-button",
+                    set_sensitive: true,
                     #[watch]
-                    set_action_name: model.state.album_id.as_ref().map(|_| OPEN_ALBUM),
+                    set_can_target: model.state.artist_id.is_some(),
                     #[watch]
-                    set_action_target_value: model.state.album_id.as_deref().map(ToVariant::to_variant).as_ref(),
-                    #[watch]
-                    set_tooltip_text: Some(&model.state.title),
-                    #[watch]
-                    set_can_target: model.state.album_id.is_some(),
+                    set_cursor_from_name: model.state.artist_id.as_ref().map(|_| "pointer"),
+                    connect_clicked[sender] => move |_| sender.input(PlayerBarInput::OpenArtist),
 
                     #[wrap(Some)]
                     set_child = &gtk::Label {
                         set_xalign: 0.0,
                         set_ellipsize: EllipsizeMode::End,
                         set_max_width_chars: 24,
-                        add_css_class: "heading",
+                        add_css_class: "dim-label",
                         #[watch]
-                        set_label: &model.state.title,
+                        set_label: &model.state.artist,
                     },
-                },
-
-                gtk::Label {
-                    set_halign: gtk::Align::Start,
-                    set_xalign: 0.0,
-                    set_ellipsize: EllipsizeMode::End,
-                    set_max_width_chars: 24,
-                    add_css_class: "dim-label",
-                    #[watch]
-                    set_label: &model.state.artist,
                 },
             },
 
@@ -361,10 +402,11 @@ impl SimpleComponent for PlayerBar {
             artwork,
             window,
             catalog,
+            api,
         } = init;
         let actions = PlaybackActions::register(&window, &core);
         let mut state = BarState::of(&core.subscribe().borrow());
-        state.fill_album(&catalog);
+        state.fill_links(&catalog);
         actions.sync(state.action_state());
         restore_volume(&core, &settings);
         forward_state(&core, &sender);
@@ -372,24 +414,31 @@ impl SimpleComponent for PlayerBar {
         let artwork = ArtworkImage::new(artwork);
         artwork.set_artwork(state.artwork.as_deref(), ARTWORK_SIZE);
         let artwork_widget = artwork.widget().clone();
-        let model = Self {
+        let mut model = Self {
             state,
             actions,
             settings,
             core,
             catalog,
+            api,
+            window,
+            asked_links: HashSet::new(),
             artwork,
             dragging: false,
             seek_target: None,
         };
+        model.ask_links(&sender);
         let widgets = view_output!();
         show_elapsed_time(&widgets.seek_scale, &widgets.elapsed_label);
         ComponentParts { model, widgets }
     }
 
-    fn update(&mut self, message: Self::Input, _sender: ComponentSender<Self>) {
+    fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
-            PlayerBarInput::State(state) => self.follow(state),
+            PlayerBarInput::State(state) => {
+                self.follow(state);
+                self.ask_links(&sender);
+            }
             PlayerBarInput::SeekPressed => {
                 self.dragging = true;
                 self.seek_target = None;
@@ -401,6 +450,9 @@ impl SimpleComponent for PlayerBar {
             }
             // The view update that follows shows the volume.
             PlayerBarInput::VolumePopoverClosed => {}
+            PlayerBarInput::OpenAlbum => self.open(OPEN_ALBUM, self.state.album_id.clone()),
+            PlayerBarInput::OpenArtist => self.open(OPEN_ARTIST, self.state.artist_id.clone()),
+            PlayerBarInput::LinksLoaded(song_id, links) => self.take_links(&song_id, links),
         }
     }
 
@@ -419,7 +471,7 @@ impl PlayerBar {
     /// Takes the new state. The position waits while the user holds the seek
     /// bar. A changed volume goes to the settings.
     fn follow(&mut self, mut state: BarState) {
-        state.fill_album(&self.catalog);
+        state.fill_links(&self.catalog);
         self.actions.sync(state.action_state());
         if self.dragging {
             state.position = self.state.position;
@@ -430,6 +482,48 @@ impl PlayerBar {
         self.artwork
             .set_artwork(state.artwork.as_deref(), ARTWORK_SIZE);
         self.state = state;
+    }
+
+    /// Runs the open action with `id`. It does nothing without an ID.
+    fn open(&self, action: &str, id: Option<String>) {
+        let Some(id) = id else {
+            return;
+        };
+        if let Err(error) = WidgetExt::activate_action(&self.window, action, Some(&id.to_variant()))
+        {
+            warn!(%error, action, "cannot open the page");
+        }
+    }
+
+    /// Asks the API for the links of the current song, once, when no view
+    /// knew them.
+    fn ask_links(&mut self, sender: &ComponentSender<Self>) {
+        if !self.state.lacks_links() {
+            return;
+        }
+        let Some(song_id) = self.state.song_id.clone() else {
+            return;
+        };
+        if !self.asked_links.insert(song_id.clone()) {
+            return;
+        }
+        let storefront = detail::storefront(&self.core.subscribe().borrow()).unwrap_or_default();
+        let api = Arc::clone(&self.api);
+        let input = sender.input_sender().clone();
+        relm4::spawn(async move {
+            match detail::load_song_links(&api, &storefront, &song_id).await {
+                Ok(links) => input.emit(PlayerBarInput::LinksLoaded(song_id, links)),
+                Err(error) => warn!(%error, song_id, "cannot load the links of the song"),
+            }
+        });
+    }
+
+    /// Keeps the links of a song. The bar shows them if the song still plays.
+    fn take_links(&mut self, song_id: &str, links: SongLinks) {
+        self.catalog.remember_links(song_id, links);
+        if self.state.song_id.as_deref() == Some(song_id) {
+            self.state.fill_links(&self.catalog);
+        }
     }
 
     /// A move of the seek bar. During a drag, the seek happens at the release.

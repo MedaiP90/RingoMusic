@@ -28,7 +28,7 @@ pub use lenient::LenientVec;
 pub use library::{
     LibraryAlbum, LibraryAlbumAttributes, LibraryAlbumRelationships, LibraryArtist,
     LibraryArtistAttributes, LibraryPlaylist, LibraryPlaylistAttributes,
-    LibraryPlaylistRelationships, LibrarySong, LibrarySongAttributes,
+    LibraryPlaylistRelationships, LibrarySong, LibrarySongAttributes, LibrarySongRelationships,
 };
 pub use recommendation::Recommendation;
 pub use resource::Resource;

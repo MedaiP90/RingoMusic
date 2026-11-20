@@ -211,7 +211,7 @@ fn template_of(artwork: Option<&Artwork>) -> Option<String> {
     artwork.map(|artwork| artwork.url.clone())
 }
 
-fn first_id(relationship: Option<&Relationship<ResourceRef>>) -> Option<String> {
+pub fn first_id(relationship: Option<&Relationship<ResourceRef>>) -> Option<String> {
     relationship?
         .data
         .first()

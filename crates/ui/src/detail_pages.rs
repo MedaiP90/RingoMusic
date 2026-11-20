@@ -19,6 +19,7 @@ use crate::item_actions::{self, SongCatalog};
 use crate::services::AppServices;
 use crate::views::album::{AlbumInit, AlbumView};
 use crate::views::artist::{ArtistInit, ArtistView};
+use crate::views::artist_more::{ArtistMoreInit, ArtistMoreView, MoreKind};
 use crate::views::playlist::{PlaylistInit, PlaylistView};
 
 /// What the pages need to open.
@@ -68,6 +69,20 @@ pub fn register(window: &adw::ApplicationWindow, sources: PageSources) {
         });
         window.add_action(&action);
     }
+    let more_pages = [
+        ("open-artist-songs", MoreKind::TopSongs),
+        ("open-artist-albums", MoreKind::Albums),
+    ];
+    for (name, kind) in more_pages {
+        let action = item_actions::artist_list_action(name);
+        let opener = opener.clone();
+        action.connect_activate(move |_, parameter| {
+            if let Some((id, artist_name)) = parameter.and_then(Variant::get::<(String, String)>) {
+                opener.open_more(kind, id, artist_name);
+            }
+        });
+        window.add_action(&action);
+    }
 }
 
 impl Opener {
@@ -88,6 +103,26 @@ impl Opener {
         navigation.push(&open_page.page);
         self.open_pages.borrow_mut().push(open_page);
         self.sources.split_view.set_show_content(true);
+    }
+
+    /// Pushes the page with all top songs or all albums of an artist.
+    fn open_more(&self, kind: MoreKind, id: String, artist_name: String) {
+        let Some(navigation) = self.active_navigation() else {
+            return;
+        };
+        let view = ArtistMoreView::builder().launch(ArtistMoreInit {
+            services: self.sources.services.clone(),
+            catalog: self.sources.catalog.clone(),
+            id,
+            artist_name,
+            kind,
+        });
+        let open_page = OpenPage {
+            page: view.widget().clone(),
+            _component: Box::new(view),
+        };
+        navigation.push(&open_page.page);
+        self.open_pages.borrow_mut().push(open_page);
     }
 
     /// Starts the component of the page.

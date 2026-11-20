@@ -24,6 +24,10 @@ pub const PLAY_NEXT: &str = "win.play-next";
 pub const ADD_TO_QUEUE: &str = "win.add-to-queue";
 pub const OPEN_ALBUM: &str = "win.open-album";
 pub const OPEN_ARTIST: &str = "win.open-artist";
+/// Opens the page with all top songs of an artist.
+pub const OPEN_ARTIST_SONGS: &str = "win.open-artist-songs";
+/// Opens the page with all albums of an artist.
+pub const OPEN_ARTIST_ALBUMS: &str = "win.open-artist-albums";
 
 /// The songs that the views showed, by ID. An action gets only an ID, so it
 /// finds the data of the song here. Clones share the same map.
@@ -31,6 +35,15 @@ pub const OPEN_ARTIST: &str = "win.open-artist";
 #[derive(Clone, Debug, Default)]
 pub struct SongCatalog {
     songs: Rc<RefCell<HashMap<String, KnownSong>>>,
+    /// Links that the API gave for a song that no view showed.
+    links: Rc<RefCell<HashMap<String, SongLinks>>>,
+}
+
+/// The album and the artist of a song.
+#[derive(Clone, Debug, Default, Eq, PartialEq)]
+pub struct SongLinks {
+    pub album_id: Option<String>,
+    pub artist_id: Option<String>,
 }
 
 /// What the catalog keeps of a song.
@@ -38,6 +51,7 @@ pub struct SongCatalog {
 struct KnownSong {
     queue: QueueItem,
     album_id: Option<String>,
+    artist_id: Option<String>,
 }
 
 impl SongCatalog {
@@ -48,6 +62,7 @@ impl SongCatalog {
             let entry = KnownSong {
                 queue: song.queue.clone(),
                 album_id: song.album_id.clone(),
+                artist_id: song.artist_id.clone(),
             };
             known.insert(song.id().to_owned(), entry);
         }
@@ -57,9 +72,29 @@ impl SongCatalog {
         self.songs.borrow().get(id).map(|known| known.queue.clone())
     }
 
-    /// The album of a remembered song, if a view knew it.
+    /// Remembers the links that the API gave for the song of `id`.
+    pub fn remember_links(&self, id: &str, links: SongLinks) {
+        self.links.borrow_mut().insert(id.to_owned(), links);
+    }
+
+    /// The album of a song, if a view or the API gave it.
     pub fn album_id(&self, id: &str) -> Option<String> {
-        self.songs.borrow().get(id)?.album_id.clone()
+        let from_view = self
+            .songs
+            .borrow()
+            .get(id)
+            .and_then(|known| known.album_id.clone());
+        from_view.or_else(|| self.links.borrow().get(id)?.album_id.clone())
+    }
+
+    /// The artist of a song, if a view or the API gave it.
+    pub fn artist_id(&self, id: &str) -> Option<String> {
+        let from_view = self
+            .songs
+            .borrow()
+            .get(id)
+            .and_then(|known| known.artist_id.clone());
+        from_view.or_else(|| self.links.borrow().get(id)?.artist_id.clone())
     }
 }
 
@@ -138,6 +173,17 @@ pub fn register(window: &adw::ApplicationWindow, core: &CoreHandle, catalog: &So
 /// Creates an action with the item ID as parameter.
 pub fn item_action(name: &str) -> SimpleAction {
     SimpleAction::new(name, Some(VariantTy::STRING))
+}
+
+/// Creates an action that opens a list of an artist. Its parameter is the
+/// artist ID and the artist name. Build it with [`artist_list_target`].
+pub fn artist_list_action(name: &str) -> SimpleAction {
+    SimpleAction::new(name, Some(&<(String, String)>::static_variant_type()))
+}
+
+/// The parameter of an artist list action.
+pub fn artist_list_target(artist_id: &str, artist_name: &str) -> Variant {
+    (artist_id, artist_name).to_variant()
 }
 
 /// Creates an action that sends `command` for the song of the ID.

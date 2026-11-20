@@ -34,3 +34,6 @@ button.byline-link {
   min-height: 0;
   min-width: 0;
 }
+
+/* The cover of the player opens the album. It has no button look. */
+button.artwork-button { padding: 0; min-height: 0; min-width: 0; background: none; box-shadow: none; }

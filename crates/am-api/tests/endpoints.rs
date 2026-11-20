@@ -7,8 +7,8 @@
 
 use ringo_am_api::endpoints::{self, CatalogSearchType, LibrarySearchType};
 use ringo_am_api::models::{
-    AlbumId, ArtistId, LibraryAlbumId, LibraryArtistId, LibraryPlaylistId, PlaylistId, Resource,
-    SongId,
+    AlbumId, ArtistId, LibraryAlbumId, LibraryArtistId, LibraryPlaylistId, LibrarySongId,
+    PlaylistId, Resource, SongId,
 };
 use ringo_am_api::{Error, FixtureTransport};
 
@@ -104,8 +104,11 @@ async fn library_search_rejects_an_empty_term_without_a_request() {
 
 #[tokio::test]
 async fn song_returns_the_song() {
-    let transport =
-        FixtureTransport::new().with(&catalog("songs/1097861769"), &[], "catalog_song.json");
+    let transport = FixtureTransport::new().with(
+        &catalog("songs/1097861769"),
+        &[("include", "albums,artists")],
+        "catalog_song.json",
+    );
 
     let song = endpoints::song(
         &transport,
@@ -130,6 +133,22 @@ async fn song_rejects_an_id_that_changes_the_path() {
 }
 
 #[tokio::test]
+async fn library_song_returns_the_song_with_its_links() {
+    let transport = FixtureTransport::new().with(
+        "/v1/me/library/songs/i.example1",
+        &[("include", "albums,artists")],
+        "library_song.json",
+    );
+
+    let song = endpoints::library_song(&transport, &LibrarySongId::from("i.example1".to_owned()))
+        .await
+        .unwrap();
+
+    let links = song.relationships.unwrap();
+    assert_eq!(links.artists.unwrap().data[0].id, "r.example1");
+}
+
+#[tokio::test]
 async fn album_returns_the_album_with_tracks() {
     let transport = FixtureTransport::new().with(
         &catalog("albums/1097861387"),
@@ -147,6 +166,46 @@ async fn album_returns_the_album_with_tracks() {
 
     let tracks = album.relationships.unwrap().tracks.unwrap();
     assert!(!tracks.data.is_empty());
+}
+
+#[tokio::test]
+async fn artist_top_songs_returns_a_page_with_the_next_offset() {
+    let transport = FixtureTransport::new().with(
+        &catalog("artists/657515/view/top-songs"),
+        &PAGE_QUERY,
+        "catalog_artist_top_songs.json",
+    );
+
+    let page = endpoints::artist_top_songs(
+        &transport,
+        STOREFRONT,
+        &ArtistId::from("657515".to_owned()),
+        0,
+    )
+    .await
+    .unwrap();
+
+    assert_eq!((page.items.len(), page.next_offset), (2, Some(2)));
+}
+
+#[tokio::test]
+async fn artist_full_albums_returns_a_page_with_the_next_offset() {
+    let transport = FixtureTransport::new().with(
+        &catalog("artists/657515/view/full-albums"),
+        &PAGE_QUERY,
+        "catalog_artist_full_albums.json",
+    );
+
+    let page = endpoints::artist_full_albums(
+        &transport,
+        STOREFRONT,
+        &ArtistId::from("657515".to_owned()),
+        0,
+    )
+    .await
+    .unwrap();
+
+    assert_eq!((page.items.len(), page.next_offset), (2, Some(2)));
 }
 
 #[tokio::test]
@@ -320,7 +379,7 @@ async fn library_playlist_tracks_returns_a_page_with_the_next_offset() {
 async fn library_album_returns_the_album_with_tracks() {
     let transport = FixtureTransport::new().with(
         "/v1/me/library/albums/l.example1",
-        &[("include", "tracks")],
+        &[("include", "tracks,artists")],
         "library_album.json",
     );
 
@@ -329,8 +388,9 @@ async fn library_album_returns_the_album_with_tracks() {
             .await
             .unwrap();
 
-    let tracks = album.relationships.unwrap().tracks.unwrap();
-    assert_eq!(tracks.data.len(), 2);
+    let links = album.relationships.unwrap();
+    assert_eq!(links.tracks.unwrap().data.len(), 2);
+    assert_eq!(links.artists.unwrap().data[0].id, "r.example1");
 }
 
 #[tokio::test]

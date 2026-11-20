@@ -15,6 +15,9 @@
         }
       },
       "relationships": {
+        "artists": {
+          "data": [{ "id": "r.example1", "type": "library-artists" }]
+        },
         "tracks": {
           "data": [
             {

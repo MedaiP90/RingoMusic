@@ -14,7 +14,7 @@ use serde_json::Value;
 use crate::models::{
     Album, AlbumId, ApiPage, Artist, ArtistId, LibraryAlbum, LibraryAlbumId, LibraryArtist,
     LibraryArtistId, LibraryPlaylist, LibraryPlaylistId, LibrarySearchResults, LibrarySong,
-    Playlist, PlaylistId, Recommendation, Resource, SearchResults, Song, SongId,
+    LibrarySongId, Playlist, PlaylistId, Recommendation, Resource, SearchResults, Song, SongId,
 };
 use crate::{ApiTransport, Error, PAGE_SIZE, Page, Result};
 
@@ -123,7 +123,7 @@ pub async fn library_search(
     Ok(envelope.results)
 }
 
-/// Gets one catalog song.
+/// Gets one catalog song with its albums and artists.
 ///
 /// # Errors
 ///
@@ -132,7 +132,7 @@ pub async fn library_search(
 /// Returns an error if the request fails or the response is not valid.
 pub async fn song(transport: &impl ApiTransport, storefront: &str, id: &SongId) -> Result<Song> {
     let path = catalog_path(storefront, "songs", id.as_str())?;
-    first(fetch(transport, &path, &[]).await?)
+    first(fetch(transport, &path, &[("include", "albums,artists")]).await?)
 }
 
 /// Gets one catalog album with its tracks.
@@ -161,6 +161,38 @@ pub async fn artist(
 ) -> Result<Artist> {
     let path = catalog_path(storefront, "artists", id.as_str())?;
     first(fetch(transport, &path, &[("views", "top-songs,full-albums")]).await?)
+}
+
+/// Gets one page of the top songs of a catalog artist.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if an argument is empty.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn artist_top_songs(
+    transport: &impl ApiTransport,
+    storefront: &str,
+    id: &ArtistId,
+    offset: u32,
+) -> Result<Page<Song>> {
+    let path = artist_view_path(storefront, id, "top-songs")?;
+    fetch_page(transport, &path, offset).await
+}
+
+/// Gets one page of the full albums of a catalog artist.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if an argument is empty.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn artist_full_albums(
+    transport: &impl ApiTransport,
+    storefront: &str,
+    id: &ArtistId,
+    offset: u32,
+) -> Result<Page<Album>> {
+    let path = artist_view_path(storefront, id, "full-albums")?;
+    fetch_page(transport, &path, offset).await
 }
 
 /// Gets one catalog playlist with its first tracks. Use [`playlist_tracks`]
@@ -247,6 +279,21 @@ pub async fn library_songs(
     fetch_page(transport, "/v1/me/library/songs", offset).await
 }
 
+/// Gets one library song with its albums and artists.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if the ID is empty.
+/// Returns [`Error::EmptyResponse`] if the song does not exist.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn library_song(
+    transport: &impl ApiTransport,
+    id: &LibrarySongId,
+) -> Result<LibrarySong> {
+    let path = library_path("songs", id.as_str())?;
+    first(fetch(transport, &path, &[("include", "albums,artists")]).await?)
+}
+
 /// Gets one library album with its tracks.
 ///
 /// # Errors
@@ -259,7 +306,7 @@ pub async fn library_album(
     id: &LibraryAlbumId,
 ) -> Result<LibraryAlbum> {
     let path = library_path("albums", id.as_str())?;
-    first(fetch(transport, &path, &[("include", "tracks")]).await?)
+    first(fetch(transport, &path, &[("include", "tracks,artists")]).await?)
 }
 
 /// Gets one page of the albums of a library artist.
@@ -356,6 +403,11 @@ fn catalog_path(storefront: &str, kind: &str, id: &str) -> Result<String> {
     let storefront = segment("storefront", storefront)?;
     let id = segment("ID", id)?;
     Ok(format!("/v1/catalog/{storefront}/{kind}/{id}"))
+}
+
+fn artist_view_path(storefront: &str, id: &ArtistId, view: &str) -> Result<String> {
+    let artist = catalog_path(storefront, "artists", id.as_str())?;
+    Ok(format!("{artist}/view/{view}"))
 }
 
 fn library_playlist_path(id: &LibraryPlaylistId) -> Result<String> {

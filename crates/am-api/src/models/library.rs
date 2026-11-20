@@ -3,7 +3,7 @@
 
 use super::id::{LibraryAlbumId, LibraryArtistId, LibraryPlaylistId, LibrarySongId};
 use super::resource::Resource;
-use super::shared::{Artwork, ContentRating, Description, PlayParams, Relationship};
+use super::shared::{Artwork, ContentRating, Description, PlayParams, Relationship, ResourceRef};
 
 /// A song in the library of the user.
 #[derive(Clone, Debug, PartialEq, serde::Deserialize)]
@@ -12,6 +12,17 @@ pub struct LibrarySong {
     pub id: LibrarySongId,
     /// Attributes of the song.
     pub attributes: LibrarySongAttributes,
+    /// Related resources, if the request asked for them.
+    pub relationships: Option<LibrarySongRelationships>,
+}
+
+/// Resources that a library song links to.
+#[derive(Clone, Debug, PartialEq, serde::Deserialize)]
+pub struct LibrarySongRelationships {
+    /// Library albums of the song.
+    pub albums: Option<Relationship<ResourceRef>>,
+    /// Library artists of the song.
+    pub artists: Option<Relationship<ResourceRef>>,
 }
 
 /// Attributes of a library song.
@@ -77,6 +88,8 @@ pub struct LibraryAlbumAttributes {
 pub struct LibraryAlbumRelationships {
     /// Tracks of the album.
     pub tracks: Option<Relationship<Resource>>,
+    /// Artists of the album. Only a request that includes them has this.
+    pub artists: Option<Relationship<ResourceRef>>,
 }
 
 /// An artist in the library of the user.

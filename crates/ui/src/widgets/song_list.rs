@@ -47,8 +47,13 @@ impl SongList {
     /// Replaces the rows with `songs`. Each song has its own lead.
     pub fn set_songs<'a>(&self, songs: impl IntoIterator<Item = (&'a SongItem, Lead)>) {
         self.list.remove_all();
+        self.rows.borrow_mut().clear();
+        self.append_songs(songs);
+    }
+
+    /// Adds `songs` after the rows that the list has.
+    pub fn append_songs<'a>(&self, songs: impl IntoIterator<Item = (&'a SongItem, Lead)>) {
         let mut rows = self.rows.borrow_mut();
-        rows.clear();
         for (song, lead) in songs {
             let (root, widgets) = SongRowWidgets::build(None);
             widgets.show(song, lead);

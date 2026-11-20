@@ -118,14 +118,24 @@ impl TileGrid {
     /// Replaces the tiles with `items`.
     pub fn set_items(&self, items: &[TileItem]) {
         self.tiles.remove_all();
+        self.images.borrow_mut().clear();
+        self.append_items(items);
+    }
+
+    /// Adds `items` after the tiles that the grid has.
+    pub fn append_items(&self, items: &[TileItem]) {
         let mut images = self.images.borrow_mut();
-        images.clear();
         for item in items {
             let (tile, image) = build_tile(item);
             self.tiles.append(&tile);
             images.push(image);
         }
-        self.root.set_visible(!items.is_empty());
+        self.root.set_visible(self.tiles.first_child().is_some());
+    }
+
+    /// Adds `button` below the tiles.
+    pub fn append_footer(&self, button: &impl IsA<gtk::Widget>) {
+        self.root.append(button);
     }
 }
 

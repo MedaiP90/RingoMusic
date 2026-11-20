@@ -3,6 +3,8 @@
 
 //! Root component: the main window with the sidebar and the section pages.
 
+use std::sync::Arc;
+
 use gettextrs::gettext;
 use relm4::adw;
 use relm4::adw::prelude::*;
@@ -186,6 +188,7 @@ impl SimpleComponent for App {
             artwork: services.artwork().clone(),
             window: root.clone(),
             catalog: catalog.clone(),
+            api: Arc::clone(services.api()),
         });
         let player_bar = bar.widget().clone();
         // Like the gate, the bar lives as long as its widget.
