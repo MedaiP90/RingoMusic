@@ -12,9 +12,9 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use crate::models::{
-    Album, AlbumId, ApiPage, Artist, ArtistId, LibraryAlbum, LibraryArtist, LibraryPlaylist,
-    LibraryPlaylistId, LibrarySearchResults, LibrarySong, Playlist, PlaylistId, Recommendation,
-    Resource, SearchResults, Song, SongId,
+    Album, AlbumId, ApiPage, Artist, ArtistId, LibraryAlbum, LibraryAlbumId, LibraryArtist,
+    LibraryArtistId, LibraryPlaylist, LibraryPlaylistId, LibrarySearchResults, LibrarySong,
+    Playlist, PlaylistId, Recommendation, Resource, SearchResults, Song, SongId,
 };
 use crate::{ApiTransport, Error, PAGE_SIZE, Page, Result};
 
@@ -247,6 +247,36 @@ pub async fn library_songs(
     fetch_page(transport, "/v1/me/library/songs", offset).await
 }
 
+/// Gets one library album with its tracks.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if the ID is empty.
+/// Returns [`Error::EmptyResponse`] if the album does not exist.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn library_album(
+    transport: &impl ApiTransport,
+    id: &LibraryAlbumId,
+) -> Result<LibraryAlbum> {
+    let path = library_path("albums", id.as_str())?;
+    first(fetch(transport, &path, &[("include", "tracks")]).await?)
+}
+
+/// Gets one page of the albums of a library artist.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if the ID is empty.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn library_artist_albums(
+    transport: &impl ApiTransport,
+    id: &LibraryArtistId,
+    offset: u32,
+) -> Result<Page<LibraryAlbum>> {
+    let path = format!("{}/albums", library_path("artists", id.as_str())?);
+    fetch_page(transport, &path, offset).await
+}
+
 /// Gets one library playlist with its first tracks. Use
 /// [`library_playlist_tracks`] for the next tracks.
 ///
@@ -329,8 +359,12 @@ fn catalog_path(storefront: &str, kind: &str, id: &str) -> Result<String> {
 }
 
 fn library_playlist_path(id: &LibraryPlaylistId) -> Result<String> {
-    let id = segment("ID", id.as_str())?;
-    Ok(format!("/v1/me/library/playlists/{id}"))
+    library_path("playlists", id.as_str())
+}
+
+fn library_path(kind: &str, id: &str) -> Result<String> {
+    let id = segment("ID", id)?;
+    Ok(format!("/v1/me/library/{kind}/{id}"))
 }
 
 /// Checks a value that goes into the path. It must not be empty or change the

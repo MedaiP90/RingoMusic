@@ -75,6 +75,7 @@ impl Fixture {
             album: "album".to_owned(),
             duration: Duration::from_secs(3),
             artwork_url: None,
+            album_id: None,
             queue_index: index,
         });
         self.wait_for(|state| {

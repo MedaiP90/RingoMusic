@@ -68,6 +68,8 @@ pub struct NowPlaying {
     pub duration: Duration,
     /// Artwork URL, if the item has artwork.
     pub artwork_url: Option<String>,
+    /// Album ID, if the engine knows it.
+    pub album_id: Option<String>,
 }
 
 /// Playback to resume when the engine is ready: after a start or a restart.

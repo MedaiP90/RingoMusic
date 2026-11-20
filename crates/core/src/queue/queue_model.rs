@@ -3,8 +3,8 @@
 
 use std::collections::VecDeque;
 
-use rand::Rng;
 use rand::seq::SliceRandom;
+use rand::{Rng, RngExt};
 use ringo_engine::ItemId;
 use ringo_engine::protocol::RepeatMode;
 
@@ -157,6 +157,19 @@ impl Queue {
         self.current = items.len().checked_sub(1).map(|last| start.min(last));
         self.items = items;
         self.shuffle = None;
+        QueueChange::Replaced
+    }
+
+    /// Replaces all items and turns shuffle on. Playback starts at a random
+    /// item, and the rest follows in random order. The engine needs only one
+    /// new queue for this change.
+    pub fn replace_shuffled(&mut self, items: Vec<QueueItem>, rng: &mut impl Rng) -> QueueChange {
+        let start = match items.len() {
+            0 => 0,
+            count => rng.random_range(0..count),
+        };
+        let _ = self.replace(items, start);
+        self.shuffle = Some(self.shuffled_order(rng));
         QueueChange::Replaced
     }
 

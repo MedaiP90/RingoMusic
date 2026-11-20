@@ -1,0 +1,13 @@
+{
+  "data": [
+    {
+      "id": "l.example1",
+      "type": "library-albums",
+      "attributes": {
+        "name": "Example Album",
+        "artistName": "Example Artist"
+      }
+    }
+  ],
+  "next": "/v1/me/library/artists/r.example1/albums?limit=25&offset=1"
+}

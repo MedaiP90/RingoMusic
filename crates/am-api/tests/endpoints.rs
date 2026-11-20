@@ -6,7 +6,10 @@
 #![expect(clippy::unwrap_used, reason = "tests may panic")]
 
 use ringo_am_api::endpoints::{self, CatalogSearchType, LibrarySearchType};
-use ringo_am_api::models::{AlbumId, ArtistId, LibraryPlaylistId, PlaylistId, Resource, SongId};
+use ringo_am_api::models::{
+    AlbumId, ArtistId, LibraryAlbumId, LibraryArtistId, LibraryPlaylistId, PlaylistId, Resource,
+    SongId,
+};
 use ringo_am_api::{Error, FixtureTransport};
 
 const STOREFRONT: &str = "it";
@@ -311,6 +314,43 @@ async fn library_playlist_tracks_returns_a_page_with_the_next_offset() {
 
     assert_eq!(page.items.len(), 2);
     assert_eq!(page.next_offset, Some(2));
+}
+
+#[tokio::test]
+async fn library_album_returns_the_album_with_tracks() {
+    let transport = FixtureTransport::new().with(
+        "/v1/me/library/albums/l.example1",
+        &[("include", "tracks")],
+        "library_album.json",
+    );
+
+    let album =
+        endpoints::library_album(&transport, &LibraryAlbumId::from("l.example1".to_owned()))
+            .await
+            .unwrap();
+
+    let tracks = album.relationships.unwrap().tracks.unwrap();
+    assert_eq!(tracks.data.len(), 2);
+}
+
+#[tokio::test]
+async fn library_artist_albums_returns_a_page_with_the_next_offset() {
+    let transport = FixtureTransport::new().with(
+        "/v1/me/library/artists/r.example1/albums",
+        &PAGE_QUERY,
+        "library_artist_albums.json",
+    );
+
+    let page = endpoints::library_artist_albums(
+        &transport,
+        &LibraryArtistId::from("r.example1".to_owned()),
+        0,
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(page.items.len(), 1);
+    assert_eq!(page.next_offset, Some(1));
 }
 
 #[tokio::test]

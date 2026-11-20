@@ -3,7 +3,7 @@
 
 use super::id::{LibraryAlbumId, LibraryArtistId, LibraryPlaylistId, LibrarySongId};
 use super::resource::Resource;
-use super::shared::{Artwork, ContentRating, PlayParams, Relationship};
+use super::shared::{Artwork, ContentRating, Description, PlayParams, Relationship};
 
 /// A song in the library of the user.
 #[derive(Clone, Debug, PartialEq, serde::Deserialize)]
@@ -112,6 +112,8 @@ pub struct LibraryPlaylist {
 pub struct LibraryPlaylistAttributes {
     /// Title of the playlist.
     pub name: String,
+    /// Text about the playlist.
+    pub description: Option<Description>,
     /// Date of the last change.
     pub last_modified_date: Option<String>,
     /// Cover image.

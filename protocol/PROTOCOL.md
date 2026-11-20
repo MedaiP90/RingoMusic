@@ -82,7 +82,7 @@ Rust owns the queue order, including shuffle. The engine never shuffles. `player
 | `engine.log` | `{ level, message, fields }` |
 | `auth.changed` | `{ authorized }` |
 | `player.state` | `{ state }`: `playing`, `paused`, `stopped`, `loading`, or `ended` |
-| `player.nowPlaying` | `{ id, title, artist, album, duration_ms, artwork_url, queue_index }`. `queue_index` is the index in the list from `player.setQueue`. |
+| `player.nowPlaying` | `{ id, title, artist, album, duration_ms, artwork_url, album_id, queue_index }`. `album_id` is `null` when MusicKit has no album link for the item. `queue_index` is the index in the list from `player.setQueue`. |
 | `player.position` | `{ position_ms }` |
 | `error` | `{ code, message, fatal }`. If `fatal` is `true`, the engine quits after it. |
 

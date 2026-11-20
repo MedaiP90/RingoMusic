@@ -75,6 +75,60 @@ impl TileRow {
     }
 }
 
+/// A titled grid of tiles. It wraps to the width of the page and does not
+/// scroll by itself. It hides itself when it has no tiles.
+pub struct TileGrid {
+    root: gtk::Box,
+    tiles: gtk::FlowBox,
+    /// The images must live as long as the tiles: they load in the background.
+    images: RefCell<Vec<ArtworkImage>>,
+}
+
+impl TileGrid {
+    /// Makes an empty grid with the heading `title`.
+    pub fn new(title: &str) -> Self {
+        let root = gtk::Box::builder()
+            .orientation(gtk::Orientation::Vertical)
+            .spacing(6)
+            .visible(false)
+            .build();
+        root.append(&heading(title));
+        let tiles = gtk::FlowBox::builder()
+            .selection_mode(gtk::SelectionMode::None)
+            .homogeneous(true)
+            .valign(gtk::Align::Start)
+            .row_spacing(6)
+            .column_spacing(6)
+            .margin_start(6)
+            .margin_end(6)
+            .build();
+        root.append(&tiles);
+        Self {
+            root,
+            tiles,
+            images: RefCell::new(Vec::new()),
+        }
+    }
+
+    /// The widget to put in a container.
+    pub fn widget(&self) -> &gtk::Box {
+        &self.root
+    }
+
+    /// Replaces the tiles with `items`.
+    pub fn set_items(&self, items: &[TileItem]) {
+        self.tiles.remove_all();
+        let mut images = self.images.borrow_mut();
+        images.clear();
+        for item in items {
+            let (tile, image) = build_tile(item);
+            self.tiles.append(&tile);
+            images.push(image);
+        }
+        self.root.set_visible(!items.is_empty());
+    }
+}
+
 /// Builds the heading of a section.
 pub fn heading(title: &str) -> gtk::Label {
     gtk::Label::builder()
@@ -88,7 +142,7 @@ pub fn heading(title: &str) -> gtk::Label {
 
 /// Builds a flat button with the artwork, the title, and the subtitle. A
 /// click runs the open action of the kind with the ID of the item.
-fn build_tile(item: &TileItem) -> (gtk::Button, ArtworkImage) {
+pub fn build_tile(item: &TileItem) -> (gtk::Button, ArtworkImage) {
     let image = ArtworkImage::shared();
     image.set_artwork(item.artwork_template.as_deref(), ARTWORK_SIZE);
     if item.kind == TileKind::Artist {

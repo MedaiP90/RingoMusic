@@ -41,8 +41,23 @@ void test('mapNowPlaying / item with attributes / should keep the artwork templa
     album: 'Album',
     duration_ms: 1000,
     artwork_url: 'https://x/{w}x{h}.jpg',
+    album_id: null,
     queue_index: 3,
   });
+});
+
+void test('mapNowPlaying / album container / should return the album ID', () => {
+  const item: MusicKitMediaItem = { id: '1', container: { id: '77', type: 'albums' } };
+  assert.equal(mapNowPlaying(item, 0)?.album_id, '77');
+});
+
+void test('mapNowPlaying / playlist container with album link / should use the link', () => {
+  const item: MusicKitMediaItem = {
+    id: '1',
+    container: { id: 'pl.x', type: 'playlists' },
+    relationships: { albums: { data: [{ id: '88' }] } },
+  };
+  assert.equal(mapNowPlaying(item, 0)?.album_id, '88');
 });
 
 void test('mapNowPlaying / no item or negative index / should return undefined', () => {

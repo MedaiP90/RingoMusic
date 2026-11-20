@@ -3,8 +3,12 @@
 
 //! One module for each view. The view components replace the empty pages.
 
+pub mod album;
+pub mod artist;
+pub mod detail_frame;
 pub mod home;
 pub mod library;
 pub mod phase;
+pub mod playlist;
 pub mod search;
 pub mod section_page;

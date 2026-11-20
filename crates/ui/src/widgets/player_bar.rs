@@ -21,6 +21,7 @@ use ringo_core::state::{AppState, Message};
 use ringo_engine::protocol::{PlaybackState, RepeatMode};
 use tracing::warn;
 
+use crate::item_actions::{OPEN_ALBUM, SongCatalog};
 use crate::playback_actions::{self as shortcuts, ActionState, PlaybackActions};
 use crate::widgets::artwork_image::ArtworkImage;
 
@@ -33,6 +34,10 @@ const ARTWORK_SIZE: i32 = 64;
 pub struct BarState {
     title: String,
     artist: String,
+    /// ID of the current song.
+    song_id: Option<String>,
+    /// Album of the current song, if the engine or a view knows it.
+    album_id: Option<String>,
     /// Template of the artwork URL.
     artwork: Option<String>,
     duration: Duration,
@@ -65,6 +70,15 @@ impl BarState {
         Self {
             title: title.clone(),
             artist: artist.clone(),
+            song_id: state
+                .now_playing
+                .as_ref()
+                .map(|track| track.id.to_string())
+                .or_else(|| state.queue.current().map(|item| item.id.to_string())),
+            album_id: state
+                .now_playing
+                .as_ref()
+                .and_then(|track| track.album_id.clone()),
             artwork: artwork.clone(),
             duration,
             position: Duration::from_secs(state.playback.position.as_secs()),
@@ -73,6 +87,13 @@ impl BarState {
             shuffle: state.queue.shuffle_enabled(),
             repeat: state.queue.repeat(),
             has_queue: !state.queue.items().is_empty(),
+        }
+    }
+
+    /// Takes the album from the views when the engine did not send one.
+    fn fill_album(&mut self, catalog: &SongCatalog) {
+        if self.album_id.is_none() {
+            self.album_id = self.song_id.as_deref().and_then(|id| catalog.album_id(id));
         }
     }
 
@@ -92,6 +113,8 @@ pub struct PlayerBarInit {
     pub artwork: ArtworkStore,
     /// The window that gets the playback actions.
     pub window: adw::ApplicationWindow,
+    /// The songs that the views showed. Their albums fill the gaps of the engine.
+    pub catalog: SongCatalog,
 }
 
 /// Player bar model.
@@ -100,6 +123,7 @@ pub struct PlayerBar {
     actions: PlaybackActions,
     settings: Settings,
     core: CoreHandle,
+    catalog: SongCatalog,
     artwork: ArtworkImage,
     /// The user holds the seek bar. Position updates wait until the release.
     dragging: bool,
@@ -145,19 +169,30 @@ impl SimpleComponent for PlayerBar {
                 set_valign: gtk::Align::Center,
                 set_width_request: 220,
 
-                gtk::Label {
+                // The title opens the album of the song. Without an album ID, it is
+                // plain text.
+                gtk::Button {
                     set_halign: gtk::Align::Start,
-                    set_xalign: 0.0,
-                    set_ellipsize: EllipsizeMode::End,
-                    set_max_width_chars: 24,
-                    add_css_class: "heading",
+                    add_css_class: "flat",
+                    add_css_class: "title-button",
                     #[watch]
-                    set_label: &model.state.title,
+                    set_action_name: model.state.album_id.as_ref().map(|_| OPEN_ALBUM),
+                    #[watch]
+                    set_action_target_value: model.state.album_id.as_deref().map(ToVariant::to_variant).as_ref(),
                     #[watch]
                     set_tooltip_text: Some(&model.state.title),
+                    #[watch]
+                    set_can_target: model.state.album_id.is_some(),
 
-                    // ponytail: prompt 32 links the title to the album. The now-playing
-                    // state has no album ID yet.
+                    #[wrap(Some)]
+                    set_child = &gtk::Label {
+                        set_xalign: 0.0,
+                        set_ellipsize: EllipsizeMode::End,
+                        set_max_width_chars: 24,
+                        add_css_class: "heading",
+                        #[watch]
+                        set_label: &model.state.title,
+                    },
                 },
 
                 gtk::Label {
@@ -325,9 +360,11 @@ impl SimpleComponent for PlayerBar {
             settings,
             artwork,
             window,
+            catalog,
         } = init;
         let actions = PlaybackActions::register(&window, &core);
-        let state = BarState::of(&core.subscribe().borrow());
+        let mut state = BarState::of(&core.subscribe().borrow());
+        state.fill_album(&catalog);
         actions.sync(state.action_state());
         restore_volume(&core, &settings);
         forward_state(&core, &sender);
@@ -340,6 +377,7 @@ impl SimpleComponent for PlayerBar {
             actions,
             settings,
             core,
+            catalog,
             artwork,
             dragging: false,
             seek_target: None,
@@ -381,6 +419,7 @@ impl PlayerBar {
     /// Takes the new state. The position waits while the user holds the seek
     /// bar. A changed volume goes to the settings.
     fn follow(&mut self, mut state: BarState) {
+        state.fill_album(&self.catalog);
         self.actions.sync(state.action_state());
         if self.dragging {
             state.position = self.state.position;
@@ -533,6 +572,7 @@ fn volume_icon(volume: f64) -> &'static str {
 #[cfg(test)]
 mod tests {
     use ringo_core::queue::QueueItem;
+    use ringo_core::state::NowPlaying;
     use ringo_engine::ItemId;
 
     use super::*;
@@ -574,6 +614,26 @@ mod tests {
             (bar.title.as_str(), bar.duration, bar.has_queue),
             ("Title", Duration::from_secs(90), true)
         );
+    }
+
+    #[test]
+    fn bar_state_has_no_album_before_the_engine_plays() {
+        assert_eq!(BarState::of(&AppState::new()).album_id, None);
+    }
+
+    #[test]
+    fn bar_state_takes_the_album_of_the_playing_song() {
+        let mut state = AppState::new();
+        state.now_playing = Some(NowPlaying {
+            id: ItemId::new("1"),
+            title: String::new(),
+            artist: String::new(),
+            album: String::new(),
+            duration: Duration::ZERO,
+            artwork_url: None,
+            album_id: Some("77".to_owned()),
+        });
+        assert_eq!(BarState::of(&state).album_id.as_deref(), Some("77"));
     }
 
     #[test]

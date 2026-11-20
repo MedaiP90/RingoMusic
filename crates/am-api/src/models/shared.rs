@@ -26,6 +26,13 @@ pub struct PlayParams {
     pub catalog_id: Option<String>,
 }
 
+/// Text that describes a resource, for example a playlist.
+#[derive(Clone, Debug, Eq, PartialEq, serde::Deserialize)]
+pub struct Description {
+    /// Full text. Apple sends plain text.
+    pub standard: Option<String>,
+}
+
 /// Content rating of a resource.
 #[derive(Copy, Clone, Debug, Eq, PartialEq, serde::Deserialize)]
 #[serde(rename_all = "lowercase")]

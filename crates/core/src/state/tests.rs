@@ -55,6 +55,23 @@ fn event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
 }
 
 #[test]
+fn replace_queue_shuffled_sends_one_queue_and_plays() {
+    let mut state = AppState::new();
+    let commands = update(
+        &mut state,
+        Message::ReplaceQueueShuffled {
+            items: items(&["a", "b", "c"]),
+            seed: 7,
+        },
+    );
+    assert!(state.queue.shuffle_enabled());
+    assert!(matches!(
+        commands.as_slice(),
+        [Command::SetQueue { .. }, Command::Play]
+    ));
+}
+
+#[test]
 fn replace_queue_sets_queue_and_plays() {
     let mut state = AppState::new();
     let commands = update(
@@ -241,6 +258,7 @@ fn now_playing_event_moves_the_queue_and_resets_position() {
             album: "album".to_owned(),
             duration: Duration::from_secs(180),
             artwork_url: None,
+            album_id: None,
             queue_index: 1,
         },
     );

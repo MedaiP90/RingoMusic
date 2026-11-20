@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
-use crate::models::ApiPage;
+use crate::models::{ApiPage, Relationship};
 
 /// Number of items that a list request asks for.
 pub const PAGE_SIZE: u32 = 25;
@@ -25,6 +25,16 @@ impl<T> From<ApiPage<T>> for Page<T> {
     }
 }
 
+impl<T> From<Relationship<T>> for Page<T> {
+    fn from(relationship: Relationship<T>) -> Self {
+        let next_offset = relationship.next.as_deref().and_then(parse_next_offset);
+        Self {
+            items: relationship.data.into_vec(),
+            next_offset,
+        }
+    }
+}
+
 /// Reads the `offset` parameter of a `next` URL. Returns `None` if it is
 /// missing or not a number.
 fn parse_next_offset(next: &str) -> Option<u32> {
@@ -38,6 +48,18 @@ fn parse_next_offset(next: &str) -> Option<u32> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn relationship_converts_to_a_page_with_the_next_offset() {
+        let relationship: Relationship<u32> = serde_json::from_str(
+            r#"{ "data": [1, 2], "next": "/v1/me/library/playlists/p.x/tracks?offset=2" }"#,
+        )
+        .expect("the test relationship is valid");
+
+        let page = Page::from(relationship);
+
+        assert_eq!((page.items, page.next_offset), (vec![1, 2], Some(2)));
+    }
 
     #[test]
     fn parse_next_offset_reads_the_offset_parameter() {

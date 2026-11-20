@@ -19,6 +19,7 @@ use ringo_mpris::Callbacks;
 use tracing::{debug, warn};
 
 use crate::background::{self, BackgroundPlayback, CloseAction};
+use crate::detail_pages::{self, PageSources};
 use crate::gate::{self, Gate};
 use crate::item_actions::{self, SongCatalog};
 use crate::section::Section;
@@ -184,6 +185,7 @@ impl SimpleComponent for App {
             settings: settings.clone(),
             artwork: services.artwork().clone(),
             window: root.clone(),
+            catalog: catalog.clone(),
         });
         let player_bar = bar.widget().clone();
         // Like the gate, the bar lives as long as its widget.
@@ -215,6 +217,15 @@ impl SimpleComponent for App {
             LibraryKind::ALL.map(|kind| launch_library(kind, &services, &catalog, &split_view));
         let content_stack =
             build_content_stack(&split_view, &home_page, &search_page, &library_pages);
+        detail_pages::register(
+            &root,
+            PageSources {
+                services: services.clone(),
+                catalog: catalog.clone(),
+                split_view: split_view.clone(),
+                sections: content_stack.clone(),
+            },
+        );
         let sidebar_list = sidebar::build_list();
         connect_sidebar(&sidebar_list, &split_view, &sender);
 
@@ -361,10 +372,7 @@ fn register_window_actions(
         .build();
     window.add_action_entries([search]);
     relm4::main_application().set_accels_for_action("win.search", &["<Ctrl>f"]);
-    let input = sender.input_sender().clone();
-    item_actions::register(window, core, catalog, move |message| {
-        input.emit(Input::ShowToast(message));
-    });
+    item_actions::register(window, core, catalog);
 }
 
 /// Adds the `win.refresh` action. It sends a refresh to the home view.

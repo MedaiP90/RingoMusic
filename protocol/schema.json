@@ -304,6 +304,14 @@
                   "description": "Album name.",
                   "type": "string"
                 },
+                "album_id": {
+                  "description": "Catalog or library ID of the album, if MusicKit knows it.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null
+                },
                 "artist": {
                   "description": "Artist name.",
                   "type": "string"
@@ -646,6 +654,14 @@
                 "album": {
                   "description": "Album name.",
                   "type": "string"
+                },
+                "album_id": {
+                  "description": "Catalog or library ID of the album, if MusicKit knows it.",
+                  "type": [
+                    "string",
+                    "null"
+                  ],
+                  "default": null
                 },
                 "artist": {
                   "description": "Artist name.",

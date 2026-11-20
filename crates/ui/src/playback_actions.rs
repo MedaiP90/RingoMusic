@@ -183,7 +183,7 @@ fn repeat_action(core: &CoreHandle) -> SimpleAction {
 }
 
 /// Returns a random seed for the shuffle order.
-fn random_seed() -> u64 {
+pub fn random_seed() -> u64 {
     (u64::from(glib::random_int()) << 32) | u64::from(glib::random_int())
 }
 

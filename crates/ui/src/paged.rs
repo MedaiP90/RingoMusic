@@ -38,6 +38,16 @@ impl PageCursor {
         Some((self.generation, offset))
     }
 
+    /// Tells if a page is loading now.
+    pub fn is_loading(&self) -> bool {
+        self.loading
+    }
+
+    /// The offset of the next page, if one is left.
+    pub fn next_offset(&self) -> Option<u32> {
+        self.next_offset
+    }
+
     /// Tells if a page is left to load.
     pub fn has_more(&self) -> bool {
         self.next_offset.is_some()

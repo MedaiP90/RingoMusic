@@ -8,7 +8,6 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use gettextrs::gettext;
 use relm4::adw;
 use relm4::gtk::gio::SimpleAction;
 use relm4::gtk::glib::{Variant, VariantTy};
@@ -18,6 +17,7 @@ use ringo_core::runner::CoreHandle;
 use ringo_core::state::Message;
 
 use crate::item::SongItem;
+use crate::playback_actions;
 
 pub const PLAY_ITEM: &str = "win.play-item";
 pub const PLAY_NEXT: &str = "win.play-next";
@@ -30,7 +30,14 @@ pub const OPEN_ARTIST: &str = "win.open-artist";
 // ponytail: the map only grows. Add a limit if the library views make it big.
 #[derive(Clone, Debug, Default)]
 pub struct SongCatalog {
-    songs: Rc<RefCell<HashMap<String, QueueItem>>>,
+    songs: Rc<RefCell<HashMap<String, KnownSong>>>,
+}
+
+/// What the catalog keeps of a song.
+#[derive(Clone, Debug)]
+struct KnownSong {
+    queue: QueueItem,
+    album_id: Option<String>,
 }
 
 impl SongCatalog {
@@ -38,12 +45,21 @@ impl SongCatalog {
     pub fn remember(&self, songs: &[SongItem]) {
         let mut known = self.songs.borrow_mut();
         for song in songs {
-            known.insert(song.id().to_owned(), song.queue.clone());
+            let entry = KnownSong {
+                queue: song.queue.clone(),
+                album_id: song.album_id.clone(),
+            };
+            known.insert(song.id().to_owned(), entry);
         }
     }
 
     fn find(&self, id: &str) -> Option<QueueItem> {
-        self.songs.borrow().get(id).cloned()
+        self.songs.borrow().get(id).map(|known| known.queue.clone())
+    }
+
+    /// The album of a remembered song, if a view knew it.
+    pub fn album_id(&self, id: &str) -> Option<String> {
+        self.songs.borrow().get(id)?.album_id.clone()
     }
 }
 
@@ -68,13 +84,47 @@ impl SongCommand {
     }
 }
 
-/// Adds the item actions to `window`. `show_toast` shows a short message.
-pub fn register(
-    window: &adw::ApplicationWindow,
-    core: &CoreHandle,
-    catalog: &SongCatalog,
-    show_toast: impl Fn(String) + Clone + 'static,
-) {
+/// Plays `songs` as the new queue, from the song at `start`. It does nothing
+/// if `start` is not a position in `songs`.
+pub fn play_songs(core: &CoreHandle, songs: &[SongItem], start: usize) {
+    if start >= songs.len() {
+        return;
+    }
+    send(
+        core,
+        Message::ReplaceQueue {
+            items: queue_items(songs),
+            start,
+        },
+    );
+}
+
+/// Plays `songs` in random order as the new queue. The core gets one message,
+/// so the engine gets one new queue.
+pub fn shuffle_songs(core: &CoreHandle, songs: &[SongItem]) {
+    if songs.is_empty() {
+        return;
+    }
+    send(
+        core,
+        Message::ReplaceQueueShuffled {
+            items: queue_items(songs),
+            seed: playback_actions::random_seed(),
+        },
+    );
+}
+
+fn queue_items(songs: &[SongItem]) -> Vec<QueueItem> {
+    songs.iter().map(|song| song.queue.clone()).collect()
+}
+
+fn send(core: &CoreHandle, message: Message) {
+    let core = core.clone();
+    relm4::spawn(async move { core.send(message).await });
+}
+
+/// Adds the song actions to `window`. The detail pages add the open actions.
+pub fn register(window: &adw::ApplicationWindow, core: &CoreHandle, catalog: &SongCatalog) {
     let song_actions = [
         ("play-item", SongCommand::Play),
         ("play-next", SongCommand::PlayNext),
@@ -83,17 +133,10 @@ pub fn register(
     for (name, command) in song_actions {
         window.add_action(&song_action(name, command, core, catalog));
     }
-    // ponytail: prompt 32 gives the detail pages and replaces this toast.
-    for name in ["open-album", "open-artist", "open-playlist"] {
-        let show_toast = show_toast.clone();
-        let action = item_action(name);
-        action.connect_activate(move |_, _| show_toast(gettext("Not available yet")));
-        window.add_action(&action);
-    }
 }
 
 /// Creates an action with the item ID as parameter.
-fn item_action(name: &str) -> SimpleAction {
+pub fn item_action(name: &str) -> SimpleAction {
     SimpleAction::new(name, Some(VariantTy::STRING))
 }
 

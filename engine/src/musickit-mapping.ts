@@ -32,6 +32,16 @@ export function mapPlaybackState(code: number): PlayerState | undefined {
   return STATE_BY_CODE[code];
 }
 
+// Finds the album ID of an item: its container if it is an album, else its album link.
+// Returns `null` when MusicKit has no such data.
+function findAlbumId(item: MusicKitMediaItem): string | null {
+  const container = item.container;
+  if (container?.id && container.type?.endsWith('albums')) {
+    return container.id;
+  }
+  return item.relationships?.albums?.data?.[0]?.id ?? null;
+}
+
 // Returns `undefined` when there is no item or no valid queue index.
 export function mapNowPlaying(
   item: MusicKitMediaItem | null | undefined,
@@ -49,6 +59,7 @@ export function mapNowPlaying(
     duration_ms: Math.round(attributes?.durationInMillis ?? item.playbackDuration ?? 0),
     // Rust replaces `{w}` and `{h}` (Phase 2).
     artwork_url: attributes?.artwork?.url ?? item.artwork?.url ?? null,
+    album_id: findAlbumId(item),
     queue_index: queueIndex,
   };
 }

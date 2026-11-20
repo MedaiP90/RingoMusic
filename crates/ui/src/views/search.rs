@@ -14,14 +14,13 @@ use relm4::prelude::*;
 use relm4::typed_view::list::TypedListView;
 use ringo_am_api::endpoints::{self, CatalogSearchType};
 use ringo_am_api::models::{ApiPage, SearchResults};
-use ringo_core::queue::QueueItem;
 use ringo_core::runner::CoreHandle;
-use ringo_core::state::{AppState, AuthState, Message};
 use tokio::task::JoinHandle;
 use tracing::warn;
 
+use crate::detail::storefront;
 use crate::item::{SongItem, TileItem};
-use crate::item_actions::SongCatalog;
+use crate::item_actions::{self, SongCatalog};
 use crate::services::{ApiClient, AppServices};
 use crate::views::section_page;
 use crate::widgets::song_row::{self, SongRow};
@@ -258,7 +257,10 @@ impl SimpleComponent for SearchView {
                     self.finish(sections);
                 }
             }
-            SearchInput::SongActivated(position) => self.play_from(position),
+            SearchInput::SongActivated(position) => {
+                let start = usize::try_from(position).unwrap_or(usize::MAX);
+                item_actions::play_songs(&self.core, &self.song_items, start);
+            }
             SearchInput::Focus => {
                 self.entry.grab_focus();
             }
@@ -318,30 +320,6 @@ impl SearchView {
         self.playlists.set_items(&sections.playlists);
         self.song_items = sections.songs;
     }
-
-    /// Plays the song results as the queue, from the song at `position`.
-    fn play_from(&self, position: u32) {
-        let items = queue_items(&self.song_items);
-        let start = usize::try_from(position).unwrap_or(usize::MAX);
-        if start >= items.len() {
-            return;
-        }
-        let core = self.core.clone();
-        relm4::spawn(async move { core.send(Message::ReplaceQueue { items, start }).await });
-    }
-}
-
-/// The queue items of `songs`, in the same order.
-fn queue_items(songs: &[SongItem]) -> Vec<QueueItem> {
-    songs.iter().map(|song| song.queue.clone()).collect()
-}
-
-/// The storefront of the signed-in user.
-fn storefront(state: &AppState) -> Option<String> {
-    match &state.auth {
-        AuthState::SignedIn { storefront } => Some(storefront.clone()),
-        AuthState::Unknown | AuthState::SignedOut => None,
-    }
 }
 
 /// Searches the catalog. Returns `None` if the request fails.
@@ -376,6 +354,7 @@ fn build_entry(sender: &ComponentSender<SearchView>) -> gtk::SearchEntry {
 
 /// Sends the activation of a row, and opens the row menu with the Menu key.
 fn connect_song_view(view: &gtk::ListView, sender: &ComponentSender<SearchView>) {
+    view.set_single_click_activate(true);
     let input = sender.input_sender().clone();
     view.connect_activate(move |_, position| input.emit(SearchInput::SongActivated(position)));
     song_row::connect_menu_key(view);
@@ -456,32 +435,5 @@ mod tests {
             ),
             (1, 1, 1)
         );
-    }
-
-    #[test]
-    fn queue_items_follow_the_song_order() {
-        let value = json!({ "songs": { "data": [song_json("1"), song_json("2")] } });
-        let sections = SearchSections::from(&results(value));
-        let ids: Vec<String> = queue_items(&sections.songs)
-            .iter()
-            .map(|item| item.id.to_string())
-            .collect();
-        assert_eq!(ids, ["1", "2"]);
-    }
-
-    #[test]
-    fn storefront_is_none_when_signed_out() {
-        let mut state = AppState::default();
-        state.auth = AuthState::SignedOut;
-        assert_eq!(storefront(&state), None);
-    }
-
-    #[test]
-    fn storefront_is_the_one_of_the_signed_in_user() {
-        let mut state = AppState::default();
-        state.auth = AuthState::SignedIn {
-            storefront: "it".to_owned(),
-        };
-        assert_eq!(storefront(&state).as_deref(), Some("it"));
     }
 }

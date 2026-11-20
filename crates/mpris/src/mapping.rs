@@ -193,6 +193,7 @@ mod tests {
             album: "Record".to_owned(),
             duration: Duration::from_secs(10),
             artwork_url: None,
+            album_id: None,
         });
         let metadata = metadata(&state);
         assert_eq!(metadata.title(), Some("Playing"));

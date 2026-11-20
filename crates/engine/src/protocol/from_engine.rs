@@ -67,6 +67,9 @@ pub enum FromEngine {
         duration_ms: u64,
         /// Artwork URL, if the item has artwork.
         artwork_url: Option<String>,
+        /// Catalog or library ID of the album, if MusicKit knows it.
+        #[serde(default)]
+        album_id: Option<String>,
         /// Index of the item in the queue that Rust sent.
         queue_index: u32,
     },

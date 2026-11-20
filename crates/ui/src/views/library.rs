@@ -16,14 +16,12 @@ use relm4::typed_view::grid::TypedGridView;
 use relm4::typed_view::list::TypedListView;
 use ringo_am_api::endpoints;
 use ringo_am_api::{Page, Result as ApiResult};
-use ringo_core::queue::QueueItem;
 use ringo_core::runner::CoreHandle;
-use ringo_core::state::Message;
 use tokio::task::JoinHandle;
 use tracing::warn;
 
 use crate::item::{SongItem, TileItem};
-use crate::item_actions::SongCatalog;
+use crate::item_actions::{self, SongCatalog};
 use crate::name_filter::NameFilter;
 use crate::paged::{self, PageCursor};
 use crate::section::Section;
@@ -124,6 +122,7 @@ impl Content {
                 let filter = filter.clone();
                 view.add_filter(move |row| row.matches(&filter));
                 view.view.set_show_separators(true);
+                view.view.set_single_click_activate(true);
                 view.view
                     .connect_activate(move |_, position| activated(position));
                 song_row::connect_menu_key(&view.view);
@@ -237,20 +236,10 @@ impl Content {
                     .filter(|song| song.matches(filter))
                     .cloned()
                     .collect();
-                play_from(&shown, index, core);
+                item_actions::play_songs(core, &shown, index);
             }
         }
     }
-}
-
-/// Plays `songs` as the queue, from the song at `start`.
-fn play_from(songs: &[SongItem], start: usize, core: &CoreHandle) {
-    if start >= songs.len() {
-        return;
-    }
-    let items: Vec<QueueItem> = songs.iter().map(|song| song.queue.clone()).collect();
-    let core = core.clone();
-    relm4::spawn(async move { core.send(Message::ReplaceQueue { items, start }).await });
 }
 
 /// What a library page needs to start.
@@ -351,7 +340,24 @@ impl SimpleComponent for LibraryView {
                     },
                 },
 
-                add_named[Some(Phase::Content.page())] = &scrolled.clone() -> gtk::ScrolledWindow {},
+                add_named[Some(Phase::Content.page())] = &gtk::Box {
+                    set_orientation: gtk::Orientation::Vertical,
+
+                    append = &scrolled.clone() -> gtk::ScrolledWindow {
+                        set_vexpand: true,
+                    },
+
+                    // Tells the user that the next page loads.
+                    append = &adw::Spinner {
+                        set_halign: gtk::Align::Center,
+                        set_width_request: 24,
+                        set_height_request: 24,
+                        set_margin_top: 12,
+                        set_margin_bottom: 12,
+                        #[watch]
+                        set_visible: model.cursor.is_loading() && model.phase == Phase::Content,
+                    },
+                },
             },
         }
     }

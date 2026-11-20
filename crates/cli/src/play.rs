@@ -110,6 +110,7 @@ mod tests {
             album: String::new(),
             duration: Duration::from_secs(200),
             artwork_url: None,
+            album_id: None,
             queue_index,
         }
     }

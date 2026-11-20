@@ -90,6 +90,10 @@ export type Notification = {
          */
         album: string;
         /**
+         * Catalog or library ID of the album, if MusicKit knows it.
+         */
+        album_id?: string | null;
+        /**
          * Artist name.
          */
         artist: string;
@@ -366,6 +370,10 @@ export interface ProtocolSchema {
            * Album name.
            */
           album: string;
+          /**
+           * Catalog or library ID of the album, if MusicKit knows it.
+           */
+          album_id?: string | null;
           /**
            * Artist name.
            */

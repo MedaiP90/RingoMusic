@@ -294,6 +294,28 @@ fn shuffle_keeps_current_item_first_and_all_items() {
 }
 
 #[test]
+fn replace_shuffled_turns_shuffle_on_with_all_items() {
+    let mut queue = Queue::new();
+
+    let change = queue.replace_shuffled(items(&["a", "b", "c", "d"]), &mut rng());
+
+    assert_eq!(change, QueueChange::Replaced);
+    assert!(queue.shuffle_enabled());
+    assert_eq!(user_order(&queue), ["a", "b", "c", "d"]);
+    assert_eq!(sorted(playback(&queue)), ["a", "b", "c", "d"]);
+    assert_eq!(playback(&queue)[0], current_id(&queue));
+}
+
+#[test]
+fn replace_shuffled_with_no_items_leaves_no_current_item() {
+    let mut queue = queue(&["a"], 0);
+
+    let _ = queue.replace_shuffled(Vec::new(), &mut rng());
+
+    assert_eq!(queue.current(), None);
+}
+
+#[test]
 fn shuffle_is_the_same_for_the_same_seed() {
     let mut first = queue(&["a", "b", "c", "d", "e", "f"], 0);
     let mut second = first.clone();

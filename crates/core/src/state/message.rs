@@ -35,6 +35,14 @@ pub enum Message {
         /// Index of the first item to play.
         start: usize,
     },
+    /// Replaces the queue, turns shuffle on, and starts to play at a random
+    /// item. The engine gets one new queue.
+    ReplaceQueueShuffled {
+        /// New items in user order.
+        items: Vec<QueueItem>,
+        /// Seed of the random number generator.
+        seed: u64,
+    },
     /// Adds items at the end of the queue.
     Append(Vec<QueueItem>),
     /// Adds items after the current item.

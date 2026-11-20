@@ -6,3 +6,31 @@ banner.offline > revealer > widget {
   background-color: var(--warning-bg-color);
   color: var(--warning-fg-color);
 }
+
+/* The title in the player bar is a button. It has no padding, so the text
+   stays aligned with the artist below. */
+button.title-button {
+  padding: 0;
+  min-height: 0;
+  min-width: 0;
+}
+
+/* The title shows the accent color on hover, without a button background. */
+button.title-button:hover,
+button.title-button:active {
+  background: none;
+  box-shadow: none;
+  color: var(--accent-color);
+}
+
+/* A list box has a view background. The song lists look like list views. */
+list.song-list {
+  background: none;
+}
+
+/* The artist link under the title has no padding, so it lines up with the title. */
+button.byline-link {
+  padding: 0;
+  min-height: 0;
+  min-width: 0;
+}

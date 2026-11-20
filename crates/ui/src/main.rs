@@ -8,6 +8,8 @@ mod app;
 mod artwork;
 mod background;
 mod debug_play;
+mod detail;
+mod detail_pages;
 mod gate;
 mod item;
 mod item_actions;

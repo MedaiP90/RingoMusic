@@ -3,7 +3,9 @@
 
 use super::id::{AlbumId, ArtistId, PlaylistId, SongId};
 use super::resource::Resource;
-use super::shared::{ApiPage, Artwork, ContentRating, PlayParams, Relationship, ResourceRef};
+use super::shared::{
+    ApiPage, Artwork, ContentRating, Description, PlayParams, Relationship, ResourceRef,
+};
 
 /// A song of the Apple Music catalog.
 #[derive(Clone, Debug, PartialEq, serde::Deserialize)]
@@ -151,6 +153,8 @@ pub struct PlaylistAttributes {
     pub name: String,
     /// Name of the curator.
     pub curator_name: Option<String>,
+    /// Text about the playlist.
+    pub description: Option<Description>,
     /// Date of the last change.
     pub last_modified_date: Option<String>,
     /// Cover image.

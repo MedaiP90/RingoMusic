@@ -33,4 +33,6 @@ pub use library::{
 pub use recommendation::Recommendation;
 pub use resource::Resource;
 pub use search::{LibrarySearchResults, SearchResults};
-pub use shared::{ApiPage, Artwork, ContentRating, PlayParams, Relationship, ResourceRef};
+pub use shared::{
+    ApiPage, Artwork, ContentRating, Description, PlayParams, Relationship, ResourceRef,
+};

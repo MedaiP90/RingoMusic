@@ -16,6 +16,10 @@ interface MusicKitMediaItem {
   // Duration in milliseconds.
   playbackDuration?: number;
   artwork?: MusicKitArtwork;
+  // The album or playlist that the item was queued from, if any.
+  container?: { id?: string; type?: string };
+  // Links of a catalog song to its album.
+  relationships?: { albums?: { data?: { id: string }[] } };
   attributes?: {
     name?: string;
     artistName?: string;

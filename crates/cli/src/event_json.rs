@@ -22,6 +22,7 @@ pub fn to_json(event: &EngineEvent) -> Value {
             album,
             duration,
             artwork_url,
+            album_id,
             queue_index,
         } => json!({
             "event": "player.nowPlaying",
@@ -31,6 +32,7 @@ pub fn to_json(event: &EngineEvent) -> Value {
             "album": album,
             "duration_ms": duration.as_millis(),
             "artwork_url": artwork_url,
+            "album_id": album_id,
             "queue_index": queue_index,
         }),
         EngineEvent::Position { position } => {

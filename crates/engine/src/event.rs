@@ -43,6 +43,8 @@ pub enum EngineEvent {
         duration: Duration,
         /// Artwork URL, if the item has artwork.
         artwork_url: Option<String>,
+        /// ID of the album, if the engine knows it.
+        album_id: Option<String>,
         /// Index of the item in the queue that the caller sent.
         queue_index: usize,
     },
@@ -87,6 +89,7 @@ impl EngineEvent {
                 album,
                 duration_ms,
                 artwork_url,
+                album_id,
                 queue_index,
             } => Self::NowPlaying {
                 id: ItemId::new(id),
@@ -95,6 +98,7 @@ impl EngineEvent {
                 album,
                 duration: Duration::from_millis(duration_ms),
                 artwork_url,
+                album_id,
                 queue_index: usize::try_from(queue_index).unwrap_or(usize::MAX),
             },
             FromEngine::PlayerPosition { position_ms } => Self::Position {
@@ -137,6 +141,7 @@ mod tests {
             album: "Album".to_owned(),
             duration_ms: 1500,
             artwork_url: None,
+            album_id: None,
             queue_index: 3,
         };
         let Some(EngineEvent::NowPlaying {

@@ -60,6 +60,10 @@ fn edit_queue(state: &mut AppState, message: Message) -> Vec<Command> {
     let queue = &mut state.queue;
     let (change, autoplay) = match message {
         Message::ReplaceQueue { items, start } => (queue.replace(items, start), true),
+        Message::ReplaceQueueShuffled { items, seed } => {
+            let mut rng = StdRng::seed_from_u64(seed);
+            (queue.replace_shuffled(items, &mut rng), true)
+        }
         Message::Append(items) => (queue.append(items), was_playing),
         Message::PlayNext(items) => (queue.play_next(items), was_playing),
         Message::Remove(index) => (queue.remove(index), was_playing),
@@ -193,6 +197,7 @@ fn apply_event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
             album,
             duration,
             artwork_url,
+            album_id,
             queue_index,
         } => {
             // An index outside the queue is ignored. The queue stays as it is.
@@ -205,6 +210,7 @@ fn apply_event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
                 album,
                 duration,
                 artwork_url,
+                album_id,
             });
             Vec::new()
         }
