@@ -127,6 +127,11 @@ impl DetailHeader {
         &self.root
     }
 
+    /// The image of the artwork.
+    pub fn artwork_image(&self) -> &gtk::Image {
+        self.artwork.widget()
+    }
+
     pub fn set_artwork(&self, template: Option<&str>) {
         self.artwork.set_artwork(template, ARTWORK_SIZE);
     }

@@ -268,7 +268,7 @@ fn edits_with_a_stale_item_do_nothing() {
 fn clear_queue_stops_playback() {
     let mut state = state_with(&["a", "b"], 0);
     assert_eq!(update(&mut state, Message::ClearQueue), vec![Command::Stop]);
-    assert!(state.queue.items().is_empty());
+    assert_eq!(state.queue.items(), Vec::new());
 }
 
 #[test]

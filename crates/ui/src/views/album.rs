@@ -19,6 +19,7 @@ use crate::detail::{self, AlbumData};
 use crate::item::SongItem;
 use crate::item_actions::{self, OPEN_ARTIST, SongCatalog};
 use crate::services::{ApiClient, AppServices};
+use crate::tint;
 use crate::views::detail_frame::DetailFrame;
 use crate::views::phase::Phase;
 use crate::widgets::detail_header::{ArtworkShape, BylineLink, DetailHeader, PlayActions};
@@ -81,7 +82,10 @@ impl SimpleComponent for AlbumView {
 
             #[wrap(Some)]
             set_child = &adw::ToolbarView {
-                add_top_bar = &adw::HeaderBar {},
+                add_css_class: "album-tint",
+                add_top_bar = &adw::HeaderBar {
+                    add_css_class: "flat",
+                },
 
                 #[wrap(Some)]
                 set_content = &frame_widget.clone() -> gtk::Stack {},
@@ -100,6 +104,7 @@ impl SimpleComponent for AlbumView {
             id,
         } = init;
         let header = DetailHeader::new(ArtworkShape::Square);
+        tint::follow_viewed(header.artwork_image(), &root, &id);
         let discs = gtk::Box::new(gtk::Orientation::Vertical, 12);
         let content = build_content(&header, &discs);
         let input = sender.input_sender().clone();

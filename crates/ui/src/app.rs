@@ -67,6 +67,7 @@ pub struct App {
     split_view: adw::NavigationSplitView,
     search: relm4::Sender<SearchInput>,
     player_bar: relm4::Sender<PlayerBarInput>,
+    queue_open: bool,
     settings: Settings,
     background: BackgroundPlayback,
     sign_in_failed: bool,
@@ -85,8 +86,10 @@ pub enum Input {
     QuitRequested,
     /// The user asks to search: show the search page and focus its entry.
     ShowSearch,
-    /// The user asks for the queue page.
-    ShowQueue,
+    /// The user opens or closes the queue panel.
+    ToggleQueue,
+    /// The queue panel opened or closed, also by a swipe.
+    QueueVisibility(bool),
     /// A view asks for a short message.
     ShowToast(String),
     /// The user asks for the about dialog.
@@ -127,7 +130,20 @@ impl SimpleComponent for App {
                       add_bottom_bar: &player_bar,
 
                       #[wrap(Some)]
-                      set_content = &split_view.clone() -> adw::NavigationSplitView {
+                      set_content = &queue_split.clone() -> adw::OverlaySplitView {
+                        set_sidebar_position: gtk::PackType::End,
+                        set_min_sidebar_width: 320.0,
+                        set_max_sidebar_width: 420.0,
+                        set_sidebar_width_fraction: 0.3,
+                        set_sidebar: Some(&queue_page),
+                        #[watch]
+                        set_show_sidebar: model.queue_open,
+                        connect_show_sidebar_notify[sender] => move |panel| {
+                            sender.input(Input::QueueVisibility(panel.shows_sidebar()));
+                        },
+
+                        #[wrap(Some)]
+                        set_content = &split_view.clone() -> adw::NavigationSplitView {
                 #[wrap(Some)]
                 set_sidebar = &adw::NavigationPage {
                     set_title: "RingoMusic",
@@ -156,6 +172,7 @@ impl SimpleComponent for App {
                         set_visible_child_name: model.section.id(),
                     },
                 },
+                      },
                       },
                     },
                   },
@@ -226,18 +243,12 @@ impl SimpleComponent for App {
         let mut queue = QueueView::builder().launch(QueueInit {
             core: core.clone(),
             window: root.clone(),
-            split_view: split_view.clone(),
         });
         let queue_page = queue.widget().clone();
         // The queue view also lives as long as its widget.
         queue.detach_runtime();
-        let content_stack = build_content_stack(
-            &split_view,
-            &home_page,
-            &search_page,
-            &queue_page,
-            &library_pages,
-        );
+        let content_stack =
+            build_content_stack(&split_view, &home_page, &search_page, &library_pages);
         detail_pages::register(
             &root,
             PageSources {
@@ -247,6 +258,7 @@ impl SimpleComponent for App {
                 sections: content_stack.clone(),
             },
         );
+        let queue_split = adw::OverlaySplitView::new();
         let sidebar_list = sidebar::build_list();
         connect_sidebar(&sidebar_list, &split_view, &sender);
 
@@ -258,6 +270,7 @@ impl SimpleComponent for App {
             split_view: split_view.clone(),
             search: search_input,
             player_bar: bar_input,
+            queue_open: false,
             settings,
             background,
             sign_in_failed: false,
@@ -273,7 +286,8 @@ impl SimpleComponent for App {
             Input::Raise => self.window.present(),
             Input::QuitRequested => self.quit(),
             Input::ShowSearch => self.show_search(),
-            Input::ShowQueue => self.show_section(Section::Queue),
+            Input::ToggleQueue => self.set_queue_open(!self.queue_open),
+            Input::QueueVisibility(open) => self.set_queue_open(open),
             Input::ShowToast(message) => self.toast_overlay.add_toast(adw::Toast::new(&message)),
             Input::ShowAbout => about::present(&self.window),
             Input::TrackChanged(track) => self.notify(&track),
@@ -304,8 +318,6 @@ impl App {
     /// Makes `section` the current one. The refresh action works on the home page only.
     fn select(&mut self, section: Section) {
         self.section = section;
-        self.player_bar
-            .emit(PlayerBarInput::QueueShown(section == Section::Queue));
         let refresh = self.window.lookup_action("refresh");
         if let Some(refresh) = refresh.and_then(|action| action.downcast::<SimpleAction>().ok()) {
             refresh.set_enabled(section == Section::Home);
@@ -318,12 +330,17 @@ impl App {
         self.search.emit(SearchInput::Focus);
     }
 
+    /// Opens or closes the queue panel and tells the player bar.
+    fn set_queue_open(&mut self, open: bool) {
+        if self.queue_open != open {
+            self.queue_open = open;
+            self.player_bar.emit(PlayerBarInput::QueueShown(open));
+        }
+    }
+
     /// Selects `section` in the sidebar and shows its page.
     fn show_section(&mut self, section: Section) {
-        // A section without a row clears the selection of the sidebar.
-        let row = section
-            .row_index()
-            .and_then(|index| self.sidebar_list.row_at_index(index));
+        let row = self.sidebar_list.row_at_index(section.row_index());
         self.sidebar_list.select_row(row.as_ref());
         self.select(section);
         self.split_view.set_show_content(true);
@@ -404,10 +421,10 @@ fn register_window_actions(
         .activate(move |_: &adw::ApplicationWindow, _, _| input.emit(Input::ShowSearch))
         .build();
     let input = sender.input_sender().clone();
-    let show_queue = ActionEntry::builder("show-queue")
-        .activate(move |_: &adw::ApplicationWindow, _, _| input.emit(Input::ShowQueue))
+    let toggle_queue = ActionEntry::builder("toggle-queue")
+        .activate(move |_: &adw::ApplicationWindow, _, _| input.emit(Input::ToggleQueue))
         .build();
-    window.add_action_entries([search, show_queue]);
+    window.add_action_entries([search, toggle_queue]);
     relm4::main_application().set_accels_for_action("win.search", &["<Ctrl>f"]);
     item_actions::register(window, core, catalog);
 }
@@ -441,13 +458,12 @@ fn launch_library(
     (kind, page)
 }
 
-/// Builds the stack with the navigation stack of each section. The queue
-/// sections without a view show an empty page.
+/// Builds the stack with the navigation stack of each section. A section
+/// without a view shows an empty page.
 fn build_content_stack(
     split_view: &adw::NavigationSplitView,
     home_page: &adw::ToolbarView,
     search_page: &adw::ToolbarView,
-    queue_page: &adw::ToolbarView,
     library_pages: &[(LibraryKind, adw::ToolbarView)],
 ) -> gtk::Stack {
     let stack = gtk::Stack::new();
@@ -459,7 +475,6 @@ fn build_content_stack(
             (_, Some((_, page))) => section_page::wrap(section, page),
             (Section::Home, None) => section_page::wrap(section, home_page),
             (Section::Search, None) => section_page::wrap(section, search_page),
-            (Section::Queue, None) => section_page::wrap(section, queue_page),
             _ => section_page::build(section, split_view),
         };
         stack.add_named(&page, Some(section.id()));

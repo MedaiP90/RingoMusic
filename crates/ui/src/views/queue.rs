@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
-//! Queue page: the item that plays now, the upcoming items in playback
+//! Queue panel: the item that plays now, the upcoming items in playback
 //! order, and the history. Each edit goes to the core as a message. The
 //! page follows the queue in the core state and changes only the rows that
 //! differ.
@@ -23,16 +23,14 @@ use ringo_core::state::Message;
 use ringo_engine::ItemId;
 
 use super::queue_diff::{self, Edit};
-use crate::views::section_page;
 use crate::widgets::artwork_image::ArtworkImage;
 use crate::widgets::player_bar::format_time;
 use crate::widgets::queue_row::{QueueRow, QueueRowWidgets};
 
-/// What the queue page needs to start.
+/// What the queue panel needs to start.
 pub struct QueueInit {
     pub core: CoreHandle,
     pub window: adw::ApplicationWindow,
-    pub split_view: adw::NavigationSplitView,
 }
 
 /// An item of the queue with its place in the user order.
@@ -92,7 +90,7 @@ impl Snapshot {
     }
 }
 
-/// Input of the queue page.
+/// Input of the queue panel.
 #[derive(Debug)]
 pub enum QueueInput {
     /// The queue in the core state changed.
@@ -113,7 +111,7 @@ pub enum QueueInput {
     ClearRequested,
 }
 
-/// The queue page.
+/// The queue panel.
 pub struct QueueView {
     core: CoreHandle,
     window: adw::ApplicationWindow,
@@ -136,8 +134,14 @@ impl SimpleComponent for QueueView {
 
     view! {
         adw::ToolbarView {
+            add_css_class: "cover-tint",
             add_top_bar = &adw::HeaderBar {
-                pack_start: &back_button,
+                add_css_class: "flat",
+                pack_start = &gtk::Button {
+                    set_icon_name: "window-close-symbolic",
+                    set_tooltip_text: Some(&gettext("Close Queue")),
+                    set_action_name: Some(TOGGLE_ACTION),
+                },
 
                 #[wrap(Some)]
                 set_title_widget = &adw::WindowTitle {
@@ -145,7 +149,7 @@ impl SimpleComponent for QueueView {
                 },
 
                 pack_end = &gtk::Button {
-                    set_icon_name: "edit-clear-all-symbolic",
+                    set_icon_name: "user-trash-symbolic",
                     set_tooltip_text: Some(&gettext("Clear Queue")),
                     set_action_name: Some(CLEAR_ACTION),
                 },
@@ -227,12 +231,7 @@ impl SimpleComponent for QueueView {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let QueueInit {
-            core,
-            window,
-            split_view,
-        } = init;
-        let back_button = section_page::back_button(&split_view);
+        let QueueInit { core, window } = init;
         let upcoming = TypedListView::<QueueRow, gtk::SingleSelection>::new();
         let input = sender.input_sender().clone();
         upcoming
@@ -302,6 +301,9 @@ impl SimpleComponent for QueueView {
 
 /// Size of the artwork of a history row in pixels.
 const HISTORY_ARTWORK_SIZE: i32 = 40;
+
+/// Name of the window action that closes the panel.
+const TOGGLE_ACTION: &str = "win.toggle-queue";
 
 /// Name of the window action that asks to clear the queue.
 const CLEAR_ACTION: &str = "win.queue-clear";

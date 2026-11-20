@@ -15,24 +15,11 @@ pub enum Section {
     Albums,
     Artists,
     Songs,
-    Queue,
 }
 
 impl Section {
-    /// All sections. Each has a page in the content area.
-    pub const ALL: [Self; 7] = [
-        Self::Home,
-        Self::Search,
-        Self::Playlists,
-        Self::Albums,
-        Self::Artists,
-        Self::Songs,
-        Self::Queue,
-    ];
-
-    /// The sections that have a row in the sidebar, in row order. The player
-    /// bar opens the queue, so it has no row.
-    pub const SIDEBAR: [Self; 6] = [
+    /// All sections, in the order of the sidebar rows.
+    pub const ALL: [Self; 6] = [
         Self::Home,
         Self::Search,
         Self::Playlists,
@@ -44,13 +31,15 @@ impl Section {
     /// Returns the section of the sidebar row at `index`.
     pub fn from_row_index(index: i32) -> Option<Self> {
         let index = usize::try_from(index).ok()?;
-        Self::SIDEBAR.get(index).copied()
+        Self::ALL.get(index).copied()
     }
 
-    /// Index of the sidebar row of the section. `None` if it has no row.
-    pub fn row_index(self) -> Option<i32> {
-        let index = Self::SIDEBAR.iter().position(|section| *section == self)?;
-        i32::try_from(index).ok()
+    /// Index of the sidebar row of the section.
+    pub fn row_index(self) -> i32 {
+        let index = Self::ALL.iter().position(|section| *section == self);
+        index
+            .and_then(|index| i32::try_from(index).ok())
+            .unwrap_or(0)
     }
 
     /// Stable name for the stack child and the navigation page tag.
@@ -62,7 +51,6 @@ impl Section {
             Self::Albums => "albums",
             Self::Artists => "artists",
             Self::Songs => "songs",
-            Self::Queue => "queue",
         }
     }
 
@@ -75,7 +63,6 @@ impl Section {
             Self::Albums => gettext("Albums"),
             Self::Artists => gettext("Artists"),
             Self::Songs => gettext("Songs"),
-            Self::Queue => gettext("Queue"),
         }
     }
 
@@ -88,7 +75,6 @@ impl Section {
             Self::Albums => "media-optical-symbolic",
             Self::Artists => "avatar-default-symbolic",
             Self::Songs => "audio-x-generic-symbolic",
-            Self::Queue => "view-list-ordered-symbolic",
         }
     }
 }
@@ -98,8 +84,8 @@ mod tests {
     use super::*;
 
     #[test]
-    fn from_row_index_follows_the_order_of_the_sidebar() {
-        for (index, section) in Section::SIDEBAR.into_iter().enumerate() {
+    fn from_row_index_follows_the_order_of_all() {
+        for (index, section) in Section::ALL.into_iter().enumerate() {
             let index = i32::try_from(index).expect("the section count is small");
             assert_eq!(Section::from_row_index(index), Some(section));
         }
@@ -107,15 +93,9 @@ mod tests {
 
     #[test]
     fn row_index_is_the_inverse_of_from_row_index() {
-        for section in Section::SIDEBAR {
-            let index = section.row_index().expect("the section has a row");
-            assert_eq!(Section::from_row_index(index), Some(section));
+        for section in Section::ALL {
+            assert_eq!(Section::from_row_index(section.row_index()), Some(section));
         }
-    }
-
-    #[test]
-    fn queue_has_no_sidebar_row() {
-        assert_eq!(Section::Queue.row_index(), None);
     }
 
     #[test]

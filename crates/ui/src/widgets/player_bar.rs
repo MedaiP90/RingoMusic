@@ -27,6 +27,7 @@ use crate::detail;
 use crate::item_actions::{OPEN_ALBUM, OPEN_ARTIST, SongCatalog, SongLinks};
 use crate::playback_actions::{self as shortcuts, ActionState, PlaybackActions};
 use crate::services::ApiClient;
+use crate::tint;
 use crate::widgets::artwork_image::ArtworkImage;
 
 /// Size of the artwork in pixels.
@@ -150,7 +151,7 @@ pub struct PlayerBar {
     dragging: bool,
     /// The last position that the user chose while the seek bar was held.
     seek_target: Option<Duration>,
-    /// The queue page is open.
+    /// The queue panel is open.
     queue_open: bool,
 }
 
@@ -169,7 +170,7 @@ pub enum PlayerBarInput {
     VolumeMoved(f64),
     /// The volume popover closed. The bar shows the volume again.
     VolumePopoverClosed,
-    /// The queue page opened or closed.
+    /// The queue panel opened or closed.
     QueueShown(bool),
     /// The user pressed the cover.
     OpenAlbum,
@@ -188,7 +189,8 @@ impl SimpleComponent for PlayerBar {
     view! {
         gtk::Box {
             set_spacing: 16,
-            set_margin_all: 12,
+            add_css_class: "player-bar",
+            add_css_class: "cover-tint",
             #[watch]
             set_visible: model.state.has_queue,
 
@@ -366,7 +368,7 @@ impl SimpleComponent for PlayerBar {
                     #[watch]
                     set_css_classes: accent_when(model.queue_open),
                     set_tooltip_text: Some(&gettext("Queue")),
-                    set_action_name: Some(SHOW_QUEUE_ACTION),
+                    set_action_name: Some(TOGGLE_QUEUE_ACTION),
                 },
 
                 gtk::MenuButton {
@@ -426,6 +428,7 @@ impl SimpleComponent for PlayerBar {
         let artwork = ArtworkImage::new(artwork);
         artwork.set_artwork(state.artwork.as_deref(), ARTWORK_SIZE);
         let artwork_widget = artwork.widget().clone();
+        tint::follow_playing(&artwork_widget);
         let mut model = Self {
             state,
             actions,
@@ -608,8 +611,8 @@ fn forward_state(core: &CoreHandle, sender: &ComponentSender<PlayerBar>) {
     });
 }
 
-/// Name of the window action that shows the queue page.
-pub const SHOW_QUEUE_ACTION: &str = "win.show-queue";
+/// Name of the window action that opens and closes the queue panel.
+pub const TOGGLE_QUEUE_ACTION: &str = "win.toggle-queue";
 
 /// Converts the volume of the scale to the volume of the core.
 #[expect(

@@ -24,6 +24,7 @@ mod services;
 mod sidebar;
 mod startup_error;
 mod subscription;
+mod tint;
 mod views;
 mod widgets;
 

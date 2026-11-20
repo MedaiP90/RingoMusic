@@ -98,7 +98,7 @@ impl SongRowWidgets {
             .width_request(ARTWORK_SIZE)
             .height_request(ARTWORK_SIZE)
             .hexpand(false)
-            .css_classes(["card"])
+            .css_classes(["card", "track-badge"])
             .build();
         badge.append(&number);
         let artwork = ArtworkImage::shared();
