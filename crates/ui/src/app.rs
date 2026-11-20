@@ -7,7 +7,7 @@ use gettextrs::gettext;
 use relm4::adw;
 use relm4::adw::prelude::*;
 use relm4::gtk;
-use relm4::gtk::gio::{ActionEntry, Menu, SimpleAction};
+use relm4::gtk::gio::{ActionEntry, SimpleAction};
 use relm4::gtk::glib::Propagation;
 use relm4::prelude::*;
 use ringo_core::paths::PackageFormat;
@@ -18,16 +18,18 @@ use ringo_mpris::Callbacks;
 use tracing::{debug, warn};
 
 use crate::background::{self, BackgroundPlayback, CloseAction};
+use crate::gate::{self, Gate};
 use crate::section::Section;
 use crate::services::AppServices;
 use crate::views::section_page;
-use crate::{about, notification, sidebar};
+use crate::{about, menu, network_banner, notification, sidebar, subscription};
 
 /// The part of the state that the shell follows.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct Summary {
     engine: EngineStatus,
     auth: AuthState,
+    sign_in_failed: bool,
 }
 
 impl Summary {
@@ -35,6 +37,7 @@ impl Summary {
         Self {
             engine: state.engine.clone(),
             auth: state.auth.clone(),
+            sign_in_failed: state.sign_in_failed,
         }
     }
 }
@@ -52,6 +55,7 @@ pub struct App {
     section: Section,
     settings: Settings,
     background: BackgroundPlayback,
+    sign_in_failed: bool,
 }
 
 /// Input of the main window.
@@ -93,7 +97,14 @@ impl SimpleComponent for App {
             },
 
             #[wrap(Some)]
-            set_content = &split_view.clone() -> adw::NavigationSplitView {
+            set_content = &adw::ToolbarView {
+                add_top_bar = &network_banner::build(),
+
+                #[wrap(Some)]
+                set_content = &toast_overlay.clone() -> adw::ToastOverlay {
+                  #[wrap(Some)]
+                  set_child = &gate_stack.clone() -> gtk::Stack {
+                    add_named[Some(gate::CONTENT_PAGE)] = &split_view.clone() -> adw::NavigationSplitView {
                 #[wrap(Some)]
                 set_sidebar = &adw::NavigationPage {
                     set_title: "RingoMusic",
@@ -101,12 +112,7 @@ impl SimpleComponent for App {
                     #[wrap(Some)]
                     set_child = &adw::ToolbarView {
                         add_top_bar = &adw::HeaderBar {
-                            pack_end = &gtk::MenuButton {
-                                set_icon_name: "open-menu-symbolic",
-                                set_tooltip_text: Some(&gettext("Main menu")),
-                                set_menu_model: Some(&primary_menu()),
-                                set_primary: true,
-                            },
+                            pack_end = &menu::primary_button(),
                         },
 
                         #[wrap(Some)]
@@ -122,13 +128,13 @@ impl SimpleComponent for App {
                     set_title: &model.section.title(),
 
                     #[wrap(Some)]
-                    set_child = &toast_overlay.clone() -> adw::ToastOverlay {
-                        #[wrap(Some)]
-                        set_child = &content_stack.clone() -> gtk::Stack {
-                            #[watch]
-                            set_visible_child_name: model.section.id(),
-                        },
+                    set_child = &content_stack.clone() -> gtk::Stack {
+                        #[watch]
+                        set_visible_child_name: model.section.id(),
                     },
+                },
+                    },
+                  },
                 },
             },
         }
@@ -145,6 +151,11 @@ impl SimpleComponent for App {
         forward_track_changes(core, &sender);
         publish_mpris(core, &sender);
         register_actions(&sender);
+        subscription::watch(core, services.api());
+        let mut gate = Gate::builder().launch(core.clone());
+        let gate_stack = gate.widget().clone();
+        // The gate lives as long as its widget. A dropped controller would stop its updates.
+        gate.detach_runtime();
 
         let settings = services.settings().clone();
         restore_window_state(&root, &settings);
@@ -164,6 +175,7 @@ impl SimpleComponent for App {
             section: Section::Home,
             settings,
             background,
+            sign_in_failed: false,
         };
         let widgets = view_output!();
         ComponentParts { model, widgets }
@@ -172,7 +184,7 @@ impl SimpleComponent for App {
     fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
             Input::SectionSelected(section) => self.section = section,
-            Input::SummaryChanged(summary) => debug!(?summary, "engine or authorization changed"),
+            Input::SummaryChanged(summary) => self.follow(&summary),
             Input::Raise => self.window.present(),
             Input::QuitRequested => self.quit(),
             Input::ShowToast(message) => self.toast_overlay.add_toast(adw::Toast::new(&message)),
@@ -192,6 +204,16 @@ impl SimpleComponent for App {
 }
 
 impl App {
+    /// Shows a toast when a login fails. One failure gives one toast.
+    fn follow(&mut self, summary: &Summary) {
+        debug!(?summary, "engine or authorization changed");
+        if summary.sign_in_failed && !self.sign_in_failed {
+            let message = gettext("Sign in failed. Try again.");
+            self.toast_overlay.add_toast(adw::Toast::new(&message));
+        }
+        self.sign_in_failed = summary.sign_in_failed;
+    }
+
     /// Saves the window state and stops the application. The shutdown handler
     /// then stops the core.
     fn quit(&self) {
@@ -233,19 +255,6 @@ impl App {
             &notification::now_playing(track),
         );
     }
-}
-
-/// Builds the primary menu of the sidebar header.
-fn primary_menu() -> Menu {
-    let menu = Menu::new();
-    let preferences = Menu::new();
-    preferences.append(Some(&gettext("_Preferences")), Some("app.preferences"));
-    let application = Menu::new();
-    application.append(Some(&gettext("_About RingoMusic")), Some("app.about"));
-    application.append(Some(&gettext("_Quit")), Some("app.quit"));
-    menu.append_section(None, &preferences);
-    menu.append_section(None, &application);
-    menu
 }
 
 /// Adds the application actions and their shortcuts. Each action sends an

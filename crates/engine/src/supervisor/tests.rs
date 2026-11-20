@@ -52,6 +52,8 @@ enum Behavior {
     Serve,
     /// Never connects.
     Silent,
+    /// Exits at once, like an engine that crashes at start.
+    Exit,
 }
 
 /// Launcher that runs a fake engine as a task in the test process.
@@ -93,6 +95,7 @@ impl Launcher for FakeLauncher {
             match behavior {
                 Behavior::Serve => serve(&socket_path).await,
                 Behavior::Silent => std::future::pending().await,
+                Behavior::Exit => {}
             }
         });
         self.tasks
@@ -213,4 +216,34 @@ async fn shutdown_stops_the_engine_without_restart() {
 
     assert_eq!(launcher.launch_count(), 1);
     assert!(matches!(engine.play().await, Err(Error::NotReady)));
+}
+
+/// Time that a test waits for the supervisor to give up. It includes the
+/// delays between the restarts.
+const GIVE_UP_TIMEOUT: Duration = Duration::from_secs(120);
+
+async fn wait_for_give_up(events: &mut broadcast::Receiver<EngineEvent>) {
+    let wait = async {
+        while events.recv().await.expect("the event channel stays open") != EngineEvent::GaveUp {}
+    };
+    time::timeout(GIVE_UP_TIMEOUT, wait)
+        .await
+        .expect("the supervisor gives up in time");
+}
+
+#[tokio::test(start_paused = true)]
+async fn restart_after_give_up_allows_new_attempts() {
+    let dir = TestDir::new("give-up");
+    let launcher = FakeLauncher::new(Behavior::Exit);
+    let engine = SidecarEngine::start_with(launcher.clone(), dir.config()).expect("engine starts");
+    let mut events = engine.events();
+    wait_for_give_up(&mut events).await;
+    // One start and five restarts.
+    assert_eq!(launcher.launch_count(), 6);
+
+    engine.restart().await.expect("restart request is accepted");
+
+    wait_for_give_up(&mut events).await;
+    assert_eq!(launcher.launch_count(), 12);
+    engine.shutdown().await.expect("shutdown works");
 }

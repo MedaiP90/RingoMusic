@@ -1281,6 +1281,7 @@ dependencies = [
  "gettext-rs",
  "glib-build-tools",
  "relm4",
+ "ringo-am-api",
  "ringo-core",
  "ringo-engine",
  "ringo-mpris",

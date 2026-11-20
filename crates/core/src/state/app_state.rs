@@ -87,6 +87,12 @@ pub struct AppState {
     pub engine: EngineStatus,
     /// Authorization of the user.
     pub auth: AuthState,
+    /// The login window is open.
+    pub signing_in: bool,
+    /// The last login failed. The user did not cancel it.
+    pub sign_in_failed: bool,
+    /// The API refused a request because the account has no subscription.
+    pub no_subscription: bool,
     /// Playback queue.
     pub queue: Queue,
     /// Playback state, position, and volume.
@@ -111,6 +117,9 @@ impl AppState {
         Self {
             engine: EngineStatus::Starting,
             auth: AuthState::Unknown,
+            signing_in: false,
+            sign_in_failed: false,
+            no_subscription: false,
             queue: Queue::new(),
             playback: Playback {
                 state: PlaybackState::Stopped,

@@ -4,12 +4,12 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use ringo_engine::protocol::PlaybackState;
-use ringo_engine::{EngineEvent, ItemId, PlaybackEngine, Result};
+use ringo_engine::protocol::{ErrorCode, PlaybackState};
+use ringo_engine::{EngineEvent, Error, ItemId, PlaybackEngine, Result};
 use tokio::sync::broadcast::error::RecvError;
 use tokio::sync::{broadcast, mpsc, watch};
 use tokio::time::{self, Instant, MissedTickBehavior};
-use tracing::warn;
+use tracing::{debug, warn};
 
 use super::CoreHandle;
 use super::engine_queue::{Edit, EngineQueue};
@@ -237,6 +237,7 @@ impl Core {
             Command::Seek(position) => self.engine.seek(*position).await,
             Command::SetVolume(volume) => self.engine.set_volume(*volume).await,
             Command::SetRepeat(mode) => self.engine.set_repeat(*mode).await,
+            Command::RestartEngine => self.engine.restart().await,
             Command::RefreshAuth => {
                 self.spawn_auth_task(false);
                 Ok(())
@@ -293,9 +294,7 @@ impl Core {
         };
         let engine = Arc::clone(&self.engine);
         tokio::spawn(async move {
-            if sign_in && let Err(error) = engine.sign_in().await {
-                warn!(%error, "sign in failed");
-            }
+            let failed = sign_in && !run_sign_in(engine.as_ref()).await;
             match engine.auth_status().await {
                 Ok(status) => {
                     // A closed inbox means that the runner stopped.
@@ -303,7 +302,30 @@ impl Core {
                 }
                 Err(error) => warn!(%error, "cannot read the authorization"),
             }
+            if sign_in {
+                // The authorization comes first, so the user sees no flash of the sign-in page.
+                let _ = inbox.send(Message::SignInEnded { failed }).await;
+            }
         });
+    }
+}
+
+/// Shows the login window. Returns `false` if the login failed. A cancel by
+/// the user is not a failure.
+async fn run_sign_in(engine: &dyn PlaybackEngine) -> bool {
+    match engine.sign_in().await {
+        Ok(()) => true,
+        Err(Error::Remote {
+            code: ErrorCode::Cancelled,
+            ..
+        }) => {
+            debug!("the user cancelled the sign in");
+            true
+        }
+        Err(error) => {
+            warn!(%error, "sign in failed");
+            false
+        }
     }
 }
 

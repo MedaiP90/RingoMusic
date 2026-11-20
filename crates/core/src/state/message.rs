@@ -62,6 +62,19 @@ pub enum Message {
     SignIn,
     /// Signs the user out.
     SignOut,
+    /// The login window closed.
+    SignInEnded {
+        /// The login failed. A cancel by the user is not a failure.
+        failed: bool,
+    },
+    /// The result of a subscription check. A refused API request because of a
+    /// missing subscription is `active: false`.
+    SubscriptionChecked {
+        /// The account has an Apple Music subscription.
+        active: bool,
+    },
+    /// Starts the engine again after it gave up.
+    RestartEngine,
     /// The engine reported the authorization.
     AuthLoaded(AuthStatus),
     /// Puts a saved queue in place at application start. The engine gets it

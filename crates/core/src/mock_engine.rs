@@ -51,6 +51,8 @@ pub enum EngineCall {
     SetVolume(f32),
     /// `set_repeat`.
     SetRepeat(RepeatMode),
+    /// `restart`.
+    Restart,
     /// `shutdown`.
     Shutdown,
 }
@@ -232,6 +234,11 @@ impl PlaybackEngine for MockEngine {
 
     async fn set_repeat(&self, mode: RepeatMode) -> Result<()> {
         self.record(EngineCall::SetRepeat(mode));
+        Ok(())
+    }
+
+    async fn restart(&self) -> Result<()> {
+        self.record(EngineCall::Restart);
         Ok(())
     }
 

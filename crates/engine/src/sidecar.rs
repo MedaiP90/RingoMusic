@@ -6,7 +6,7 @@ use std::sync::{Arc, Mutex, MutexGuard};
 use std::time::Duration;
 
 use serde_json::Value;
-use tokio::sync::{broadcast, oneshot, watch};
+use tokio::sync::{broadcast, mpsc, oneshot, watch};
 use tokio::task::JoinHandle;
 use tracing::warn;
 
@@ -18,6 +18,8 @@ use crate::{EngineConfig, EngineEvent, Error, ItemId, PlaybackEngine, Result, Rp
 const CALL_TIMEOUT: Duration = Duration::from_secs(30);
 /// Time limit that is long enough to be no limit.
 const NO_TIMEOUT: Duration = Duration::from_hours(365 * 24);
+/// Capacity of the restart request channel. One waiting request is enough.
+const RESTART_CAPACITY: usize = 1;
 /// Capacity of the event channel.
 const EVENT_CAPACITY: usize = 256;
 
@@ -27,6 +29,7 @@ pub struct SidecarEngine {
     connection: watch::Receiver<Option<Arc<RpcConnection>>>,
     events: broadcast::Sender<EngineEvent>,
     stop: Mutex<Option<oneshot::Sender<()>>>,
+    restart: mpsc::Sender<()>,
     task: Mutex<Option<JoinHandle<()>>>,
 }
 
@@ -52,6 +55,7 @@ impl SidecarEngine {
         let (connection_sender, connection) = watch::channel(None);
         let (events, _) = broadcast::channel(EVENT_CAPACITY);
         let (stop_sender, stop) = oneshot::channel();
+        let (restart, restart_requests) = mpsc::channel(RESTART_CAPACITY);
         let supervisor = Supervisor {
             launcher,
             config,
@@ -61,12 +65,14 @@ impl SidecarEngine {
                 events: events.clone(),
             },
             stop,
+            restart: restart_requests,
         };
         let task = tokio::spawn(supervisor.run());
         Ok(Self {
             connection,
             events,
             stop: Mutex::new(Some(stop_sender)),
+            restart,
             task: Mutex::new(Some(task)),
         })
     }
@@ -176,6 +182,14 @@ impl PlaybackEngine for SidecarEngine {
 
     async fn set_repeat(&self, mode: RepeatMode) -> Result<()> {
         self.command(ToEngine::PlayerSetRepeat { mode }).await
+    }
+
+    async fn restart(&self) -> Result<()> {
+        match self.restart.try_send(()) {
+            // A full channel means that a request waits already.
+            Ok(()) | Err(mpsc::error::TrySendError::Full(())) => Ok(()),
+            Err(mpsc::error::TrySendError::Closed(())) => Err(Error::NotReady),
+        }
     }
 
     async fn shutdown(&self) -> Result<()> {

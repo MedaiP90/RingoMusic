@@ -122,6 +122,15 @@ pub trait PlaybackEngine: Send + Sync {
     /// Returns an error if the engine is not ready or does not answer.
     async fn set_repeat(&self, mode: RepeatMode) -> Result<()>;
 
+    /// Starts the engine again after [`EngineEvent::GaveUp`]. The restart limit
+    /// begins again. The call does nothing while the supervisor still restarts
+    /// the engine by itself.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the engine was stopped by [`PlaybackEngine::shutdown`].
+    async fn restart(&self) -> Result<()>;
+
     /// Stops the engine and waits until it quits. No restart follows.
     ///
     /// # Errors

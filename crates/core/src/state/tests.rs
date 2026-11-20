@@ -397,3 +397,76 @@ fn supervisor_events_set_the_engine_status() {
     let _ = event(&mut state, EngineEvent::GaveUp);
     assert_eq!(state.engine, EngineStatus::GaveUp);
 }
+
+#[test]
+fn sign_in_marks_the_login_as_open() {
+    let mut state = AppState::new();
+    let commands = update(&mut state, Message::SignIn);
+    assert_eq!((commands, state.signing_in), (vec![Command::SignIn], true));
+}
+
+#[test]
+fn second_sign_in_while_the_login_is_open_does_nothing() {
+    let mut state = AppState::new();
+    let _ = update(&mut state, Message::SignIn);
+    assert_eq!(update(&mut state, Message::SignIn), Vec::new());
+}
+
+#[test]
+fn sign_in_ended_clears_the_login_flag() {
+    let mut state = AppState::new();
+    let _ = update(&mut state, Message::SignIn);
+    let _ = update(&mut state, Message::SignInEnded { failed: false });
+    assert!(!state.signing_in);
+}
+
+#[test]
+fn no_subscription_message_sets_the_flag() {
+    let mut state = AppState::new();
+    let _ = update(&mut state, Message::SubscriptionChecked { active: false });
+    assert!(state.no_subscription);
+}
+
+#[test]
+fn sign_out_clears_the_subscription_flag() {
+    let mut state = AppState::new();
+    let _ = update(&mut state, Message::SubscriptionChecked { active: false });
+    let _ = event(&mut state, EngineEvent::AuthChanged { authorized: false });
+    assert!(!state.no_subscription);
+}
+
+#[test]
+fn restart_engine_after_give_up_starts_the_engine_again() {
+    let mut state = AppState::new();
+    let _ = event(&mut state, EngineEvent::GaveUp);
+    let commands = update(&mut state, Message::RestartEngine);
+    assert_eq!(
+        (commands, state.engine),
+        (vec![Command::RestartEngine], EngineStatus::Starting)
+    );
+}
+
+#[test]
+fn restart_engine_does_nothing_while_the_engine_runs() {
+    let mut state = AppState::new();
+    let _ = event(&mut state, EngineEvent::Ready);
+    assert_eq!(update(&mut state, Message::RestartEngine), Vec::new());
+}
+
+#[test]
+fn active_subscription_check_clears_the_flag() {
+    let mut state = AppState::new();
+    let _ = update(&mut state, Message::SubscriptionChecked { active: false });
+    let _ = update(&mut state, Message::SubscriptionChecked { active: true });
+    assert!(!state.no_subscription);
+}
+
+#[test]
+fn failed_sign_in_sets_the_flag_and_a_new_attempt_clears_it() {
+    let mut state = AppState::new();
+    let _ = update(&mut state, Message::SignIn);
+    let _ = update(&mut state, Message::SignInEnded { failed: true });
+    let failed = state.sign_in_failed;
+    let _ = update(&mut state, Message::SignIn);
+    assert_eq!((failed, state.sign_in_failed), (true, false));
+}

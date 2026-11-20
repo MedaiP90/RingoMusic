@@ -49,6 +49,8 @@ pub enum Command {
     SetRepeat(RepeatMode),
     /// Reads the authorization from the engine.
     RefreshAuth,
+    /// Starts the engine again after it gave up.
+    RestartEngine,
     /// Shows the login window.
     SignIn,
     /// Signs the user out.

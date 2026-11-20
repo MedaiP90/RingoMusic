@@ -30,7 +30,6 @@ pub type ApiClient = CachingTransport<SidecarTransport>;
 /// What the views need from the back end. Clones share the same services.
 #[derive(Clone)]
 pub struct AppServices {
-    #[expect(dead_code, reason = "the views of prompts 29-33 use it")]
     api: Arc<ApiClient>,
     core: CoreHandle,
     settings: Settings,
@@ -40,7 +39,6 @@ pub struct AppServices {
 
 impl AppServices {
     /// The API transport with the response cache.
-    #[expect(dead_code, reason = "the views of prompts 29-33 use it")]
     pub fn api(&self) -> &Arc<ApiClient> {
         &self.api
     }

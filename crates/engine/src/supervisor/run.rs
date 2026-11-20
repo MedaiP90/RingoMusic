@@ -5,6 +5,7 @@ use std::time::Duration;
 use std::time::Instant;
 
 use tokio::net::UnixListener;
+use tokio::sync::mpsc;
 use tokio::time;
 use tracing::{error, info, warn};
 
@@ -24,10 +25,13 @@ pub(crate) struct Supervisor<L: Launcher> {
     pub(crate) listener: UnixListener,
     pub(crate) outputs: Outputs,
     pub(crate) stop: StopSignal,
+    /// Requests to start the engine again after the supervisor gave up.
+    pub(crate) restart: mpsc::Receiver<()>,
 }
 
 impl<L: Launcher> Supervisor<L> {
-    /// Runs until the stop signal fires or the engine fails too often.
+    /// Runs until the stop signal fires. If the engine fails too often, it
+    /// emits [`EngineEvent::GaveUp`] and waits for a restart request.
     pub(crate) async fn run(mut self) {
         let mut window = RestartWindow::new();
         let mut attempt: u32 = 0;
@@ -46,7 +50,12 @@ impl<L: Launcher> Supervisor<L> {
             if !window.try_record(Instant::now()) {
                 error!("engine failed too often, the supervisor gives up");
                 self.outputs.emit(EngineEvent::GaveUp);
-                return;
+                if !self.wait_for_restart_request().await {
+                    return;
+                }
+                window = RestartWindow::new();
+                attempt = 0;
+                continue;
             }
             let delay = backoff_delay(attempt);
             attempt = attempt.saturating_add(1);
@@ -78,6 +87,17 @@ impl<L: Launcher> Supervisor<L> {
                     reached_ready: false,
                 }
             }
+        }
+    }
+
+    /// Waits after a give-up. Returns `true` on a restart request, and `false`
+    /// if the stop signal fired.
+    async fn wait_for_restart_request(&mut self) -> bool {
+        // A request from before the give-up is old.
+        while self.restart.try_recv().is_ok() {}
+        tokio::select! {
+            Some(()) = self.restart.recv() => true,
+            _ = &mut self.stop => false,
         }
     }
 

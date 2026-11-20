@@ -7,11 +7,15 @@ mod about;
 mod app;
 mod background;
 mod debug_play;
+mod gate;
+mod menu;
+mod network_banner;
 mod notification;
 mod section;
 mod services;
 mod sidebar;
 mod startup_error;
+mod subscription;
 mod views;
 
 use std::cell::RefCell;

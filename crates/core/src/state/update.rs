@@ -32,16 +32,20 @@ pub fn update(state: &mut AppState, message: Message) -> Vec<Command> {
             state.queue.set_repeat(mode);
             vec![Command::SetRepeat(mode)]
         }
-        Message::SignIn => vec![Command::SignIn],
+        Message::SignIn => start_sign_in(state),
+        Message::SignInEnded { failed } => {
+            state.signing_in = false;
+            state.sign_in_failed = failed;
+            Vec::new()
+        }
         Message::SignOut => vec![Command::SignOut],
+        Message::SubscriptionChecked { active } => {
+            state.no_subscription = !active;
+            Vec::new()
+        }
+        Message::RestartEngine => restart_engine(state),
         Message::AuthLoaded(status) => {
-            state.auth = if status.authorized {
-                AuthState::SignedIn {
-                    storefront: status.storefront,
-                }
-            } else {
-                AuthState::SignedOut
-            };
+            set_auth(state, status.authorized.then_some(status.storefront));
             Vec::new()
         }
         Message::RestoreQueue { queue, position } => restore_queue(state, queue, position),
@@ -135,6 +139,37 @@ fn play_current(queue: &Queue) -> Vec<Command> {
     ]
 }
 
+/// Opens the login window. A second request while the window is open does
+/// nothing.
+fn start_sign_in(state: &mut AppState) -> Vec<Command> {
+    if state.signing_in {
+        return Vec::new();
+    }
+    state.signing_in = true;
+    state.sign_in_failed = false;
+    vec![Command::SignIn]
+}
+
+/// Starts the engine again. Only an engine that gave up needs it.
+fn restart_engine(state: &mut AppState) -> Vec<Command> {
+    if state.engine != EngineStatus::GaveUp {
+        return Vec::new();
+    }
+    state.engine = EngineStatus::Starting;
+    vec![Command::RestartEngine]
+}
+
+/// Sets the authorization. `storefront` is `None` if the user is signed out.
+/// A signed-out user has no subscription state.
+fn set_auth(state: &mut AppState, storefront: Option<String>) {
+    if let Some(storefront) = storefront {
+        state.auth = AuthState::SignedIn { storefront };
+    } else {
+        state.auth = AuthState::SignedOut;
+        state.no_subscription = false;
+    }
+}
+
 fn apply_event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
     match event {
         EngineEvent::Ready => on_ready(state),
@@ -144,7 +179,7 @@ fn apply_event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
         }
         EngineEvent::AuthChanged { authorized: true } => vec![Command::RefreshAuth],
         EngineEvent::AuthChanged { authorized: false } => {
-            state.auth = AuthState::SignedOut;
+            set_auth(state, None);
             Vec::new()
         }
         EngineEvent::State { state: playback } => {
