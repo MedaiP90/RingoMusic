@@ -4,6 +4,7 @@
 //! Playback queue, state, and storage shared by the front ends.
 
 pub mod api_cache;
+pub mod artwork;
 pub mod db;
 pub mod paths;
 pub mod queue;

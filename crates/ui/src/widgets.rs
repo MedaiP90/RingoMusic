@@ -3,4 +3,5 @@
 
 //! Widgets that more than one view uses.
 
+pub mod artwork_image;
 pub mod player_bar;

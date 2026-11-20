@@ -7,6 +7,7 @@ use std::time::Duration;
 
 use mpris_server::{LoopStatus, Metadata, PlaybackStatus, Time, TrackId};
 use ringo_am_api::artwork_url;
+use ringo_core::artwork::ArtworkStore;
 use ringo_core::state::AppState;
 use ringo_engine::protocol::{PlaybackState, RepeatMode};
 
@@ -42,10 +43,24 @@ pub(crate) fn metadata(state: &AppState) -> Metadata {
         .album(track.album)
         .length(to_time(track.duration))
         .build();
-    if let Some(template) = track.artwork {
-        metadata.set_art_url(Some(artwork_url(template, ARTWORK_SIZE, ARTWORK_SIZE)));
+    metadata.set_art_url(current_artwork_url(state));
+    metadata
+}
+
+/// Like [`metadata`], but the artwork points to the cache file when it is on disk.
+pub(crate) fn cached_metadata(state: &AppState, artwork: &ArtworkStore) -> Metadata {
+    let mut metadata = metadata(state);
+    let cached = current_artwork_url(state).and_then(|url| artwork.cached_uri(&url));
+    if cached.is_some() {
+        metadata.set_art_url(cached);
     }
     metadata
+}
+
+/// Returns the artwork URL of the current item, if it has one.
+pub(crate) fn current_artwork_url(state: &AppState) -> Option<String> {
+    let template = current_track(state)?.artwork?;
+    Some(artwork_url(template, ARTWORK_SIZE, ARTWORK_SIZE))
 }
 
 /// Returns the length of the current item, if there is one.

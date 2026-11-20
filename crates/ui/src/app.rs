@@ -10,6 +10,7 @@ use relm4::gtk;
 use relm4::gtk::gio::{ActionEntry, SimpleAction};
 use relm4::gtk::glib::Propagation;
 use relm4::prelude::*;
+use ringo_core::artwork::ArtworkStore;
 use ringo_core::paths::PackageFormat;
 use ringo_core::runner::CoreHandle;
 use ringo_core::settings::Settings;
@@ -156,7 +157,7 @@ impl SimpleComponent for App {
         let core = services.core();
         forward_state(core, &sender);
         forward_track_changes(core, &sender);
-        publish_mpris(core, &sender);
+        publish_mpris(core, services.artwork(), &sender);
         register_actions(&sender);
         subscription::watch(core, services.api());
         let mut gate = Gate::builder().launch(core.clone());
@@ -169,6 +170,7 @@ impl SimpleComponent for App {
         let mut bar = PlayerBar::builder().launch(PlayerBarInit {
             core: core.clone(),
             settings: settings.clone(),
+            artwork: services.artwork().clone(),
             window: root.clone(),
         });
         let player_bar = bar.widget().clone();
@@ -388,15 +390,15 @@ fn forward_track_changes(core: &CoreHandle, sender: &ComponentSender<App>) {
 }
 
 /// Starts the MPRIS server. A failure is not fatal: playback works without it.
-fn publish_mpris(core: &CoreHandle, sender: &ComponentSender<App>) {
+fn publish_mpris(core: &CoreHandle, artwork: &ArtworkStore, sender: &ComponentSender<App>) {
     let (raise, quit) = (sender.input_sender().clone(), sender.input_sender().clone());
     let callbacks = Callbacks::new(
         move || raise.emit(Input::Raise),
         move || quit.emit(Input::QuitRequested),
     );
-    let (state, inbox) = (core.subscribe(), core.sender());
+    let (state, inbox, artwork) = (core.subscribe(), core.sender(), artwork.clone());
     relm4::spawn(async move {
-        if let Err(error) = ringo_mpris::run(state, inbox, callbacks).await {
+        if let Err(error) = ringo_mpris::run(state, inbox, callbacks, artwork).await {
             warn!(%error, "MPRIS is not available");
         }
     });

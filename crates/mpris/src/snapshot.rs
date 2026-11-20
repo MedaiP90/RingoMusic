@@ -2,6 +2,7 @@
 // Copyright (C) 2026 RingoMusic contributors
 
 use mpris_server::{LoopStatus, Metadata, PlaybackStatus, Property};
+use ringo_core::artwork::ArtworkStore;
 use ringo_core::state::AppState;
 
 use crate::capabilities::Capabilities;
@@ -20,12 +21,12 @@ pub(crate) struct Snapshot {
 }
 
 impl Snapshot {
-    pub(crate) fn of(state: &AppState) -> Self {
+    pub(crate) fn of(state: &AppState, artwork: &ArtworkStore) -> Self {
         Self {
             status: mapping::playback_status(state.playback.state),
             loop_status: mapping::loop_status(state.queue.repeat()),
             shuffle: state.queue.shuffle_enabled(),
-            metadata: mapping::metadata(state),
+            metadata: mapping::cached_metadata(state, artwork),
             volume: f64::from(state.playback.volume),
             capabilities: Capabilities::from_state(state),
         }
@@ -84,27 +85,34 @@ mod tests {
 
     use super::*;
 
+    fn store() -> ArtworkStore {
+        ArtworkStore::new("/nonexistent".into()).expect("client starts")
+    }
+
     #[test]
     fn equal_snapshots_have_no_changes() {
-        let snapshot = Snapshot::of(&AppState::new());
+        let snapshot = Snapshot::of(&AppState::new(), &store());
         assert_eq!(snapshot.changes_since(&snapshot.clone()), Vec::new());
     }
 
     #[test]
     fn position_updates_are_not_changes() {
-        let before = Snapshot::of(&AppState::new());
+        let before = Snapshot::of(&AppState::new(), &store());
         let mut state = AppState::new();
         state.playback.position = Duration::from_secs(5);
-        assert_eq!(Snapshot::of(&state).changes_since(&before), Vec::new());
+        assert_eq!(
+            Snapshot::of(&state, &store()).changes_since(&before),
+            Vec::new()
+        );
     }
 
     #[test]
     fn playback_state_and_volume_changes_are_reported() {
-        let before = Snapshot::of(&AppState::new());
+        let before = Snapshot::of(&AppState::new(), &store());
         let mut state = AppState::new();
         state.playback.state = PlaybackState::Playing;
         state.playback.volume = 0.5;
-        let changes = Snapshot::of(&state).changes_since(&before);
+        let changes = Snapshot::of(&state, &store()).changes_since(&before);
         assert_eq!(
             changes,
             [
@@ -116,9 +124,12 @@ mod tests {
 
     #[test]
     fn a_ready_engine_without_an_item_changes_nothing() {
-        let before = Snapshot::of(&AppState::new());
+        let before = Snapshot::of(&AppState::new(), &store());
         let mut state = AppState::new();
         state.engine = EngineStatus::Ready;
-        assert_eq!(Snapshot::of(&state).changes_since(&before), Vec::new());
+        assert_eq!(
+            Snapshot::of(&state, &store()).changes_since(&before),
+            Vec::new()
+        );
     }
 }

@@ -78,6 +78,10 @@ pub enum Error {
         source: gio::glib::BoolError,
     },
 
+    /// The HTTP client for artwork cannot start.
+    #[error("cannot create the HTTP client")]
+    HttpClient(#[source] reqwest::Error),
+
     /// The blocking task of a database call did not finish.
     #[error("database task failed")]
     Task(#[source] tokio::task::JoinError),

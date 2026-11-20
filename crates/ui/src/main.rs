@@ -5,6 +5,7 @@
 
 mod about;
 mod app;
+mod artwork;
 mod background;
 mod debug_play;
 mod gate;

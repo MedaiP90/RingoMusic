@@ -14,6 +14,7 @@ use relm4::gtk::glib::{self, Propagation};
 use relm4::gtk::pango::EllipsizeMode;
 use relm4::gtk::prelude::*;
 use relm4::prelude::*;
+use ringo_core::artwork::ArtworkStore;
 use ringo_core::runner::CoreHandle;
 use ringo_core::settings::Settings;
 use ringo_core::state::{AppState, Message};
@@ -21,6 +22,7 @@ use ringo_engine::protocol::{PlaybackState, RepeatMode};
 use tracing::warn;
 
 use crate::playback_actions::{self as shortcuts, ActionState, OPEN_ALBUM, PlaybackActions};
+use crate::widgets::artwork_image::ArtworkImage;
 
 /// Size of the artwork in pixels.
 const ARTWORK_SIZE: i32 = 64;
@@ -31,6 +33,8 @@ const ARTWORK_SIZE: i32 = 64;
 pub struct BarState {
     title: String,
     artist: String,
+    /// Template of the artwork URL.
+    artwork: Option<String>,
     duration: Duration,
     position: Duration,
     playing: bool,
@@ -43,14 +47,25 @@ pub struct BarState {
 impl BarState {
     fn of(state: &AppState) -> Self {
         // Before the engine plays, the queue knows the current song.
-        let (title, artist, duration) = match (&state.now_playing, state.queue.current()) {
-            (Some(track), _) => (&track.title, &track.artist, track.duration),
-            (None, Some(item)) => (&item.title, &item.artist, item.duration),
-            (None, None) => (&String::new(), &String::new(), Duration::ZERO),
+        let (title, artist, artwork, duration) = match (&state.now_playing, state.queue.current()) {
+            (Some(track), _) => (
+                &track.title,
+                &track.artist,
+                &track.artwork_url,
+                track.duration,
+            ),
+            (None, Some(item)) => (
+                &item.title,
+                &item.artist,
+                &item.artwork_template,
+                item.duration,
+            ),
+            (None, None) => (&String::new(), &String::new(), &None, Duration::ZERO),
         };
         Self {
             title: title.clone(),
             artist: artist.clone(),
+            artwork: artwork.clone(),
             duration,
             position: Duration::from_secs(state.playback.position.as_secs()),
             playing: state.playback.state == PlaybackState::Playing,
@@ -73,6 +88,8 @@ impl BarState {
 pub struct PlayerBarInit {
     pub core: CoreHandle,
     pub settings: Settings,
+    /// The artwork files.
+    pub artwork: ArtworkStore,
     /// The window that gets the playback actions.
     pub window: adw::ApplicationWindow,
 }
@@ -83,6 +100,7 @@ pub struct PlayerBar {
     actions: PlaybackActions,
     settings: Settings,
     core: CoreHandle,
+    artwork: ArtworkImage,
     /// The user holds the seek bar. Position updates wait until the release.
     dragging: bool,
     /// The last position that the user chose while the seek bar was held.
@@ -119,11 +137,8 @@ impl SimpleComponent for PlayerBar {
             #[watch]
             set_visible: model.state.has_queue,
 
-            gtk::Image {
-                set_icon_name: Some("audio-x-generic-symbolic"),
-                set_pixel_size: ARTWORK_SIZE,
-                add_css_class: "dim-label",
-            },
+            #[local_ref]
+            artwork_widget -> gtk::Image {},
 
             gtk::Box {
                 set_orientation: gtk::Orientation::Vertical,
@@ -314,6 +329,7 @@ impl SimpleComponent for PlayerBar {
         let PlayerBarInit {
             core,
             settings,
+            artwork,
             window,
         } = init;
         let actions = PlaybackActions::register(&window, &core);
@@ -322,11 +338,15 @@ impl SimpleComponent for PlayerBar {
         restore_volume(&core, &settings);
         forward_state(&core, &sender);
 
+        let artwork = ArtworkImage::new(artwork);
+        artwork.set_artwork(state.artwork.as_deref(), ARTWORK_SIZE);
+        let artwork_widget = artwork.widget().clone();
         let model = Self {
             state,
             actions,
             settings,
             core,
+            artwork,
             dragging: false,
             seek_target: None,
         };
@@ -374,6 +394,8 @@ impl PlayerBar {
         if state.volume.total_cmp(&self.state.volume).is_ne() {
             self.save_volume(state.volume);
         }
+        self.artwork
+            .set_artwork(state.artwork.as_deref(), ARTWORK_SIZE);
         self.state = state;
     }
 

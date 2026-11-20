@@ -7,6 +7,7 @@ use std::time::Duration;
 
 use anyhow::Context;
 use ringo_core::api_cache::{CachingTransport, SWEEP_INTERVAL};
+use ringo_core::artwork::ArtworkStore;
 use ringo_core::db::Database;
 use ringo_core::paths::Paths;
 use ringo_core::queue_store::QueueStore;
@@ -32,6 +33,7 @@ pub type ApiClient = CachingTransport<SidecarTransport>;
 pub struct AppServices {
     api: Arc<ApiClient>,
     core: CoreHandle,
+    artwork: ArtworkStore,
     settings: Settings,
     #[expect(dead_code, reason = "the views of prompts 29-33 use it")]
     paths: Arc<Paths>,
@@ -46,6 +48,11 @@ impl AppServices {
     /// The handle of the core.
     pub fn core(&self) -> &CoreHandle {
         &self.core
+    }
+
+    /// The artwork files on disk.
+    pub fn artwork(&self) -> &ArtworkStore {
+        &self.artwork
     }
 
     pub fn settings(&self) -> &Settings {
@@ -100,9 +107,14 @@ impl Services {
             let sweeper = api.spawn_sweeper(SWEEP_INTERVAL);
             anyhow::Ok((handle, Arc::new(api), runner, sweeper))
         })?;
+        let artwork = ArtworkStore::new(paths.artwork_cache_dir.clone())
+            .context("cannot start the artwork cache")?;
+        let pruned = artwork.clone();
+        runtime.spawn_blocking(move || pruned.prune());
         let shared = AppServices {
             api,
             core,
+            artwork,
             settings,
             paths: Arc::new(paths),
         };

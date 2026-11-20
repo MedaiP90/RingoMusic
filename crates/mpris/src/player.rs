@@ -14,6 +14,7 @@ use mpris_server::{
     LoopStatus, Metadata, PlaybackRate, PlaybackStatus, PlayerInterface, RootInterface, Time,
     TrackId, Volume,
 };
+use ringo_core::artwork::ArtworkStore;
 use ringo_core::state::{AppState, Message};
 use ringo_engine::protocol::PlaybackState;
 use tokio::sync::{mpsc, watch};
@@ -35,6 +36,7 @@ pub(crate) struct Player {
     state: watch::Receiver<AppState>,
     inbox: mpsc::Sender<Message>,
     callbacks: Callbacks,
+    artwork: ArtworkStore,
 }
 
 impl Player {
@@ -42,11 +44,13 @@ impl Player {
         state: watch::Receiver<AppState>,
         inbox: mpsc::Sender<Message>,
         callbacks: Callbacks,
+        artwork: ArtworkStore,
     ) -> Self {
         Self {
             state,
             inbox,
             callbacks,
+            artwork,
         }
     }
 
@@ -217,7 +221,7 @@ impl PlayerInterface for Player {
     }
 
     async fn metadata(&self) -> fdo::Result<Metadata> {
-        Ok(self.read(mapping::metadata))
+        Ok(self.read(|state| mapping::cached_metadata(state, &self.artwork)))
     }
 
     async fn volume(&self) -> fdo::Result<Volume> {
