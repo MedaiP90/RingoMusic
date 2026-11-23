@@ -5,7 +5,7 @@ use std::time::Duration;
 
 use rand::SeedableRng;
 use rand::rngs::StdRng;
-use ringo_engine::protocol::PlaybackState;
+use ringo_engine::protocol::{ErrorCode, PlaybackState};
 use ringo_engine::{EngineEvent, ItemId};
 
 use super::app_state::Resume;
@@ -193,9 +193,12 @@ fn start_sign_in(state: &mut AppState) -> Vec<Command> {
     vec![Command::SignIn]
 }
 
-/// Starts the engine again. Only an engine that gave up needs it.
+/// Starts the engine again. Only an engine that gave up or has a sandbox failure needs it.
 fn restart_engine(state: &mut AppState) -> Vec<Command> {
-    if state.engine != EngineStatus::GaveUp {
+    if !matches!(
+        state.engine,
+        EngineStatus::GaveUp | EngineStatus::SandboxFailed
+    ) {
         return Vec::new();
     }
     state.engine = EngineStatus::Starting;
@@ -274,7 +277,14 @@ fn apply_event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
             state.engine = EngineStatus::GaveUp;
             Vec::new()
         }
-        // Errors are logged by the runner. New events are not known yet.
+        EngineEvent::Error {
+            code: ErrorCode::SandboxFailed,
+            ..
+        } => {
+            state.engine = EngineStatus::SandboxFailed;
+            Vec::new()
+        }
+        // Other errors are logged by the runner. New events are not known yet.
         _ => Vec::new(),
     }
 }

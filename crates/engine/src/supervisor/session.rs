@@ -7,11 +7,11 @@ use std::time::Duration;
 use tokio::net::UnixListener;
 use tokio::sync::{broadcast, oneshot};
 use tokio::time;
-use tracing::{debug, warn};
+use tracing::{debug, error, warn};
 
 use super::outputs::Outputs;
 use super::process::ChildProcess;
-use crate::protocol::{FromEngine, ToEngine};
+use crate::protocol::{ErrorCode, FromEngine, ToEngine};
 use crate::{EngineEvent, Error, Result, RpcConnection};
 
 /// Time that the engine has to connect to the socket.
@@ -29,6 +29,8 @@ pub(super) type StopSignal = oneshot::Receiver<()>;
 pub(super) enum SessionEnd {
     /// The caller asked to stop. Do not restart.
     Stopped,
+    /// The Chromium sandbox of the engine cannot start. Restarting does not help.
+    SandboxFailed,
     /// The engine failed. Restart it if the policy allows.
     Failed {
         /// The engine was ready before it failed.
@@ -66,6 +68,9 @@ async fn drive<P: ChildProcess>(
     let startup = tokio::select! {
         result = start_up(listener, outputs) => result,
         () = process.wait() => {
+            if process.sandbox_failed() {
+                return report_sandbox_failure(outputs);
+            }
             warn!("engine process exited before it was ready");
             return SessionEnd::Failed { reached_ready: false };
         }
@@ -96,6 +101,16 @@ async fn drive<P: ChildProcess>(
         outputs.emit(EngineEvent::Restarted);
     }
     forward_events(process, &connection, &mut events, outputs, stop).await
+}
+
+fn report_sandbox_failure(outputs: &Outputs) -> SessionEnd {
+    error!("the Chromium sandbox of the engine cannot start");
+    outputs.emit(EngineEvent::Error {
+        code: ErrorCode::SandboxFailed,
+        message: "the Chromium sandbox cannot start".to_owned(),
+        fatal: true,
+    });
+    SessionEnd::SandboxFailed
 }
 
 /// Forwards events until the engine fails or the caller stops it.

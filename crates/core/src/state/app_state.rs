@@ -26,6 +26,9 @@ pub enum EngineStatus {
     Restarting,
     /// The engine failed too often. The supervisor does not start it again.
     GaveUp,
+    /// The Chromium sandbox of the engine cannot start. The supervisor does not
+    /// start the engine again.
+    SandboxFailed,
 }
 
 /// Authorization of the user.

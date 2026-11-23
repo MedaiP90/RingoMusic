@@ -18,6 +18,10 @@ use crate::menu;
 /// Page of the Apple Music subscription.
 const SUBSCRIBE_URL: &str = "https://music.apple.com/subscribe";
 
+/// Page with the help for the Chromium sandbox errors.
+const SANDBOX_HELP_URL: &str =
+    "https://github.com/MedaiP90/RingoMusic/blob/main/docs/troubleshooting.md#chromium-sandbox";
+
 /// Page where users report problems.
 const ISSUES_URL: &str = "https://github.com/MedaiP90/RingoMusic/issues";
 
@@ -30,6 +34,7 @@ const FIRST_RUN_PAGE: &str = "first-run";
 const NO_SUBSCRIPTION_PAGE: &str = "no-subscription";
 const INCOMPATIBLE_PAGE: &str = "incompatible";
 const GAVE_UP_PAGE: &str = "gave-up";
+const SANDBOX_FAILED_PAGE: &str = "sandbox-failed";
 
 /// What the gate shows.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -44,6 +49,8 @@ pub enum Screen {
     Incompatible { check: String, detail: String },
     /// The engine failed too often.
     GaveUp,
+    /// The Chromium sandbox of the engine cannot start.
+    SandboxFailed,
     /// The main content.
     Content,
 }
@@ -57,6 +64,7 @@ impl Screen {
                 detail: detail.clone(),
             },
             EngineStatus::GaveUp => Self::GaveUp,
+            EngineStatus::SandboxFailed => Self::SandboxFailed,
             EngineStatus::Starting => Self::Loading,
             // A restart keeps the screen of the account, so a crash does not hide the content.
             EngineStatus::Ready | EngineStatus::Restarting => Self::of_account(state),
@@ -80,6 +88,7 @@ impl Screen {
             Self::NoSubscription => NO_SUBSCRIPTION_PAGE,
             Self::Incompatible { .. } => INCOMPATIBLE_PAGE,
             Self::GaveUp => GAVE_UP_PAGE,
+            Self::SandboxFailed => SANDBOX_FAILED_PAGE,
             Self::Content => CONTENT_PAGE,
         }
     }
@@ -260,6 +269,40 @@ impl SimpleComponent for Gate {
                 },
             },
 
+            add_named[Some(SANDBOX_FAILED_PAGE)] = &adw::ToolbarView {
+                add_top_bar = &adw::HeaderBar {
+                    pack_end = &menu::primary_button(),
+                },
+
+                #[wrap(Some)]
+                set_content = &adw::StatusPage {
+                    set_icon_name: Some("dialog-error-symbolic"),
+                    set_title: &gettext("The player cannot start"),
+                    set_description: Some(&gettext(
+                        "The security sandbox of the player cannot start. This often means that the installation is not complete, or that the system blocks the sandbox. RingoMusic does not start the player without the sandbox.",
+                    )),
+
+                    #[wrap(Some)]
+                    set_child = &gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+                        set_spacing: 12,
+                        set_halign: gtk::Align::Center,
+
+                        gtk::LinkButton {
+                            set_uri: SANDBOX_HELP_URL,
+                            set_label: &gettext("Open Troubleshooting Guide"),
+                        },
+
+                        gtk::Button {
+                            set_label: &gettext("Try Again"),
+                            set_action_name: Some("app.restart-engine"),
+                            add_css_class: "suggested-action",
+                            add_css_class: "pill",
+                        },
+                    },
+                },
+            },
+
             // Set after the pages exist. The content page comes later from the parent.
             #[watch]
             set_visible_child_name: model.state.screen.page_name(),
@@ -383,6 +426,12 @@ mod tests {
                 detail: "no CDM".to_owned()
             }
         );
+    }
+
+    #[test]
+    fn engine_with_sandbox_failure_shows_its_screen() {
+        let state = state(EngineStatus::SandboxFailed, signed_in());
+        assert_eq!(Screen::of(&state), Screen::SandboxFailed);
     }
 
     #[test]

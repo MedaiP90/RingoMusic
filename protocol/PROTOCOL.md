@@ -113,3 +113,4 @@ Codes are 32-bit integers. Application codes are in the range -32000 to -32099.
 | -32003 | `not_ready` | Widevine or MusicKit is not ready. |
 | -32004 | `cancelled` | The user cancelled the operation. |
 | -32005 | `musickit_error` | MusicKit returned an error. |
+| -32006 | `sandbox_failed` | The Chromium sandbox cannot start. The supervisor sets this code. The engine does not send it. |

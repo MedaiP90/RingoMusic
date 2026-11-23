@@ -40,6 +40,15 @@ impl<L: Launcher> Supervisor<L> {
             let end = self.run_session(was_ready).await;
             match end {
                 SessionEnd::Stopped => return,
+                SessionEnd::SandboxFailed => {
+                    // A restart cannot fix the sandbox. Wait for the user.
+                    if !self.wait_for_restart_request().await {
+                        return;
+                    }
+                    window = RestartWindow::new();
+                    attempt = 0;
+                    continue;
+                }
                 SessionEnd::Failed { reached_ready } if reached_ready => {
                     was_ready = true;
                     attempt = 0;
@@ -90,7 +99,7 @@ impl<L: Launcher> Supervisor<L> {
         }
     }
 
-    /// Waits after a give-up. Returns `true` on a restart request, and `false`
+    /// Waits after a give-up or a sandbox failure. Returns `true` on a restart request, and `false`
     /// if the stop signal fired.
     async fn wait_for_restart_request(&mut self) -> bool {
         // A request from before the give-up is old.

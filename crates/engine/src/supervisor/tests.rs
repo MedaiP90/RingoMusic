@@ -17,6 +17,7 @@ use tokio::task::{AbortHandle, JoinHandle};
 use tokio::time;
 
 use super::{ChildProcess, Launcher};
+use crate::protocol::ErrorCode;
 use crate::{EngineConfig, EngineEvent, Error, PlaybackEngine, SidecarEngine};
 
 const EVENT_TIMEOUT: Duration = Duration::from_secs(10);
@@ -54,6 +55,8 @@ enum Behavior {
     Silent,
     /// Exits at once, like an engine that crashes at start.
     Exit,
+    /// Exits at once and reports a sandbox failure.
+    SandboxFailure,
 }
 
 /// Launcher that runs a fake engine as a task in the test process.
@@ -95,19 +98,23 @@ impl Launcher for FakeLauncher {
             match behavior {
                 Behavior::Serve => serve(&socket_path).await,
                 Behavior::Silent => std::future::pending().await,
-                Behavior::Exit => {}
+                Behavior::Exit | Behavior::SandboxFailure => {}
             }
         });
         self.tasks
             .lock()
             .expect("task list is not poisoned")
             .push(task.abort_handle());
-        Ok(FakeProcess { task })
+        Ok(FakeProcess {
+            task,
+            sandbox_failed: matches!(behavior, Behavior::SandboxFailure),
+        })
     }
 }
 
 struct FakeProcess {
     task: JoinHandle<()>,
+    sandbox_failed: bool,
 }
 
 impl ChildProcess for FakeProcess {
@@ -117,6 +124,10 @@ impl ChildProcess for FakeProcess {
 
     async fn kill(&mut self) {
         self.task.abort();
+    }
+
+    fn sandbox_failed(&self) -> bool {
+        self.sandbox_failed
     }
 }
 
@@ -245,5 +256,31 @@ async fn restart_after_give_up_allows_new_attempts() {
 
     wait_for_give_up(&mut events).await;
     assert_eq!(launcher.launch_count(), 12);
+    engine.shutdown().await.expect("shutdown works");
+}
+
+#[tokio::test(start_paused = true)]
+async fn sandbox_failure_is_reported_without_restart() {
+    let dir = TestDir::new("sandbox");
+    let launcher = FakeLauncher::new(Behavior::SandboxFailure);
+    let engine = SidecarEngine::start_with(launcher.clone(), dir.config()).expect("engine starts");
+    let mut events = engine.events();
+
+    let event = next_event(&mut events).await;
+    assert!(matches!(
+        event,
+        EngineEvent::Error {
+            code: ErrorCode::SandboxFailed,
+            fatal: true,
+            ..
+        }
+    ));
+    time::sleep(Duration::from_secs(120)).await;
+    assert_eq!(launcher.launch_count(), 1);
+
+    engine.restart().await.expect("restart request is accepted");
+    let event = next_event(&mut events).await;
+    assert!(matches!(event, EngineEvent::Error { .. }));
+    assert_eq!(launcher.launch_count(), 2);
     engine.shutdown().await.expect("shutdown works");
 }

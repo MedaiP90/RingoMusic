@@ -33,6 +33,8 @@ pub enum ErrorCode {
     Cancelled,
     /// MusicKit returned an error (-32005).
     MusicKitError,
+    /// The Chromium sandbox of the engine cannot start (-32006).
+    SandboxFailed,
 }
 
 impl ErrorCode {
@@ -50,6 +52,7 @@ impl ErrorCode {
             Self::NotReady => -32003,
             Self::Cancelled => -32004,
             Self::MusicKitError => -32005,
+            Self::SandboxFailed => -32006,
         }
     }
 }
@@ -87,6 +90,7 @@ impl TryFrom<i32> for ErrorCode {
             -32003 => Ok(Self::NotReady),
             -32004 => Ok(Self::Cancelled),
             -32005 => Ok(Self::MusicKitError),
+            -32006 => Ok(Self::SandboxFailed),
             other => Err(UnknownErrorCode(other)),
         }
     }

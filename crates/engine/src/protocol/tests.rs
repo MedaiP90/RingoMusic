@@ -121,7 +121,7 @@ fn error_code_try_from_returns_error_for_unknown_value() {
 #[test]
 fn error_code_round_trips_every_numeric_value() {
     for code in [
-        -32700, -32600, -32601, -32602, -32603, -32001, -32002, -32003, -32004, -32005,
+        -32700, -32600, -32601, -32602, -32603, -32001, -32002, -32003, -32004, -32005, -32006,
     ] {
         let parsed = ErrorCode::try_from(code).expect("code is known");
         assert_eq!(parsed.code(), code);

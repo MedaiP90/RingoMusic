@@ -3,7 +3,7 @@
 
 use std::time::Duration;
 
-use ringo_engine::protocol::{AuthStatus, PlaybackState, RepeatMode};
+use ringo_engine::protocol::{AuthStatus, ErrorCode, PlaybackState, RepeatMode};
 use ringo_engine::{EngineEvent, ItemId};
 
 use super::*;
@@ -546,6 +546,24 @@ fn supervisor_events_set_the_engine_status() {
     let mut state = AppState::new();
     let _ = event(&mut state, EngineEvent::GaveUp);
     assert_eq!(state.engine, EngineStatus::GaveUp);
+}
+
+#[test]
+fn sandbox_failure_sets_the_engine_status_and_allows_restart() {
+    let mut state = AppState::new();
+    let _ = event(
+        &mut state,
+        EngineEvent::Error {
+            code: ErrorCode::SandboxFailed,
+            message: "sandbox".to_owned(),
+            fatal: true,
+        },
+    );
+    assert_eq!(state.engine, EngineStatus::SandboxFailed);
+
+    let commands = update(&mut state, Message::RestartEngine);
+    assert_eq!(commands, vec![Command::RestartEngine]);
+    assert_eq!(state.engine, EngineStatus::Starting);
 }
 
 #[test]
