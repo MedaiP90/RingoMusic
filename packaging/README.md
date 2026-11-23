@@ -100,3 +100,16 @@ Ubuntu restricts unprivileged user namespaces with AppArmor. The `.deb`
 package loads a profile for the engine, but an AppImage has no fixed path for
 a profile. On Ubuntu, the AppImage shows the sandbox error page, with text
 that tells the user to install the `.deb` package or the Flatpak.
+
+## Release file names
+
+The release workflow (`.github/workflows/release.yml`) starts on a `v*` tag.
+It stops in `version-check` when the tag, `Cargo.toml`, `engine/package.json`,
+and the newest `<release>` in the metainfo file are not equal. A manual run
+(`workflow_dispatch` with a `version` input) builds the same files without a
+tag and publishes nothing.
+
+All file names use the tag version without the `v`, for example
+`0.9.0-rc.1`. Only the metadata inside the `.deb` uses the Debian form
+`0.9.0~rc.1`, so that the pre-release sorts before `0.9.0`. The file name keeps
+`0.9.0-rc.1`.
