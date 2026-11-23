@@ -49,3 +49,13 @@ path = [
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 RingoMusic contributors"
 SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+# Instructions for coding agents.
+[[annotations]]
+path = [
+  "CLAUDE.md",
+  "plan/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 RingoMusic contributors"
+SPDX-License-Identifier = "GPL-3.0-or-later"
