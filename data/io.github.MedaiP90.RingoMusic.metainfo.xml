@@ -56,6 +56,13 @@ Copyright (C) 2026 RingoMusic contributors
     <control>pointing</control>
   </recommends>
   <releases>
+    <release version="1.0.2" date="2026-11-23">
+      <description>
+        <ul>
+          <li>The Flatpak package starts again. Versions 1.0.0 and 1.0.1 stopped at start because the settings schema was missing.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.1" date="2026-11-23">
       <description>
         <ul>

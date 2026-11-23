@@ -43,6 +43,8 @@ modules:
       # Flatpak does not keep the SUID bit. zypak replaces chrome-sandbox.
       - chmod 0755 stage/app/lib/ringomusic/engine/chrome-sandbox
       - cp -a stage/app/. /app/
+      # GLib reads only the compiled schemas. Without this file the app stops at start.
+      - glib-compile-schemas --strict /app/share/glib-2.0/schemas
     sources:
       - type: dir
         path: ../..

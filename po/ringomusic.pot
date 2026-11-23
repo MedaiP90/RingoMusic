@@ -672,6 +672,12 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
+"The Flatpak package starts again. Versions 1.0.0 and 1.0.1 stopped at start "
+"because the settings schema was missing."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
 "Sign-in is faster: the Apple ID dialog opens directly. You do not have to "
 "click the Sign In button on the site."
 msgstr ""
