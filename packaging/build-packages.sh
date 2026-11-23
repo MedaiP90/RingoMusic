@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # Copyright (C) 2026 RingoMusic contributors
 #
-# Builds the .deb and the .rpm from the install tree (run packaging/stage.sh first).
+# Builds the .deb, the .rpm, and the .tar.gz from the install tree (run packaging/stage.sh first).
 # Usage: packaging/build-packages.sh [VERSION]
 # VERSION defaults to the workspace version. A leading "v" is removed.
 # Environment: MAINTAINER, NFPM (nfpm command, default: nfpm).
@@ -31,8 +31,17 @@ $NFPM package --config packaging/nfpm.yaml --packager deb \
 $NFPM package --config packaging/nfpm.yaml --packager rpm \
     --target "dist/ringomusic-${VERSION}-1.x86_64.rpm"
 
+# The tarball keeps the usr/ paths. The AUR package uses it. The options make the archive stable:
+# owner root, files sorted by name, no file name or time stamp in the gzip header.
+tar_args=(--sort=name --owner=0 --group=0 --numeric-owner)
+if [ -n "${SOURCE_DATE_EPOCH:-}" ]; then
+    tar_args+=(--mtime="@${SOURCE_DATE_EPOCH}")
+fi
+tar "${tar_args[@]}" -cf - -C stage usr | gzip -n -9 > "dist/ringomusic-${VERSION}-x86_64.tar.gz"
+
 # Check the file names from plan section 1.1.
-for name in "ringomusic_${VERSION}_amd64.deb" "ringomusic-${VERSION}-1.x86_64.rpm"; do
+for name in "ringomusic_${VERSION}_amd64.deb" "ringomusic-${VERSION}-1.x86_64.rpm" \
+    "ringomusic-${VERSION}-x86_64.tar.gz"; do
     if [ ! -f "dist/$name" ]; then
         echo "error: expected dist/$name, found:" >&2
         ls dist >&2

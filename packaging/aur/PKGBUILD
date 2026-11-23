@@ -1,0 +1,30 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 RingoMusic contributors
+# Maintainer: RingoMusic contributors <noreply@users.noreply.github.com>
+
+pkgname=ringomusic-bin
+# A pre-release uses "_" in pkgver (0.9.0_rc.1) and "-" in the upstream tag (0.9.0-rc.1).
+pkgver=1.0.0
+pkgrel=1
+pkgdesc='Apple Music client for GNOME (binary release)'
+arch=(x86_64)
+url='https://github.com/MedaiP90/RingoMusic'
+license=('GPL-3.0-or-later')
+# Electron also needs gtk3, cups, at-spi2 and xkbcommon (namcap finds them as implicit).
+depends=(gtk4 libadwaita nss alsa-lib mesa dbus gtk3 libcups at-spi2-core libxkbcommon)
+provides=(ringomusic)
+conflicts=(ringomusic)
+# The Electron binaries must stay as built.
+options=(!strip !debug)
+source=("$pkgname-$pkgver.tar.gz::$url/releases/download/v${pkgver//_/-}/ringomusic-${pkgver//_/-}-x86_64.tar.gz")
+# The release script sets the real checksum from SHA256SUMS (prompt 46).
+sha256sums=('SKIP')
+
+package() {
+    cd "$srcdir"
+    cp -a usr "$pkgdir/usr"
+    # The Chromium sandbox helper needs owner root (set by fakeroot) and the SUID bit.
+    chmod 4755 "$pkgdir/usr/lib/ringomusic/engine/chrome-sandbox"
+    # The package manager does the updates, so the app must not check for them (decision D21).
+    install -Dm644 /dev/null "$pkgdir/usr/share/ringomusic/no-update-check"
+}
