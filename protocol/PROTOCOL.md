@@ -53,7 +53,7 @@ A notification has no `id` and gets no response.
 | Method | Params | Result |
 |---|---|---|
 | `auth.status` | none | `{ authorized, storefront }` |
-| `auth.signIn` | none | `null`. Shows the window. The user signs in with the site's own Sign In button. Returns when `auth.changed` reports `authorized: true`, or fails with `cancelled` if the user closes the window. Returns at once if already authorized. |
+| `auth.signIn` | none | `null`. Loads `https://music.apple.com/login`, which opens the site's own sign-in dialog, then shows the window. If the load fails, the window shows anyway and the user can click the site's Sign In button. After `auth.changed` reports `authorized: true`, the window hides and the engine loads `https://music.apple.com` again. The call returns when the new page sends `engine.ready` or `engine.incompatible`, so the page is ready for the next calls. Rust gets this second `engine.ready` and sends the volume and the repeat mode again. Returns when `auth.changed` reports `authorized: true`, or fails with `cancelled` if the user closes the window. Returns at once if already authorized. |
 | `auth.signOut` | none | `null`. Drops the MusicKit token and clears the cookies of the session. The page would sign in again from the Apple ID cookies without the clear. Other storage stays, because it holds the device identity. |
 | `player.setQueue` | `{ items, start_index, kind }` | `null`. `kind` is `songs`. IDs can be catalog IDs or library IDs (`i.…`). |
 | `player.playNext`, `player.playLater` | `{ items, kind }` | `null`. Insert after the current item, or at the end. The current item keeps playing. |
@@ -66,7 +66,7 @@ A notification has no `id` and gets no response.
 | `api.get` | `{ path, query }` | Raw JSON from `api.music()` |
 | `engine.shutdown` | none | `null`. The engine answers, then quits. |
 
-**Sign-in note:** MusicKit `authorize()` does not work on music.apple.com. The site resets the token from its own storage right after the pop-up closes (status 3, then 0). Sign-in through the site's own button stays authorized. Checked with a real account.
+**Sign-in note:** MusicKit `authorize()` does not work on music.apple.com. The site resets the token from its own storage right after the pop-up closes (status 3, then 0). Sign-in through the site's own button stays authorized. Checked with a real account. The `/login` route opens the same dialog as the button. Checked with a real account: the login stays after a restart, and a sign-in after a sign-out opens the dialog again. A MusicKit session that starts on `/login` plays only 90-second previews until the page loads again. For this reason the engine loads the home page after the login.
 
 **Unverified:** library song IDs (`i.…`) in `setQueue({ songs })` need a test with a real account. Result: pending.
 

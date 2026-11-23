@@ -671,6 +671,12 @@ msgid "The narrow layout"
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Sign-in is faster: the Apple ID dialog opens directly. You do not have to "
+"click the Sign In button on the site."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "First stable release of RingoMusic."
 msgstr ""
 

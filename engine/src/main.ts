@@ -13,9 +13,8 @@ import { forwardLogs, log } from './log.ts';
 import { PageBridge } from './page-bridge.ts';
 import { PAGE_METHODS } from './page-methods.ts';
 import { RpcClient } from './rpc.ts';
-import { decidePopup, SignIn } from './sign-in.ts';
+import { decidePopup, SignIn, START_URL } from './sign-in.ts';
 
-const START_URL = 'https://music.apple.com';
 const SESSION_PARTITION = 'persist:ringomusic';
 const EXIT_CODE_BAD_CONFIGURATION = 2;
 const QUIT_GRACE_MS = 3000;
