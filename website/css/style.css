@@ -399,8 +399,10 @@
     }
   }
 
-  /* AdwCard */
+  /* AdwCard. A column, so a button can stay at the bottom of a stretched card. */
   .card {
+    display: flex;
+    flex-direction: column;
     padding: var(--space-md);
     border-radius: var(--radius-md);
     background-color: var(--card-bg-color);
@@ -436,8 +438,10 @@
     color: var(--dim-fg-color);
   }
 
+  /* `auto` pushes the button to the bottom when cards in a row differ in height. */
   .card .button {
-    margin-block-start: var(--space-xs);
+    align-self: flex-start;
+    margin-block-start: auto;
   }
 
   /* boxed-list: rows inside one card, split by a thin line. */
