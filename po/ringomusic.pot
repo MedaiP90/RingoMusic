@@ -212,6 +212,14 @@ msgid "Show notifications for new songs"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
+msgid "Check for updates"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+msgid "Look for a new version when the application starts"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
 msgid "Appearance"
 msgstr ""
 
@@ -337,6 +345,15 @@ msgstr ""
 
 #: crates/ui/src/theme.rs
 msgid "Dark"
+msgstr ""
+
+#: crates/ui/src/update_notice.rs
+#, rust-format
+msgid "Version {version} is available"
+msgstr ""
+
+#: crates/ui/src/update_notice.rs
+msgid "Download"
 msgstr ""
 
 #: crates/ui/src/views/album.rs
@@ -635,4 +652,20 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "The audio quality is AAC 256 kbps."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "First pre-release. It tests the release pipeline and the packages."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The application checks for a new release once a day and shows a message with "
+"a link."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Turn the check off with the new \"Check for updates\" switch in the "
+"preferences."
 msgstr ""
