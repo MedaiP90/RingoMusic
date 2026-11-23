@@ -2,6 +2,8 @@ name: CI
 
 on:
   push:
+    # Branches only. A "v*" tag runs the release workflow, not CI.
+    branches: ["**"]
   pull_request:
 
 permissions:
