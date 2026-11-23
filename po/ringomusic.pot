@@ -146,6 +146,21 @@ msgstr ""
 msgid "Try Again"
 msgstr ""
 
+#: crates/ui/src/gate.rs
+msgid "The player cannot start"
+msgstr ""
+
+#: crates/ui/src/gate.rs
+msgid ""
+"The security sandbox of the player cannot start. This often means that the "
+"installation is not complete, or that the system blocks the sandbox. "
+"RingoMusic does not start the player without the sandbox."
+msgstr ""
+
+#: crates/ui/src/gate.rs
+msgid "Open Troubleshooting Guide"
+msgstr ""
+
 #: crates/ui/src/menu.rs
 msgid "Main menu"
 msgstr ""
