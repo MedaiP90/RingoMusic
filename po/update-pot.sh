@@ -22,7 +22,8 @@ if [ -n "$missing" ]; then
     exit 1
 fi
 
-xgettext \
+# Options shared by both runs.
+common=(
     --from-code=UTF-8 \
     --keyword=gettext \
     --keyword=ngettext:1,2 \
@@ -31,8 +32,16 @@ xgettext \
     --package-name=ringomusic \
     --copyright-holder='RingoMusic contributors' \
     --msgid-bugs-address='https://github.com/MedaiP90/RingoMusic/issues' \
-    --files-from=po/POTFILES.in \
+)
+
+# The metainfo file gets its own ITS rules. The rules that gettext ships differ
+# between versions: some skip the release notes, some skip the screenshot captions.
+xgettext "${common[@]}" \
+    --files-from=<(grep -v '\.metainfo\.xml$' po/POTFILES.in) \
     --output=po/ringomusic.pot
+xgettext "${common[@]}" --join-existing --its=po/metainfo.its \
+    --output=po/ringomusic.pot \
+    data/io.github.MedaiP90.RingoMusic.metainfo.xml
 
 # A fixed date keeps the file identical between runs.
 sed -i 's/^"POT-Creation-Date: .*\\n"$/"POT-Creation-Date: 1970-01-01 00:00+0000\\n"/' po/ringomusic.pot

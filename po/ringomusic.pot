@@ -33,23 +33,11 @@ msgid "Blue"
 msgstr ""
 
 #: crates/ui/src/accent.rs
-msgid "Teal"
-msgstr ""
-
-#: crates/ui/src/accent.rs
 msgid "Green"
 msgstr ""
 
 #: crates/ui/src/accent.rs
-msgid "Yellow"
-msgstr ""
-
-#: crates/ui/src/accent.rs
 msgid "Orange"
-msgstr ""
-
-#: crates/ui/src/accent.rs
-msgid "Red"
 msgstr ""
 
 #: crates/ui/src/accent.rs
@@ -61,6 +49,10 @@ msgid "Purple"
 msgstr ""
 
 #: crates/ui/src/accent.rs
+msgid "Red"
+msgstr ""
+
+#: crates/ui/src/accent.rs
 msgid "Slate"
 msgstr ""
 
@@ -68,8 +60,20 @@ msgstr ""
 msgid "System"
 msgstr ""
 
+#: crates/ui/src/accent.rs
+msgid "Teal"
+msgstr ""
+
+#: crates/ui/src/accent.rs
+msgid "Yellow"
+msgstr ""
+
 #: crates/ui/src/app.rs
 msgid "Sign in failed. Try again."
+msgstr ""
+
+#: crates/ui/src/background.rs
+msgid "Continue playback when the window is closed"
 msgstr ""
 
 #: crates/ui/src/background.rs
@@ -78,8 +82,60 @@ msgid ""
 "window closes."
 msgstr ""
 
-#: crates/ui/src/background.rs
-msgid "Continue playback when the window is closed"
+#: crates/ui/src/gate.rs
+msgid "Check Again"
+msgstr ""
+
+#: crates/ui/src/gate.rs
+msgid "Get Apple Music"
+msgstr ""
+
+#: crates/ui/src/gate.rs
+msgid "No Apple Music subscription"
+msgstr ""
+
+#: crates/ui/src/gate.rs
+msgid "Open Troubleshooting Guide"
+msgstr ""
+
+#: crates/ui/src/gate.rs
+msgid "Report Problem"
+msgstr ""
+
+#: crates/ui/src/gate.rs
+msgid ""
+"RingoMusic plays your Apple Music library. You need an Apple Music "
+"subscription. You sign in on a page of Apple, and RingoMusic does not store "
+"your password."
+msgstr ""
+
+#: crates/ui/src/gate.rs
+msgid "Sign In"
+msgstr ""
+
+#: crates/ui/src/gate.rs
+msgid "Starting the player…"
+msgstr ""
+
+#: crates/ui/src/gate.rs
+#, rust-format
+msgid "The check “{check}” failed: {detail}"
+msgstr ""
+
+#: crates/ui/src/gate.rs
+msgid "The player cannot start"
+msgstr ""
+
+#: crates/ui/src/gate.rs
+msgid "The player does not work on this system"
+msgstr ""
+
+#: crates/ui/src/gate.rs
+msgid "The player failed many times and does not start again by itself."
+msgstr ""
+
+#: crates/ui/src/gate.rs
+msgid "The player stopped"
 msgstr ""
 
 #: crates/ui/src/gate.rs
@@ -98,65 +154,9 @@ msgid ""
 msgstr ""
 
 #: crates/ui/src/gate.rs
-#, rust-format
-msgid "The check “{check}” failed: {detail}"
-msgstr ""
-
-#: crates/ui/src/gate.rs
-msgid "Starting the player…"
-msgstr ""
-
-#: crates/ui/src/gate.rs
-msgid "Welcome to RingoMusic"
-msgstr ""
-
-#: crates/ui/src/gate.rs
-msgid ""
-"RingoMusic plays your Apple Music library. You need an Apple Music "
-"subscription. You sign in on a page of Apple, and RingoMusic does not store "
-"your password."
-msgstr ""
-
-#: crates/ui/src/gate.rs
-msgid "Sign In"
-msgstr ""
-
-#: crates/ui/src/gate.rs
-msgid "No Apple Music subscription"
-msgstr ""
-
-#: crates/ui/src/gate.rs
 msgid ""
 "This Apple Music account has no subscription. RingoMusic needs a "
 "subscription to play music."
-msgstr ""
-
-#: crates/ui/src/gate.rs
-msgid "Get Apple Music"
-msgstr ""
-
-#: crates/ui/src/gate.rs
-msgid "Check Again"
-msgstr ""
-
-#: crates/ui/src/gate.rs
-msgid "The player does not work on this system"
-msgstr ""
-
-#: crates/ui/src/gate.rs
-msgid "Open Troubleshooting Guide"
-msgstr ""
-
-#: crates/ui/src/gate.rs
-msgid "Report Problem"
-msgstr ""
-
-#: crates/ui/src/gate.rs
-msgid "The player stopped"
-msgstr ""
-
-#: crates/ui/src/gate.rs
-msgid "The player failed many times and does not start again by itself."
 msgstr ""
 
 #: crates/ui/src/gate.rs crates/ui/src/views/detail_frame.rs
@@ -166,7 +166,7 @@ msgid "Try Again"
 msgstr ""
 
 #: crates/ui/src/gate.rs
-msgid "The player cannot start"
+msgid "Welcome to RingoMusic"
 msgstr ""
 
 #: crates/ui/src/menu.rs
@@ -174,11 +174,11 @@ msgid "Main menu"
 msgstr ""
 
 #: crates/ui/src/menu.rs
-msgid "_Preferences"
+msgid "_About RingoMusic"
 msgstr ""
 
 #: crates/ui/src/menu.rs
-msgid "_About RingoMusic"
+msgid "_Preferences"
 msgstr ""
 
 #: crates/ui/src/menu.rs
@@ -200,7 +200,56 @@ msgid "{action} ({shortcut})"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
+msgid "API cache"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+msgid "Accent color"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+msgid "Account"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+msgid "Appearance"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+msgid "Artwork cache"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+#, rust-format
+msgid "Cache cleared. {size} freed."
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+msgid "Check for updates"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+msgid "Clear Cache"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
 msgid "General"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+msgid "In use"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+msgid "Look for a new version when the application starts"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+msgid "Not signed in"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+msgid "Playback stops and the queue is cleared."
 msgstr ""
 
 #: crates/ui/src/preferences.rs
@@ -212,35 +261,15 @@ msgid "Show notifications for new songs"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
-msgid "Check for updates"
+msgid "Sign Out"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
-msgid "Look for a new version when the application starts"
+msgid "Sign out?"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
-msgid "Appearance"
-msgstr ""
-
-#: crates/ui/src/preferences.rs
-msgid "Theme"
-msgstr ""
-
-#: crates/ui/src/preferences.rs
-msgid "Accent color"
-msgstr ""
-
-#: crates/ui/src/preferences.rs
-msgid "Storage"
-msgstr ""
-
-#: crates/ui/src/preferences.rs
-msgid "API cache"
-msgstr ""
-
-#: crates/ui/src/preferences.rs
-msgid "Size limit"
+msgid "Signed in"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
@@ -248,32 +277,11 @@ msgid "Size in MiB. A new limit applies after a restart."
 msgstr ""
 
 #: crates/ui/src/preferences.rs
-msgid "In use"
+msgid "Size limit"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
-msgid "Artwork cache"
-msgstr ""
-
-#: crates/ui/src/preferences.rs
-msgid "Clear Cache"
-msgstr ""
-
-#: crates/ui/src/preferences.rs
-msgid "Account"
-msgstr ""
-
-#: crates/ui/src/preferences.rs
-msgid "Sign Out"
-msgstr ""
-
-#: crates/ui/src/preferences.rs
-#, rust-format
-msgid "Cache cleared. {size} freed."
-msgstr ""
-
-#: crates/ui/src/preferences.rs
-msgid "Signed in"
+msgid "Storage"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
@@ -282,15 +290,7 @@ msgid "Storefront: {storefront}"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
-msgid "Not signed in"
-msgstr ""
-
-#: crates/ui/src/preferences.rs
-msgid "Sign out?"
-msgstr ""
-
-#: crates/ui/src/preferences.rs
-msgid "Playback stops and the queue is cleared."
+msgid "Theme"
 msgstr ""
 
 #: crates/ui/src/preferences.rs crates/ui/src/views/queue.rs
@@ -306,18 +306,6 @@ msgstr ""
 msgid "{used} of {limit}"
 msgstr ""
 
-#: crates/ui/src/section.rs
-msgid "Home"
-msgstr ""
-
-#: crates/ui/src/section.rs
-msgid "Search"
-msgstr ""
-
-#: crates/ui/src/section.rs crates/ui/src/views/search.rs
-msgid "Playlists"
-msgstr ""
-
 #: crates/ui/src/section.rs crates/ui/src/views/artist.rs
 #: crates/ui/src/views/artist_more.rs crates/ui/src/views/search.rs
 msgid "Albums"
@@ -325,6 +313,18 @@ msgstr ""
 
 #: crates/ui/src/section.rs crates/ui/src/views/search.rs
 msgid "Artists"
+msgstr ""
+
+#: crates/ui/src/section.rs
+msgid "Home"
+msgstr ""
+
+#: crates/ui/src/section.rs crates/ui/src/views/search.rs
+msgid "Playlists"
+msgstr ""
+
+#: crates/ui/src/section.rs
+msgid "Search"
 msgstr ""
 
 #: crates/ui/src/section.rs crates/ui/src/views/search.rs
@@ -340,24 +340,20 @@ msgid "RingoMusic cannot start"
 msgstr ""
 
 #: crates/ui/src/theme.rs
-msgid "Light"
-msgstr ""
-
-#: crates/ui/src/theme.rs
 msgid "Dark"
 msgstr ""
 
-#: crates/ui/src/update_notice.rs
-#, rust-format
-msgid "Version {version} is available"
+#: crates/ui/src/theme.rs
+msgid "Light"
 msgstr ""
 
 #: crates/ui/src/update_notice.rs
 msgid "Download"
 msgstr ""
 
-#: crates/ui/src/views/album.rs
-msgid "This album has no songs"
+#: crates/ui/src/update_notice.rs
+#, rust-format
+msgid "Version {version} is available"
 msgstr ""
 
 #: crates/ui/src/views/album.rs
@@ -367,6 +363,10 @@ msgstr ""
 #: crates/ui/src/views/album.rs
 #, rust-format
 msgid "Disc {number}"
+msgstr ""
+
+#: crates/ui/src/views/album.rs
+msgid "This album has no songs"
 msgstr ""
 
 #: crates/ui/src/views/album.rs
@@ -382,11 +382,11 @@ msgid "{minutes} min"
 msgstr ""
 
 #: crates/ui/src/views/artist.rs
-msgid "Nothing to show for this artist"
+msgid "Artist"
 msgstr ""
 
 #: crates/ui/src/views/artist.rs
-msgid "Artist"
+msgid "Nothing to show for this artist"
 msgstr ""
 
 #: crates/ui/src/views/artist.rs crates/ui/src/widgets/detail_header.rs
@@ -411,11 +411,7 @@ msgid "Check your connection and try again."
 msgstr ""
 
 #: crates/ui/src/views/home.rs
-msgid "Recommended for You"
-msgstr ""
-
-#: crates/ui/src/views/home.rs
-msgid "Refresh (F5)"
+msgid "Cannot Load Recommendations"
 msgstr ""
 
 #: crates/ui/src/views/home.rs
@@ -427,11 +423,15 @@ msgid "Play some music and check back later."
 msgstr ""
 
 #: crates/ui/src/views/home.rs
-msgid "Cannot Load Recommendations"
+msgid "Recommended for You"
+msgstr ""
+
+#: crates/ui/src/views/home.rs
+msgid "Refresh (F5)"
 msgstr ""
 
 #: crates/ui/src/views/library.rs
-msgid "Cannot Load Playlists"
+msgid "Add music to your library to see it here."
 msgstr ""
 
 #: crates/ui/src/views/library.rs
@@ -443,15 +443,15 @@ msgid "Cannot Load Artists"
 msgstr ""
 
 #: crates/ui/src/views/library.rs
+msgid "Cannot Load Playlists"
+msgstr ""
+
+#: crates/ui/src/views/library.rs
 msgid "Cannot Load Songs"
 msgstr ""
 
 #: crates/ui/src/views/library.rs
-msgid "Your library is empty"
-msgstr ""
-
-#: crates/ui/src/views/library.rs
-msgid "Add music to your library to see it here."
+msgid "Filter by name"
 msgstr ""
 
 #: crates/ui/src/views/library.rs
@@ -463,23 +463,19 @@ msgid "Try a different name."
 msgstr ""
 
 #: crates/ui/src/views/library.rs
-msgid "Filter by name"
-msgstr ""
-
-#: crates/ui/src/views/playlist.rs
-msgid "This playlist has no songs"
+msgid "Your library is empty"
 msgstr ""
 
 #: crates/ui/src/views/playlist.rs
 msgid "Playlist"
 msgstr ""
 
-#: crates/ui/src/views/queue.rs
-msgid "Close Queue"
+#: crates/ui/src/views/playlist.rs
+msgid "This playlist has no songs"
 msgstr ""
 
-#: crates/ui/src/views/queue.rs crates/ui/src/widgets/player_bar.rs
-msgid "Queue"
+#: crates/ui/src/views/queue.rs
+msgid "All songs leave the queue and playback stops."
 msgstr ""
 
 #: crates/ui/src/views/queue.rs
@@ -487,19 +483,15 @@ msgid "Clear Queue"
 msgstr ""
 
 #: crates/ui/src/views/queue.rs
-msgid "The queue is empty"
+msgid "Clear Queue?"
 msgstr ""
 
 #: crates/ui/src/views/queue.rs
-msgid "Songs that you play or add show here."
+msgid "Close Queue"
 msgstr ""
 
 #: crates/ui/src/views/queue.rs
-msgid "Now Playing"
-msgstr ""
-
-#: crates/ui/src/views/queue.rs
-msgid "Up Next"
+msgid "History"
 msgstr ""
 
 #: crates/ui/src/views/queue.rs
@@ -507,7 +499,27 @@ msgid "Nothing is up next."
 msgstr ""
 
 #: crates/ui/src/views/queue.rs
-msgid "History"
+msgid "Now Playing"
+msgstr ""
+
+#: crates/ui/src/views/queue.rs crates/ui/src/widgets/player_bar.rs
+msgid "Queue"
+msgstr ""
+
+#: crates/ui/src/views/queue.rs
+msgid "Songs that you play or add show here."
+msgstr ""
+
+#: crates/ui/src/views/queue.rs
+msgid "The queue is empty"
+msgstr ""
+
+#: crates/ui/src/views/queue.rs
+msgid "Up Next"
+msgstr ""
+
+#: crates/ui/src/views/queue.rs
+msgid "_Clear"
 msgstr ""
 
 #: crates/ui/src/views/queue.rs
@@ -516,22 +528,6 @@ msgid "{} song"
 msgid_plural "{} songs"
 msgstr[0] ""
 msgstr[1] ""
-
-#: crates/ui/src/views/queue.rs
-msgid "Clear Queue?"
-msgstr ""
-
-#: crates/ui/src/views/queue.rs
-msgid "All songs leave the queue and playback stops."
-msgstr ""
-
-#: crates/ui/src/views/queue.rs
-msgid "_Clear"
-msgstr ""
-
-#: crates/ui/src/views/search.rs
-msgid "Search Apple Music"
-msgstr ""
 
 #: crates/ui/src/views/search.rs
 msgid "Look for songs, albums, artists, and playlists."
@@ -542,11 +538,15 @@ msgid "No Results"
 msgstr ""
 
 #: crates/ui/src/views/search.rs
-msgid "Try a different term."
+msgid "Search Apple Music"
 msgstr ""
 
 #: crates/ui/src/views/search.rs
 msgid "Search Failed"
+msgstr ""
+
+#: crates/ui/src/views/search.rs
+msgid "Try a different term."
 msgstr ""
 
 #: crates/ui/src/widgets/detail_header.rs crates/ui/src/widgets/player_bar.rs
@@ -554,20 +554,12 @@ msgstr ""
 msgid "Play"
 msgstr ""
 
-#: crates/ui/src/widgets/detail_header.rs crates/ui/src/widgets/player_bar.rs
-msgid "Shuffle"
-msgstr ""
-
 #: crates/ui/src/widgets/detail_header.rs
 msgid "Show Less"
 msgstr ""
 
-#: crates/ui/src/widgets/player_bar.rs
-msgid "Open album"
-msgstr ""
-
-#: crates/ui/src/widgets/player_bar.rs
-msgid "Previous"
+#: crates/ui/src/widgets/detail_header.rs crates/ui/src/widgets/player_bar.rs
+msgid "Shuffle"
 msgstr ""
 
 #: crates/ui/src/widgets/player_bar.rs
@@ -575,15 +567,15 @@ msgid "Next"
 msgstr ""
 
 #: crates/ui/src/widgets/player_bar.rs
-msgid "Seek"
-msgstr ""
-
-#: crates/ui/src/widgets/player_bar.rs
-msgid "Volume"
+msgid "Open album"
 msgstr ""
 
 #: crates/ui/src/widgets/player_bar.rs
 msgid "Pause"
+msgstr ""
+
+#: crates/ui/src/widgets/player_bar.rs
+msgid "Previous"
 msgstr ""
 
 #: crates/ui/src/widgets/player_bar.rs
@@ -595,7 +587,15 @@ msgid "Repeat Current Song"
 msgstr ""
 
 #: crates/ui/src/widgets/player_bar.rs
+msgid "Seek"
+msgstr ""
+
+#: crates/ui/src/widgets/player_bar.rs
 msgid "Turn Repeat Off"
+msgstr ""
+
+#: crates/ui/src/widgets/player_bar.rs
+msgid "Volume"
 msgstr ""
 
 #: crates/ui/src/widgets/queue_row.rs
@@ -603,15 +603,11 @@ msgid "Remove from Queue"
 msgstr ""
 
 #: crates/ui/src/widgets/song_row.rs
-msgid "Explicit"
-msgstr ""
-
-#: crates/ui/src/widgets/song_row.rs
-msgid "Play Next"
-msgstr ""
-
-#: crates/ui/src/widgets/song_row.rs
 msgid "Add to Queue"
+msgstr ""
+
+#: crates/ui/src/widgets/song_row.rs
+msgid "Explicit"
 msgstr ""
 
 #: crates/ui/src/widgets/song_row.rs
@@ -622,13 +618,16 @@ msgstr ""
 msgid "Go to Artist"
 msgstr ""
 
-#: data/io.github.MedaiP90.RingoMusic.desktop
-#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
-msgid "RingoMusic"
+#: crates/ui/src/widgets/song_row.rs
+msgid "Play Next"
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.desktop
 msgid "Music Player"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.desktop
+msgid "Music;Streaming;Player;Songs;Albums;"
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.desktop
@@ -637,7 +636,8 @@ msgid "Play your Apple Music library"
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.desktop
-msgid "Music;Streaming;Player;Songs;Albums;"
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "RingoMusic"
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
@@ -652,6 +652,22 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "The audio quality is AAC 256 kbps."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "The main window"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "An album page"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "The playback queue"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "The narrow layout"
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

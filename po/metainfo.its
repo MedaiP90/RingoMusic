@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- ITS rules for the metainfo file. They keep xgettext output the same on every
+     gettext version: some versions skip the release notes, some skip the captions. -->
+<its:rules xmlns:its="http://www.w3.org/2005/11/its" version="2.0">
+  <its:translateRule selector="/component" translate="no"/>
+  <its:translateRule selector="/component/name |
+                               /component/summary |
+                               /component/description |
+                               /component/developer_name |
+                               /component/keywords/keyword |
+                               /component/screenshots/screenshot/caption |
+                               /component/releases/release/description"
+                     translate="yes"/>
+</its:rules>
