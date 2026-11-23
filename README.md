@@ -10,7 +10,7 @@ Website: <https://ringomusic.netlify.app/>
 
 RingoMusic is not affiliated with, endorsed by, or sponsored by Apple. You need an Apple Music subscription to use it.
 
-**Status: Stable.**
+[![Issues](https://img.shields.io/github/issues/MedaiP90/RingoMusic)](https://github.com/MedaiP90/RingoMusic/issues) ![Last commit](https://img.shields.io/github/last-commit/MedaiP90/RingoMusic) [![Latest release](https://img.shields.io/github/v/release/MedaiP90/RingoMusic)](https://github.com/MedaiP90/RingoMusic/releases) [![License](https://img.shields.io/github/license/MedaiP90/RingoMusic)](https://github.com/MedaiP90/RingoMusic/blob/master/LICENSE)
 
 <p align="center">
   <img src="assets/promo.png" alt="RingoMusic screenshot">
