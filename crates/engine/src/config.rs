@@ -3,6 +3,7 @@
 
 use std::env;
 use std::ffi::OsString;
+use std::mem;
 use std::path::{Path, PathBuf};
 
 use crate::{Error, Result};
@@ -13,6 +14,8 @@ const COMMAND_ENV: &str = "RINGO_ENGINE_CMD";
 const ARGS_ENV: &str = "RINGO_ENGINE_ARGS";
 /// Engine path relative to the directory of the executable (decision D23).
 const DEFAULT_ENGINE_PATH: &str = "../lib/ringomusic/engine/ringomusic-engine";
+/// Program of the Electron base app that starts Chromium inside a Flatpak sandbox.
+const ZYPAK_WRAPPER: &str = "zypak-wrapper";
 
 /// How to start the engine process.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -45,6 +48,14 @@ impl EngineConfig {
             data_dir,
             socket_path,
         )
+    }
+
+    /// Starts the engine through `zypak-wrapper`, as Chromium needs inside Flatpak.
+    #[must_use]
+    pub fn through_zypak(mut self) -> Self {
+        let engine = mem::replace(&mut self.command, PathBuf::from(ZYPAK_WRAPPER));
+        self.args.insert(0, engine.into_os_string());
+        self
     }
 
     fn from_parts(
@@ -111,6 +122,15 @@ mod tests {
             Path::new("/run/user/1000/ringomusic/engine.sock")
         );
         assert_eq!(config.data_dir, Path::new("/data"));
+    }
+
+    #[test]
+    fn through_zypak_moves_the_engine_into_the_arguments() {
+        let config = parts(Some("/app/engine"), Some("--foo"))
+            .expect("config is valid")
+            .through_zypak();
+        assert_eq!(config.command, Path::new("zypak-wrapper"));
+        assert_eq!(config.args, ["/app/engine", "--foo"]);
     }
 
     #[test]

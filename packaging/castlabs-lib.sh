@@ -18,10 +18,16 @@ castlabs_zip_name() {
     echo "electron-$(castlabs_tag)-linux-x64.zip"
 }
 
-# Downloads the archive into the cache and prints its path.
-# A cached file is reused. The download goes to a temporary name first.
+# Prints the path of the archive. Uses RINGO_CASTLABS_ZIP when it is set (the
+# Flatpak build provides the archive as a source). Otherwise downloads the
+# archive into the cache. A cached file is reused. The download goes to a
+# temporary name first.
 castlabs_download() {
     local tag name cache url
+    if [ -n "${RINGO_CASTLABS_ZIP:-}" ]; then
+        echo "$RINGO_CASTLABS_ZIP"
+        return
+    fi
     tag="$(castlabs_tag)"
     name="$(castlabs_zip_name)"
     cache="${RINGO_BUILD_CACHE:-$HOME/.cache/ringomusic-build}"

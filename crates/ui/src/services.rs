@@ -9,7 +9,7 @@ use anyhow::Context;
 use ringo_core::api_cache::{CachingTransport, SWEEP_INTERVAL};
 use ringo_core::artwork::ArtworkStore;
 use ringo_core::db::Database;
-use ringo_core::paths::Paths;
+use ringo_core::paths::{PackageFormat, Paths};
 use ringo_core::queue_store::QueueStore;
 use ringo_core::runner::{Core, CoreHandle};
 use ringo_core::settings::Settings;
@@ -91,11 +91,14 @@ impl Services {
                 .ensure()
                 .context("cannot create the application directories")?;
             let database = Database::open(&paths.database).context("cannot open the database")?;
-            let config = EngineConfig::from_env_or_default(
+            let mut config = EngineConfig::from_env_or_default(
                 paths.engine_data_dir.clone(),
                 paths.runtime_dir.join("engine.sock"),
             )
             .context("cannot configure the engine")?;
+            if PackageFormat::detect() == PackageFormat::Flatpak {
+                config = config.through_zypak();
+            }
             let engine = Arc::new(SidecarEngine::start(config).context("cannot start the engine")?);
             // The core subscribes to the engine events now. No `await` may come
             // between the engine start and this call, or `engine.ready` can be lost.
