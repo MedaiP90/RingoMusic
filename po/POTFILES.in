@@ -13,6 +13,7 @@ crates/ui/src/section.rs
 crates/ui/src/sidebar.rs
 crates/ui/src/startup_error.rs
 crates/ui/src/theme.rs
+crates/ui/src/update_notice.rs
 crates/ui/src/views/album.rs
 crates/ui/src/views/artist.rs
 crates/ui/src/views/artist_more.rs

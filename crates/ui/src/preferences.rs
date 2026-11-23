@@ -11,6 +11,7 @@ use relm4::gtk::glib;
 use relm4::prelude::*;
 use ringo_core::settings::Settings;
 use ringo_core::state::{AuthState, Message};
+use ringo_core::update_checker;
 
 use crate::services::AppServices;
 use crate::{accent, theme};
@@ -91,6 +92,15 @@ impl SimpleComponent for Preferences {
                     #[name = "notifications_row"]
                     add = &adw::SwitchRow {
                         set_title: &gettext("Show notifications for new songs"),
+                    },
+                    #[name = "updates_row"]
+                    add = &adw::SwitchRow {
+                        set_title: &gettext("Check for updates"),
+                        set_subtitle: &gettext("Look for a new version when the application starts"),
+                        // The package updates the application when the marker file exists.
+                        set_visible: !update_checker::disabled_by_package(
+                            &model.services.paths().install_prefix,
+                        ),
                     },
                 },
 
@@ -382,6 +392,9 @@ fn bind_settings(services: &AppServices, widgets: &PreferencesWidgets) {
         .build();
     settings
         .bind("show-notifications", &widgets.notifications_row, "active")
+        .build();
+    settings
+        .bind("check-updates", &widgets.updates_row, "active")
         .build();
     settings
         .bind("api-cache-max-mb", &widgets.api_limit_row, "value")

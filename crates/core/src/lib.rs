@@ -12,6 +12,7 @@ pub mod queue_store;
 pub mod runner;
 pub mod settings;
 pub mod state;
+pub mod update_checker;
 
 mod error;
 #[cfg(any(test, feature = "mock"))]

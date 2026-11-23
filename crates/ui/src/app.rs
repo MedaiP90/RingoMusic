@@ -17,6 +17,7 @@ use ringo_core::paths::PackageFormat;
 use ringo_core::runner::CoreHandle;
 use ringo_core::settings::Settings;
 use ringo_core::state::{AppState, AuthState, EngineStatus, NowPlaying};
+use ringo_core::update_checker::Release;
 use ringo_mpris::Callbacks;
 use tracing::{debug, warn};
 
@@ -35,6 +36,7 @@ use crate::views::section_page;
 use crate::widgets::player_bar::{PlayerBar, PlayerBarInit, PlayerBarInput, TOGGLE_QUEUE};
 use crate::{
     about, accent, artwork, menu, network_banner, notification, sidebar, subscription, theme,
+    update_notice,
 };
 
 /// Window width in sp below which the sidebar and the queue panel collapse.
@@ -103,6 +105,8 @@ pub enum Input {
     QueueVisibility(bool),
     /// A view asks for a short message.
     ShowToast(String),
+    /// The update check found a newer release.
+    UpdateAvailable(Release),
     /// The user asks for the about dialog.
     ShowAbout,
     /// The user asks for the preferences dialog.
@@ -238,6 +242,7 @@ impl SimpleComponent for App {
         if let Some(message) = background.take_refusal_message() {
             sender.input(Input::ShowToast(message));
         }
+        update_notice::start(&services, &sender);
         let split_view = adw::NavigationSplitView::new();
         let mut search = SearchView::builder().launch(SearchInit {
             services: services.clone(),
@@ -310,6 +315,9 @@ impl SimpleComponent for App {
             Input::ToggleQueue => self.set_queue_open(!self.queue_open),
             Input::QueueVisibility(open) => self.set_queue_open(open),
             Input::ShowToast(message) => self.toast_overlay.add_toast(adw::Toast::new(&message)),
+            Input::UpdateAvailable(release) => self
+                .toast_overlay
+                .add_toast(update_notice::toast(&release, &self.window)),
             Input::ShowAbout => about::present(&self.window),
             Input::ShowPreferences => self.show_preferences(),
             Input::TrackChanged(track) => self.notify(&track),

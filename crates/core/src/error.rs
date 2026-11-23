@@ -82,6 +82,24 @@ pub enum Error {
     #[error("cannot create the HTTP client")]
     HttpClient(#[source] reqwest::Error),
 
+    /// The request for the latest release failed or returned an error status.
+    #[error("cannot read the latest release")]
+    UpdateRequest(#[source] reqwest::Error),
+
+    /// The response for the latest release is not the expected JSON.
+    #[error("cannot parse the latest release")]
+    UpdateResponse(#[source] serde_json::Error),
+
+    /// A version string is not a valid semantic version.
+    #[error("invalid version {version:?}")]
+    InvalidVersion {
+        /// The text that was parsed.
+        version: String,
+        /// Cause of the failure.
+        #[source]
+        source: semver::Error,
+    },
+
     /// The blocking task of a database call did not finish.
     #[error("database task failed")]
     Task(#[source] tokio::task::JoinError),

@@ -1848,6 +1848,7 @@ dependencies = [
  "ringo-core",
  "ringo-engine",
  "rusqlite",
+ "semver",
  "serde",
  "serde_json",
  "sha2",

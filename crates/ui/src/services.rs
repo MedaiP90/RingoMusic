@@ -35,7 +35,6 @@ pub struct AppServices {
     core: CoreHandle,
     artwork: ArtworkStore,
     settings: Settings,
-    #[expect(dead_code, reason = "the views of prompts 29-33 use it")]
     paths: Arc<Paths>,
 }
 
@@ -59,7 +58,6 @@ impl AppServices {
         &self.settings
     }
 
-    #[expect(dead_code, reason = "the views of prompts 29-33 use it")]
     pub fn paths(&self) -> &Paths {
         &self.paths
     }

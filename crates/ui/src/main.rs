@@ -28,6 +28,7 @@ mod startup_error;
 mod subscription;
 mod theme;
 mod tint;
+mod update_notice;
 mod views;
 mod widgets;
 
