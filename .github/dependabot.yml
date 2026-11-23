@@ -14,6 +14,13 @@ updates:
     groups:
       npm-minor-patch:
         update-types: [minor, patch]
+    ignore:
+      # Types must match the Node version bundled in Electron (24).
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
+      # Stay on TypeScript 6 until the tooling supports 7.
+      - dependency-name: typescript
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: github-actions
     directory: /
     schedule:

@@ -31,6 +31,7 @@ build_engine_bundles() {
 # Fails if the bundles require a module that is neither electron nor a Node built-in.
 check_engine_externals() {
     local bad
+    # shellcheck disable=SC2016 # The JavaScript code has its own template literals.
     bad="$(node -e '
         const { builtinModules } = require("node:module");
         const fs = require("node:fs");
@@ -51,7 +52,7 @@ check_engine_externals() {
 }
 
 install_electron() {
-    local zip expected actual work
+    local zip expected actual
     zip="$(castlabs_download)"
     expected="$(cut -d' ' -f1 "$CASTLABS_SHA_FILE")"
     actual="$(sha256sum "$zip" | cut -d' ' -f1)"
