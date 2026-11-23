@@ -10,7 +10,7 @@ set -euo pipefail
 REPO_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 IMAGES=("$@")
 if [ ${#IMAGES[@]} -eq 0 ]; then
-    IMAGES=(debian:13 ubuntu:26.04 fedora:43 fedora:44)
+    IMAGES=(debian:13 ubuntu:26.04 fedora:44 fedora:45 opensuse/tumbleweed)
 fi
 
 # Container script. $PKG_KIND is "deb" or "rpm".
@@ -22,6 +22,11 @@ if [ "$PKG_KIND" = deb ]; then
     apt-get install -y -qq adwaita-icon-theme >/dev/null   # a normal desktop has the icon theme
     apt-get install -y -qq /dist/*.deb >/dev/null
     dpkg -L ringomusic | sort > /files.txt
+elif command -v zypper >/dev/null; then
+    # The test image has no GPG key for the local package.
+    zypper -n -q install adwaita-icon-theme >/dev/null
+    zypper -n -q --no-gpg-checks install /dist/*.rpm >/dev/null
+    rpm -ql ringomusic | sort > /files.txt
 else
     dnf install -y -q adwaita-icon-theme >/dev/null
     dnf install -y -q /dist/*.rpm >/dev/null
@@ -32,7 +37,13 @@ stat -c '%a %U' /usr/lib/ringomusic/engine/chrome-sandbox
 if find / -xdev -iname '*widevine*' 2>/dev/null | grep -q .; then echo "Widevine file found"; exit 1; fi
 missing="$(ldd /usr/lib/ringomusic/engine/ringomusic-engine /usr/bin/ringomusic | grep 'not found' || true)"
 if [ -n "$missing" ]; then echo "missing libraries:"; echo "$missing"; exit 1; fi
-if [ "$PKG_KIND" = deb ]; then apt-get purge -y -qq ringomusic >/dev/null; else dnf remove -y -q ringomusic >/dev/null; fi
+if [ "$PKG_KIND" = deb ]; then
+    apt-get purge -y -qq ringomusic >/dev/null
+elif command -v zypper >/dev/null; then
+    zypper -n -q remove ringomusic >/dev/null
+else
+    dnf remove -y -q ringomusic >/dev/null
+fi
 # Check that no package file stays, and that no generated cache still names the app.
 leftover="$(while read -r path; do
     if [ -f "$path" ] || [ -L "$path" ]; then echo "$path"; fi

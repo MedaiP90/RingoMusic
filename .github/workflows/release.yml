@@ -236,3 +236,74 @@ jobs:
             dist/RingoMusic-*-x86_64.AppImage
             dist/RingoMusic-*-x86_64.AppImage.zsync
           if-no-files-found: error
+
+  # Installs each package in a clean container and runs "ringomusic --version". No playback test.
+  smoke-test:
+    needs: [version-check, deb-rpm, tarball, flatpak, appimage]
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: "deb on debian:13", artifact: deb, command: "packaging/test-packages.sh debian:13" }
+          - { name: "deb on ubuntu:26.04", artifact: deb, command: "packaging/test-packages.sh ubuntu:26.04" }
+          - { name: "rpm on fedora:45", artifact: rpm, command: "packaging/test-packages.sh fedora:45" }
+          - { name: "rpm on fedora:44", artifact: rpm, command: "packaging/test-packages.sh fedora:44" }
+          - { name: "rpm on opensuse/tumbleweed", artifact: rpm, command: "packaging/test-packages.sh opensuse/tumbleweed" }
+          - name: "tarball on archlinux (PKGBUILD)"
+            artifact: tarball
+            command: 'docker run --rm -v "$PWD:/repo" -w /repo archlinux packaging/aur/test-install.sh "$VERSION"'
+          - { name: "AppImage on debian:13", artifact: appimage, command: "packaging/appimage/test-appimage.sh debian:13" }
+          - { name: "AppImage on fedora:45", artifact: appimage, command: "packaging/appimage/test-appimage.sh fedora:45" }
+          - { name: "AppImage on archlinux", artifact: appimage, command: "packaging/appimage/test-appimage.sh archlinux" }
+    name: smoke-test (${{ matrix.name }})
+    env:
+      VERSION: ${{ needs.version-check.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ matrix.artifact }}
+          path: dist
+      # The matrix is fixed in this file, so the command text is trusted.
+      - run: ${{ matrix.command }}
+
+  publish:
+    needs: [version-check, smoke-test]
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
+    env:
+      VERSION: ${{ needs.version-check.outputs.version }}
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: "{deb,rpm,tarball,flatpak,appimage}"
+          merge-multiple: true
+          path: release
+      - name: Make SHA256SUMS
+        working-directory: release
+        env:
+          LC_ALL: C
+        run: |
+          sha256sum -- * > ../SHA256SUMS
+          mv ../SHA256SUMS .
+          cat SHA256SUMS
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-path: release/*
+      - name: Make the release notes
+        run: python3 scripts/release-notes.py "$VERSION" | tee notes.md
+      # A tag with "-" (for example v0.9.0-rc.1) is a pre-release.
+      - name: Create the GitHub release
+        run: |
+          flags=()
+          if [[ "$TAG" == *-* ]]; then flags+=(--prerelease); fi
+          gh release create "$TAG" release/* \
+            --verify-tag --title "RingoMusic $VERSION" --notes-file notes.md "${flags[@]}"
