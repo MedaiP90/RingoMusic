@@ -21,6 +21,7 @@ rm -rf "$STAGE"
 build_binary() {
     cargo build --release --locked -p ringomusic
     install -Dm755 target/release/ringomusic "$DEST/bin/ringomusic"
+    strip --strip-unneeded "$DEST/bin/ringomusic"
 }
 
 build_engine_bundles() {
@@ -100,6 +101,13 @@ compile_translations() {
     shopt -u nullglob
 }
 
+# Packages must not have group-write or other-write bits (the zip uses the umask of the builder).
+# chrome-sandbox gets the SUID bit here. The package tool sets the owner root.
+normalize_permissions() {
+    chmod -R go-w "$STAGE"
+    chmod 4755 "$ENGINE_DIR/chrome-sandbox"
+}
+
 check_no_widevine() {
     local found
     found="$(find "$STAGE" -iname '*widevine*')"
@@ -117,5 +125,6 @@ install_electron
 install_engine_app
 install_data_files
 compile_translations
+normalize_permissions
 check_no_widevine
 echo "install tree: $STAGE ($(du -sh "$STAGE" | cut -f1))"

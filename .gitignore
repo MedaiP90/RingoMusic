@@ -33,3 +33,4 @@ engine/node_modules
 engine/dist
 /builddir
 /repo
+/dist
