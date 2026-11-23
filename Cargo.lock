@@ -1811,7 +1811,7 @@ dependencies = [
 
 [[package]]
 name = "ringo-am-api"
-version = "0.9.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "async-trait",
  "serde",
@@ -1823,7 +1823,7 @@ dependencies = [
 
 [[package]]
 name = "ringo-cli"
-version = "0.9.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "clap",
@@ -1838,7 +1838,7 @@ dependencies = [
 
 [[package]]
 name = "ringo-core"
-version = "0.9.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "async-trait",
  "gio",
@@ -1859,7 +1859,7 @@ dependencies = [
 
 [[package]]
 name = "ringo-engine"
-version = "0.9.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "async-trait",
  "ringo-am-api",
@@ -1873,7 +1873,7 @@ dependencies = [
 
 [[package]]
 name = "ringo-mpris"
-version = "0.9.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "mpris-server",
  "ringo-am-api",
@@ -1886,7 +1886,7 @@ dependencies = [
 
 [[package]]
 name = "ringomusic"
-version = "0.9.0-rc.1"
+version = "1.0.0"
 dependencies = [
  "anyhow",
  "ashpd",

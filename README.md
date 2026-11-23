@@ -10,7 +10,7 @@ Website: <https://ringomusic.netlify.app/>
 
 RingoMusic is not affiliated with, endorsed by, or sponsored by Apple. You need an Apple Music subscription to use it.
 
-**Status: Beta.**
+**Status: Stable.**
 
 <p align="center">
   <img src="assets/promo.png" alt="RingoMusic screenshot">

@@ -30,14 +30,24 @@ Copyright (C) 2026 RingoMusic contributors
     <color type="primary" scheme_preference="light">#f6a5a9</color>
     <color type="primary" scheme_preference="dark">#a51d2d</color>
   </branding>
-  <!-- Prompt 47 adds the screenshots.
   <screenshots>
     <screenshot type="default">
-      <image>https://example.invalid/screenshot.png</image>
+      <image>https://raw.githubusercontent.com/MedaiP90/RingoMusic/v1.0.0/data/screenshots/main-light.png</image>
       <caption>The main window</caption>
     </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/MedaiP90/RingoMusic/v1.0.0/data/screenshots/album.png</image>
+      <caption>An album page</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/MedaiP90/RingoMusic/v1.0.0/data/screenshots/queue.png</image>
+      <caption>The playback queue</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/MedaiP90/RingoMusic/v1.0.0/data/screenshots/mobile.png</image>
+      <caption>The narrow layout</caption>
+    </screenshot>
   </screenshots>
-  -->
   <requires>
     <display_length compare="ge">360</display_length>
   </requires>
@@ -46,6 +56,24 @@ Copyright (C) 2026 RingoMusic contributors
     <control>pointing</control>
   </recommends>
   <releases>
+    <release version="1.0.0" date="2026-11-23">
+      <description>
+        <p>First stable release of RingoMusic.</p>
+        <ul>
+          <li>Sign in with your Apple ID and play your Apple Music library.</li>
+          <li>Search the catalog. Open songs, albums, and playlists.</li>
+          <li>Control the queue. Use media keys and the GNOME Shell controls.</li>
+          <li>The window adapts to narrow screens.</li>
+          <li>The application checks for a new release once a day. You can turn this off in the preferences.</li>
+        </ul>
+        <p>Known limits:</p>
+        <ul>
+          <li>The audio quality is AAC 256 kbps.</li>
+          <li>Only x86_64 is supported.</li>
+          <li>You need an Apple Music subscription.</li>
+        </ul>
+      </description>
+    </release>
     <release version="0.9.0-rc.1" date="2026-11-23">
       <description>
         <p>First pre-release. It tests the release pipeline and the packages.</p>

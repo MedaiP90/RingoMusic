@@ -655,6 +655,44 @@ msgid "The audio quality is AAC 256 kbps."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "First stable release of RingoMusic."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Sign in with your Apple ID and play your Apple Music library."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Search the catalog. Open songs, albums, and playlists."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Control the queue. Use media keys and the GNOME Shell controls."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "The window adapts to narrow screens."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The application checks for a new release once a day. You can turn this off "
+"in the preferences."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Known limits:"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Only x86_64 is supported."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "You need an Apple Music subscription."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "First pre-release. It tests the release pipeline and the packages."
 msgstr ""
 

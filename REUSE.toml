@@ -42,6 +42,7 @@ SPDX-License-Identifier = "GPL-3.0-or-later"
 [[annotations]]
 path = [
   "data/icons/**",
+  "data/screenshots/**",
   "assets/**",
   "website/**.png",
   "website/favicon.svg",
