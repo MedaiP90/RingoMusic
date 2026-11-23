@@ -144,6 +144,10 @@ msgid "The player does not work on this system"
 msgstr ""
 
 #: crates/ui/src/gate.rs
+msgid "Open Troubleshooting Guide"
+msgstr ""
+
+#: crates/ui/src/gate.rs
 msgid "Report Problem"
 msgstr ""
 
@@ -163,10 +167,6 @@ msgstr ""
 
 #: crates/ui/src/gate.rs
 msgid "The player cannot start"
-msgstr ""
-
-#: crates/ui/src/gate.rs
-msgid "Open Troubleshooting Guide"
 msgstr ""
 
 #: crates/ui/src/menu.rs
