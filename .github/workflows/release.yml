@@ -194,6 +194,7 @@ jobs:
           arch: x86_64
           cache: false
           upload-artifact: false
+          verbose: true
       - name: Validate the metainfo file
         run: |
           command -v appstreamcli >/dev/null || dnf install -y -q appstream

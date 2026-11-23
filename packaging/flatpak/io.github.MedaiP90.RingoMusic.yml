@@ -52,6 +52,7 @@ modules:
           - stage
           - dist
           - builddir
+          - flatpak_app
           - repo
           - .flatpak-builder
           - engine/node_modules
