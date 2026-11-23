@@ -56,6 +56,13 @@ Copyright (C) 2026 RingoMusic contributors
     <control>pointing</control>
   </recommends>
   <releases>
+    <release version="1.0.1" date="2026-11-23">
+      <description>
+        <ul>
+          <li>Sign-in is faster: the Apple ID dialog opens directly. You do not have to click the Sign In button on the site.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.0" date="2026-11-23">
       <description>
         <p>First stable release of RingoMusic.</p>

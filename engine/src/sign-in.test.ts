@@ -27,7 +27,12 @@ void test('decidePopup / denied URL / should deny', () => {
 class Harness {
   readonly events: string[] = [];
   authorized = false;
+  loadFails = false;
   readonly window = {
+    loadURL: (url: string) => {
+      this.events.push(`load ${url}`);
+      return this.loadFails ? Promise.reject(new Error('load failed')) : Promise.resolve();
+    },
     show: () => this.events.push('show'),
     hide: () => this.events.push('hide'),
   };
@@ -59,7 +64,22 @@ void test('run / auth.changed authorized / should resolve and hide the window', 
     params: { authorized: true },
   });
   assert.equal(await result, null);
-  assert.deepEqual(harness.events, ['auth.status', 'show', 'hide']);
+  assert.deepEqual(harness.events, [
+    'auth.status',
+    'load https://music.apple.com/login',
+    'show',
+    'hide',
+  ]);
+});
+
+void test('run / login page fails to load / should still show the window', async () => {
+  const harness = new Harness();
+  harness.loadFails = true;
+  const result = harness.signIn.run();
+  await new Promise((resolve) => setImmediate(resolve));
+  harness.signIn.cancel();
+  await assert.rejects(result, { code: ErrorCode.Cancelled });
+  assert.deepEqual(harness.events.slice(1), ['load https://music.apple.com/login', 'show', 'hide']);
 });
 
 void test('run / window closed / should reject with cancelled', async () => {

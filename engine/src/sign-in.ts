@@ -1,18 +1,22 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
-// Main-side sign-in: shows the window and waits until the user signs in with the site's own button.
+// Main-side sign-in: opens the site's own sign-in dialog and waits until the user signs in.
 // `authorize()` is not used: the site resets its token from its own storage (see PROTOCOL.md).
 
 import type { WindowOpenHandlerResponse } from 'electron';
 
 import { ErrorCode } from './error-code.ts';
+import { log } from './log.ts';
 import type { AuthStatus, Notification } from './protocol.ts';
 import { RpcError } from './rpc.ts';
 
 const ALLOWED_POPUP_DOMAIN = 'apple.com';
+// The site opens its sign-in dialog on this route.
+const LOGIN_URL = 'https://music.apple.com/login';
 
 export interface SignInWindow {
+  loadURL(url: string): Promise<void>;
   show(): void;
   hide(): void;
 }
@@ -89,6 +93,7 @@ export class SignIn {
     if (status.authorized) {
       return null;
     }
+    await this.openLoginDialog();
     this.window.show();
     try {
       await new Promise<void>((resolve, reject) => {
@@ -98,5 +103,15 @@ export class SignIn {
       this.window.hide();
     }
     return null;
+  }
+
+  // Loads the login route before the window shows, so the home page does not flash.
+  // A failed load is not fatal: the user can still click the site's Sign In button.
+  private async openLoginDialog(): Promise<void> {
+    try {
+      await this.window.loadURL(LOGIN_URL);
+    } catch (error) {
+      log.warn({ error: String(error) }, 'cannot load the login page');
+    }
   }
 }
