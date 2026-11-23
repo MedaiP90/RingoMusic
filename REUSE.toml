@@ -27,6 +27,10 @@ path = [
   "po/*.po",
   "packaging/castlabs.sha256",
   "packaging/copyright",
+  "website/llms.txt",
+  "website/netlify.toml",
+  "website/robots.txt",
+  "website/sitemap.xml",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 RingoMusic contributors"
@@ -37,6 +41,8 @@ SPDX-License-Identifier = "GPL-3.0-or-later"
 path = [
   "data/icons/**",
   "assets/**",
+  "website/**.png",
+  "website/favicon.svg",
 ]
 precedence = "aggregate"
 SPDX-FileCopyrightText = "2026 RingoMusic contributors"
