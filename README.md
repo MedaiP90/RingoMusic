@@ -6,6 +6,8 @@
 
 RingoMusic is an open-source client for Apple Music on Linux. It looks and feels like a native GNOME application. The user interface and all application logic are Rust code (GTK 4 and libadwaita). A hidden Chromium engine plays the DRM-protected audio.
 
+Website: <https://ringomusic.netlify.app/>
+
 RingoMusic is not affiliated with, endorsed by, or sponsored by Apple. You need an Apple Music subscription to use it.
 
 **Status: Under development. Not ready for use.**
