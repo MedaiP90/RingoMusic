@@ -6,10 +6,12 @@
 
 PACKAGING_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(dirname "$PACKAGING_DIR")"
+# shellcheck disable=SC2034 # Used by the scripts that source this file.
 CASTLABS_SHA_FILE="$PACKAGING_DIR/castlabs.sha256"
 
 # Prints the pinned tag, for example "v45.2.1+wvcus".
 castlabs_tag() {
+    # shellcheck disable=SC2016 # The backticks belong to the sed pattern.
     sed -n 's/^- Tag: `\(.*\)`$/\1/p' "$REPO_ROOT/engine/CASTLABS_VERSION.md"
 }
 
