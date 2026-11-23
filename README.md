@@ -44,7 +44,7 @@ Notes:
 
 - **Flatpak:** the bundle adds no remote, so `flatpak update` does not update it. Install the new bundle to update.
 - **AppImage:** the AppImage needs unprivileged user namespaces. Ubuntu blocks them, so it is not supported on Ubuntu (use the `.deb` or the Flatpak). To update, run `appimageupdatetool RingoMusic-<version>-x86_64.AppImage`. The application also shows a notice when a new version exists.
-- **Tarball:** the archive has a `usr/` tree. Extract it into a prefix, for example `sudo tar -xzf ringomusic-<version>-x86_64.tar.gz -C /usr/local`. Then set the Chromium sandbox helper: `sudo chown root:root /usr/local/lib/ringomusic/engine/chrome-sandbox && sudo chmod 4755 /usr/local/lib/ringomusic/engine/chrome-sandbox`. Install GTK 4.18, libadwaita 1.7, NSS, and the other libraries of the `.deb` package yourself.
+- **Tarball:** the archive has a `usr/` tree. Extract it into a prefix, for example `sudo tar -xzf ringomusic-<version>-x86_64.tar.gz -C /usr/local`. Then set the Chromium sandbox helper: `sudo chown root:root /usr/local/lib/ringomusic/engine/chrome-sandbox && sudo chmod 4755 /usr/local/lib/ringomusic/engine/chrome-sandbox`. Compile the settings schema, or the app stops at start: `sudo glib-compile-schemas /usr/local/share/glib-2.0/schemas`. Install GTK 4.18, libadwaita 1.7, NSS, and the other libraries of the `.deb` package yourself.
 - If the player does not start, see [docs/troubleshooting.md](docs/troubleshooting.md).
 
 ### Verify the download

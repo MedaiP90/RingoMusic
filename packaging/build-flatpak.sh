@@ -30,6 +30,12 @@ flatpak-builder --force-clean --user --install-deps-from=flathub \
 # The metainfo file must be valid in the install tree.
 appstreamcli validate --no-net "builddir/files/share/metainfo/$APP_ID.metainfo.xml"
 
+# The app stops at start without the compiled GSettings schemas.
+if [ ! -f builddir/files/share/glib-2.0/schemas/gschemas.compiled ]; then
+    echo "error: no compiled GSettings schemas in the Flatpak" >&2
+    exit 1
+fi
+
 # The bundle must not contain Widevine (the CDM is downloaded at run time).
 if find builddir/files -iname '*widevine*' | grep -q .; then
     echo "error: Widevine files in the Flatpak" >&2
