@@ -288,6 +288,13 @@
     background-color: color-mix(in srgb, var(--accent-bg-color), black 10%);
   }
 
+  .button--disabled,
+  .button--disabled:hover {
+    background-color: var(--button-bg-color);
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
   .button__icon {
     inline-size: 1rem;
     block-size: 1rem;

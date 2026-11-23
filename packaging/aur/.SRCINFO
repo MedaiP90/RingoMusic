@@ -1,6 +1,6 @@
 pkgbase = ringomusic-bin
 	pkgdesc = Apple Music client for GNOME (binary release)
-	pkgver = 1.0.0
+	pkgver = 0.9.0_rc.1
 	pkgrel = 1
 	url = https://github.com/MedaiP90/RingoMusic
 	arch = x86_64
@@ -15,11 +15,14 @@ pkgbase = ringomusic-bin
 	depends = libcups
 	depends = at-spi2-core
 	depends = libxkbcommon
+	depends = glib2
+	depends = dconf
+	depends = hicolor-icon-theme
 	provides = ringomusic
 	conflicts = ringomusic
 	options = !strip
 	options = !debug
-	source = ringomusic-bin-1.0.0.tar.gz::https://github.com/MedaiP90/RingoMusic/releases/download/v1.0.0/ringomusic-1.0.0-x86_64.tar.gz
-	sha256sums = SKIP
+	source = ringomusic-bin-0.9.0_rc.1.tar.gz::https://github.com/MedaiP90/RingoMusic/releases/download/v0.9.0-rc.1/ringomusic-0.9.0-rc.1-x86_64.tar.gz
+	sha256sums = 127f41ea6c4f4d12669abc11a6e00dd3a34aa017f4c959faabfe2d6cd8b52f1d
 
 pkgname = ringomusic-bin

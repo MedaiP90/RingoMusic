@@ -3,8 +3,8 @@
 # Maintainer: RingoMusic contributors <noreply@users.noreply.github.com>
 
 pkgname=ringomusic-bin
-# A pre-release uses "_" in pkgver (0.9.0_rc.1) and "-" in the upstream tag (0.9.0-rc.1).
-pkgver=1.0.0
+# pacman forbids "-" in pkgver. A pre-release uses "_" in pkgver (0.9.0_rc.1) and "-" in the upstream tag (0.9.0-rc.1).
+pkgver=0.9.0_rc.1
 pkgrel=1
 pkgdesc='Apple Music client for GNOME (binary release)'
 arch=(x86_64)
@@ -18,8 +18,7 @@ conflicts=(ringomusic)
 # The Electron binaries must stay as built.
 options=(!strip !debug)
 source=("$pkgname-$pkgver.tar.gz::$url/releases/download/v${pkgver//_/-}/ringomusic-${pkgver//_/-}-x86_64.tar.gz")
-# The release script sets the real checksum from SHA256SUMS (prompt 46).
-sha256sums=('SKIP')
+sha256sums=('127f41ea6c4f4d12669abc11a6e00dd3a34aa017f4c959faabfe2d6cd8b52f1d')
 
 package() {
     cd "$srcdir"
