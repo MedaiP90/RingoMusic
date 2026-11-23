@@ -1,0 +1,13 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 RingoMusic contributors
+#
+# Lets the engine create user namespaces on systems that restrict them
+# (Ubuntu 24.04 and later). The Chromium sandbox needs this.
+abi <abi/4.0>,
+include <tunables/global>
+
+profile ringomusic /usr/lib/ringomusic/engine/ringomusic-engine flags=(unconfined) {
+  userns,
+
+  include if exists <local/ringomusic>
+}

@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 4,
+  "method": "player.setQueue",
+  "params": {
+    "items": [
+      "1440857781",
+      "i.PkdXYZ"
+    ],
+    "start_index": 1,
+    "kind": "songs"
+  }
+}

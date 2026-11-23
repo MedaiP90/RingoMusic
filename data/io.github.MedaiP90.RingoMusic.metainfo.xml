@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+SPDX-License-Identifier: GPL-3.0-or-later
+Copyright (C) 2026 RingoMusic contributors
+-->
+<component type="desktop-application">
+  <id>io.github.MedaiP90.RingoMusic</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-3.0-or-later</project_license>
+  <name>RingoMusic</name>
+  <summary>Play your Apple Music library</summary>
+  <developer id="io.github.medaip90">
+    <name>MedaiP90</name>
+  </developer>
+  <launchable type="desktop-id">io.github.MedaiP90.RingoMusic.desktop</launchable>
+  <provides>
+    <binary>ringomusic</binary>
+  </provides>
+  <description>
+    <p>RingoMusic is a native GNOME music player for Apple Music. Use it to browse your library, search the catalog, and play songs, albums, and playlists.</p>
+    <p>You must have an Apple Music subscription to use this application.</p>
+    <p>The audio quality is AAC 256 kbps.</p>
+    <p>RingoMusic is not affiliated with Apple Inc. Apple Music is a trademark of Apple Inc.</p>
+  </description>
+  <url type="homepage">https://ringomusic.netlify.app/</url>
+  <url type="bugtracker">https://github.com/MedaiP90/RingoMusic/issues</url>
+  <url type="vcs-browser">https://github.com/MedaiP90/RingoMusic</url>
+  <content_rating type="oars-1.1" />
+  <branding>
+    <color type="primary" scheme_preference="light">#f6a5a9</color>
+    <color type="primary" scheme_preference="dark">#a51d2d</color>
+  </branding>
+  <screenshots>
+    <screenshot type="default">
+      <image>https://raw.githubusercontent.com/MedaiP90/RingoMusic/v1.0.0/data/screenshots/main-light.png</image>
+      <caption>The main window</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/MedaiP90/RingoMusic/v1.0.0/data/screenshots/album.png</image>
+      <caption>An album page</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/MedaiP90/RingoMusic/v1.0.0/data/screenshots/queue.png</image>
+      <caption>The playback queue</caption>
+    </screenshot>
+    <screenshot>
+      <image>https://raw.githubusercontent.com/MedaiP90/RingoMusic/v1.0.0/data/screenshots/mobile.png</image>
+      <caption>The narrow layout</caption>
+    </screenshot>
+  </screenshots>
+  <requires>
+    <display_length compare="ge">360</display_length>
+  </requires>
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
+  <releases>
+    <release version="1.0.0" date="2026-11-23">
+      <description>
+        <p>First stable release of RingoMusic.</p>
+        <ul>
+          <li>Sign in with your Apple ID and play your Apple Music library.</li>
+          <li>Search the catalog. Open songs, albums, and playlists.</li>
+          <li>Control the queue. Use media keys and the GNOME Shell controls.</li>
+          <li>The window adapts to narrow screens.</li>
+          <li>The application checks for a new release once a day. You can turn this off in the preferences.</li>
+        </ul>
+        <p>Known limits:</p>
+        <ul>
+          <li>The audio quality is AAC 256 kbps.</li>
+          <li>Only x86_64 is supported.</li>
+          <li>You need an Apple Music subscription.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.9.0-rc.1" date="2026-11-23">
+      <description>
+        <p>First pre-release. It tests the release pipeline and the packages.</p>
+        <ul>
+          <li>The application checks for a new release once a day and shows a message with a link.</li>
+          <li>Turn the check off with the new "Check for updates" switch in the preferences.</li>
+        </ul>
+      </description>
+    </release>
+    <release version="0.1.0" date="2026-11-20" />
+  </releases>
+</component>

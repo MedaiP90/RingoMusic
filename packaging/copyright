@@ -1,0 +1,23 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: RingoMusic
+Source: https://github.com/MedaiP90/RingoMusic
+
+Files: *
+Copyright: 2026 RingoMusic contributors
+License: GPL-3.0-or-later
+
+Files: usr/lib/ringomusic/engine/*
+Copyright: Electron contributors, Chromium authors, CastLabs, and others
+License: other
+ The engine is the CastLabs Electron build. Its licenses are listed in
+ /usr/lib/ringomusic/engine/LICENSES.chromium.html and
+ /usr/lib/ringomusic/engine/LICENSE.
+
+License: GPL-3.0-or-later
+ This program is free software: you can redistribute it and/or modify it
+ under the terms of the GNU General Public License as published by the Free
+ Software Foundation, either version 3 of the License, or (at your option)
+ any later version.
+ .
+ On Debian systems, the full text of the GNU General Public License version
+ 3 is in /usr/share/common-licenses/GPL-3.

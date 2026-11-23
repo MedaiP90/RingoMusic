@@ -1,0 +1,14 @@
+{
+  "jsonrpc": "2.0",
+  "method": "player.nowPlaying",
+  "params": {
+    "id": "1440857781",
+    "title": "One More Time",
+    "artist": "Daft Punk",
+    "album": "Discovery",
+    "duration_ms": 320000,
+    "artwork_url": "https://example.com/art/{w}x{h}.jpg",
+    "album_id": "697194953",
+    "queue_index": 1
+  }
+}

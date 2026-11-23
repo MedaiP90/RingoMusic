@@ -1,0 +1,20 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 RingoMusic contributors
+#
+# Lintian overrides. Each tag is expected. Installed to /usr/share/lintian/overrides/ringomusic.
+
+# The Chromium sandbox helper must be SUID root (plan section 6.2).
+ringomusic: elevated-privileges 4755 root/root [usr/lib/ringomusic/engine/chrome-sandbox]
+
+# The engine is the CastLabs Electron build. Upstream ships these libraries inside it.
+ringomusic: embedded-library * [usr/lib/ringomusic/engine/ringomusic-engine]
+
+# Upstream Electron ships its shared libraries with mode 0755 and unstripped.
+ringomusic: shared-library-is-executable * [usr/lib/ringomusic/engine/*]
+ringomusic: unstripped-binary-or-object [usr/lib/ringomusic/engine/*]
+
+# The package has no upstream changelog file yet. The GitHub release notes hold the changes.
+ringomusic: no-changelog usr/share/doc/ringomusic/changelog.Debian.gz (non-native package)
+
+# The command-line options are minimal. A manual page is not planned for 1.0.
+ringomusic: no-manual-page [usr/bin/ringomusic]

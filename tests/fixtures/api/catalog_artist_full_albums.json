@@ -1,0 +1,101 @@
+{
+  "data": [
+    {
+      "attributes": {
+        "artistName": "Radiohead",
+        "artwork": {
+          "bgColor": "cecdd2",
+          "hasP3": false,
+          "height": 1400,
+          "textColor1": "0c0a09",
+          "textColor2": "171616",
+          "textColor3": "333131",
+          "textColor4": "3c3b3b",
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/b7/f2/5d/b7f25d91-4320-47c8-146a-6f84d5bc7e78/cover.jpg/{w}x{h}bb.jpg",
+          "width": 1400
+        },
+        "audioTraits": [
+          "lossless",
+          "lossy-stereo"
+        ],
+        "copyright": "℗ 2016 LLLP LLP under exclusive license to XL Recordings Ltd",
+        "editorialNotes": {
+          "short": "Rock multiforme, melodie distorte e una bellezza quasi spettrale.",
+          "standard": "Il nono album dei Radiohead è un'irresistibile e singolare raccolta di rock multiforme, melodie distorte e una bellezza quasi spettrale. Con reminiscenze dei loro lavori precedenti, come il distante rantolio di ‘Daydreaming’, il potente crescendo di ‘Ful Stop’ e i favolosi accordi di Jonny Greenwood, <i>A Moon Shaped Pool</i> è al contempo familiare e magnificamente elusivo, proprio come il suo indimenticabile brano di chiusura. ‘True Love Waits’, uno dei brani più amati dal vivo fin da metà degli anni ’90, è stato reinterpretato in studio come una meditazione al pianoforte che, sempre più raffinata, cresce fino a librarsi delicatamente in volo."
+        },
+        "genreNames": [
+          "Alternativa",
+          "Musica",
+          "Rock",
+          "Rock progressive/Art-rock",
+          "Alternativa adulti"
+        ],
+        "isCompilation": false,
+        "isComplete": true,
+        "isMasteredForItunes": true,
+        "isPrerelease": false,
+        "isSingle": false,
+        "name": "A Moon Shaped Pool",
+        "playParams": {
+          "id": "1111577743",
+          "kind": "album"
+        },
+        "recordLabel": "XL Recordings",
+        "releaseDate": "2016-05-08",
+        "trackCount": 11,
+        "upc": "634904079055",
+        "url": "https://music.apple.com/it/album/a-moon-shaped-pool/1111577743"
+      },
+      "href": "/v1/catalog/it/albums/1111577743",
+      "id": "1111577743",
+      "type": "albums"
+    },
+    {
+      "attributes": {
+        "artistName": "Radiohead",
+        "artwork": {
+          "bgColor": "934d28",
+          "hasP3": false,
+          "height": 4000,
+          "textColor1": "f9faec",
+          "textColor2": "fbe3dd",
+          "textColor3": "e4d7c5",
+          "textColor4": "e6c5b9",
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/af/b6/7b/afb67b4e-6cf8-10b3-31f1-1389e301166d/634904078768.png/{w}x{h}bb.jpg",
+          "width": 4000
+        },
+        "audioTraits": [
+          "lossless",
+          "lossy-stereo"
+        ],
+        "copyright": "℗ 2011 LLLP LLP under exclusive license to XL Recordings Ltd",
+        "genreNames": [
+          "Alternativa",
+          "Musica",
+          "Rock",
+          "Alternativa adulti",
+          "Rock progressive/Art-rock"
+        ],
+        "isCompilation": false,
+        "isComplete": true,
+        "isMasteredForItunes": false,
+        "isPrerelease": false,
+        "isSingle": false,
+        "name": "The King of Limbs",
+        "playParams": {
+          "id": "1109714965",
+          "kind": "album"
+        },
+        "recordLabel": "XL Recordings",
+        "releaseDate": "2011-02-18",
+        "trackCount": 8,
+        "upc": "634904078768",
+        "url": "https://music.apple.com/it/album/the-king-of-limbs/1109714965"
+      },
+      "href": "/v1/catalog/it/albums/1109714965",
+      "id": "1109714965",
+      "type": "albums"
+    }
+  ],
+  "next": "/v1/catalog/it/artists/657515/view/full-albums?offset=2"
+}

@@ -1,0 +1,14 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 RingoMusic contributors
+[Desktop Entry]
+Type=Application
+Name=RingoMusic
+GenericName=Music Player
+Comment=Play your Apple Music library
+Exec=ringomusic
+Icon=io.github.MedaiP90.RingoMusic
+Terminal=false
+Categories=AudioVideo;Audio;Player;
+Keywords=Music;Streaming;Player;Songs;Albums;
+StartupNotify=true
+SingleMainWindow=true

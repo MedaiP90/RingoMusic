@@ -1,0 +1,62 @@
+version = 1
+
+# Files that cannot hold an SPDX header (config, lock files, binary data).
+[[annotations]]
+path = [
+  ".gitignore",
+  ".nvmrc",
+  "**/.nvmrc",
+  "Cargo.lock",
+  "Cargo.toml",
+  "crates/*/Cargo.toml",
+  "README.md",
+  "rust-toolchain.toml",
+  "rustfmt.toml",
+  "clippy.toml",
+  "deny.toml",
+  "engine/package.json",
+  "engine/package-lock.json",
+  "engine/tsconfig.json",
+  "protocol/schema.json",
+  "protocol/examples/**",
+  "tests/fixtures/**",
+  ".github/**",
+  "po/POTFILES.in",
+  "po/LINGUAS",
+  "po/*.pot",
+  "po/*.po",
+  "packaging/castlabs.sha256",
+  "packaging/appimage/tools.sha256",
+  "packaging/aur/.SRCINFO",
+  "packaging/copyright",
+  "website/llms.txt",
+  "website/netlify.toml",
+  "website/robots.txt",
+  "website/sitemap.xml",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 RingoMusic contributors"
+SPDX-License-Identifier = "GPL-3.0-or-later"
+
+# Artwork.
+[[annotations]]
+path = [
+  "data/icons/**",
+  "data/screenshots/**",
+  "assets/**",
+  "website/**.png",
+  "website/favicon.svg",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 RingoMusic contributors"
+SPDX-License-Identifier = "CC-BY-SA-4.0"
+
+# Instructions for coding agents.
+[[annotations]]
+path = [
+  "CLAUDE.md",
+  "plan/**",
+]
+precedence = "aggregate"
+SPDX-FileCopyrightText = "2026 RingoMusic contributors"
+SPDX-License-Identifier = "GPL-3.0-or-later"

@@ -1,0 +1,36 @@
+[package]
+name = "ringomusic"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+homepage.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "ringomusic"
+path = "src/main.rs"
+
+[dependencies]
+ringo-am-api = { path = "../am-api" }
+ringo-core = { path = "../core" }
+ringo-engine = { path = "../engine" }
+ringo-mpris = { path = "../mpris" }
+anyhow.workspace = true
+# `gnome_48` selects GTK 4.18 and libadwaita 1.7, the floor of decision D4.
+relm4 = { version = "0.11", features = ["libadwaita", "gnome_48"] }
+tokio.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+ashpd = { version = "0.14", default-features = false, features = ["tokio", "background"] }
+# `gettext-system` uses the gettext of glibc. No source build.
+gettext-rs = { version = "0.8", features = ["gettext-system"] }
+
+[dev-dependencies]
+serde_json.workspace = true
+
+[lints]
+workspace = true
+
+[build-dependencies]
+glib-build-tools = "0.22.8"

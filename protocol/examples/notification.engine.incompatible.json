@@ -1,0 +1,8 @@
+{
+  "jsonrpc": "2.0",
+  "method": "engine.incompatible",
+  "params": {
+    "check": "widevine",
+    "detail": "CDM not found"
+  }
+}

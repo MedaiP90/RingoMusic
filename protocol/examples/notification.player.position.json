@@ -1,0 +1,7 @@
+{
+  "jsonrpc": "2.0",
+  "method": "player.position",
+  "params": {
+    "position_ms": 12500
+  }
+}

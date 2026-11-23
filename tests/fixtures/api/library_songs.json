@@ -1,0 +1,169 @@
+{
+  "data": [
+    {
+      "attributes": {
+        "albumName": "Example Album 1",
+        "artistName": "Example Artist 1",
+        "artwork": {
+          "hasP3": false,
+          "height": 1200,
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/95/ab/72/95ab727c-93ff-d512-703a-8fc81827f5bd/ticket.zsbxxupu.jpg/{w}x{h}bb.jpg",
+          "width": 1200
+        },
+        "discNumber": 1,
+        "durationInMillis": 166000,
+        "genreNames": [
+          "Folk"
+        ],
+        "hasLyrics": true,
+        "name": "Example Song 1",
+        "playParams": {
+          "catalogId": "1784383605",
+          "id": "i.example1",
+          "isLibrary": true,
+          "kind": "song",
+          "reporting": true,
+          "reportingId": "1784383605"
+        },
+        "releaseDate": "2012-02-10",
+        "trackNumber": 4
+      },
+      "href": "/v1/me/library/songs/i.example1",
+      "id": "i.example1",
+      "type": "library-songs"
+    },
+    {
+      "attributes": {
+        "albumName": "Example Album 2",
+        "artistName": "Example Artist 2",
+        "artwork": {
+          "hasP3": false,
+          "height": 1200,
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/d5/a7/58/d5a7589b-e9b1-81de-5ab1-e45ee9783dc2/artwork.jpg/{w}x{h}bb.jpg",
+          "width": 1200
+        },
+        "discNumber": 1,
+        "durationInMillis": 254918,
+        "genreNames": [
+          "Pop"
+        ],
+        "hasLyrics": true,
+        "name": "Example Song 2",
+        "playParams": {
+          "catalogId": "1441793798",
+          "id": "i.example2",
+          "isLibrary": true,
+          "kind": "song",
+          "reporting": true,
+          "reportingId": "1441793798"
+        },
+        "releaseDate": "2018-11-09",
+        "trackNumber": 2
+      },
+      "href": "/v1/me/library/songs/i.example2",
+      "id": "i.example2",
+      "type": "library-songs"
+    },
+    {
+      "attributes": {
+        "albumName": "Example Album 3",
+        "artistName": "Example Artist 3",
+        "artwork": {
+          "hasP3": false,
+          "height": 1200,
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music115/v4/ad/8c/1c/ad8c1cf2-e8d9-8bdd-13cc-7532736484a3/20UM1IM11916.rgb.jpg/{w}x{h}bb.jpg",
+          "width": 1200
+        },
+        "discNumber": 1,
+        "durationInMillis": 251071,
+        "genreNames": [
+          "Original Score"
+        ],
+        "hasLyrics": false,
+        "name": "Example Song 3",
+        "playParams": {
+          "catalogId": "1543825334",
+          "id": "i.example3",
+          "isLibrary": true,
+          "kind": "song",
+          "reporting": true,
+          "reportingId": "1543825334"
+        },
+        "releaseDate": "2010-12-03",
+        "trackNumber": 10
+      },
+      "href": "/v1/me/library/songs/i.example3",
+      "id": "i.example3",
+      "type": "library-songs"
+    },
+    {
+      "attributes": {
+        "albumName": "Example Album 4",
+        "artistName": "Example Artist 4",
+        "artwork": {
+          "hasP3": false,
+          "height": 1200,
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music128/v4/84/59/99/84599939-b243-5061-40f8-c7546ec8d9e0/00602547683595.rgb.jpg/{w}x{h}bb.jpg",
+          "width": 1200
+        },
+        "contentRating": "explicit",
+        "discNumber": 1,
+        "durationInMillis": 210938,
+        "genreNames": [
+          "Dance"
+        ],
+        "hasLyrics": true,
+        "name": "Example Song 4",
+        "playParams": {
+          "catalogId": "1445287635",
+          "id": "i.example4",
+          "isLibrary": true,
+          "kind": "song",
+          "reporting": true,
+          "reportingId": "1445287635"
+        },
+        "releaseDate": "2015-11-13",
+        "trackNumber": 1
+      },
+      "href": "/v1/me/library/songs/i.example4",
+      "id": "i.example4",
+      "type": "library-songs"
+    },
+    {
+      "attributes": {
+        "albumName": "Example Album 5",
+        "artistName": "Example Artist 5",
+        "artwork": {
+          "hasP3": false,
+          "height": 1200,
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music6/v4/07/4c/54/074c54db-05fc-001a-f409-ef573383f652/5099951553258_1500x1500_300dpi.jpg/{w}x{h}bb.jpg",
+          "width": 1200
+        },
+        "discNumber": 1,
+        "durationInMillis": 211760,
+        "genreNames": [
+          "Electronic"
+        ],
+        "hasLyrics": true,
+        "name": "Example Song 5",
+        "playParams": {
+          "catalogId": "716657859",
+          "id": "i.example5",
+          "isLibrary": true,
+          "kind": "song",
+          "reporting": true,
+          "reportingId": "716657859"
+        },
+        "releaseDate": "2007-11-14",
+        "trackNumber": 9
+      },
+      "href": "/v1/me/library/songs/i.example5",
+      "id": "i.example5",
+      "type": "library-songs"
+    }
+  ],
+  "meta": {
+    "total": 50
+  },
+  "next": "/v1/me/library/songs?offset=5"
+}

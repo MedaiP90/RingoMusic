@@ -1,0 +1,101 @@
+{
+  "data": [
+    {
+      "attributes": {
+        "canDelete": true,
+        "canEdit": true,
+        "dateAdded": "2024-01-01T00:00:00Z",
+        "description": {
+          "standard": "Example description."
+        },
+        "hasCatalog": false,
+        "hasCollaboration": false,
+        "isPublic": false,
+        "lastModifiedDate": "2024-01-01T00:00:00Z",
+        "name": "Example Playlist 1",
+        "playParams": {
+          "id": "p.example1",
+          "isLibrary": true,
+          "kind": "playlist"
+        }
+      },
+      "href": "/v1/me/library/playlists/p.example1",
+      "id": "p.example1",
+      "relationships": {
+        "tracks": {
+          "data": [
+            {
+              "attributes": {
+                "albumName": "Example Album 1",
+                "artistName": "Example Artist 1",
+                "artwork": {
+                  "hasP3": false,
+                  "height": 1200,
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/95/ab/72/95ab727c-93ff-d512-703a-8fc81827f5bd/ticket.zsbxxupu.jpg/{w}x{h}bb.jpg",
+                  "width": 1200
+                },
+                "discNumber": 1,
+                "durationInMillis": 292400,
+                "genreNames": [
+                  "Folk"
+                ],
+                "hasLyrics": false,
+                "name": "Example Song 1",
+                "playParams": {
+                  "catalogId": "1000000001",
+                  "id": "i.example1",
+                  "isLibrary": true,
+                  "kind": "song",
+                  "reporting": true,
+                  "reportingId": "1000000001"
+                },
+                "releaseDate": "2021-04-23",
+                "trackNumber": 8
+              },
+              "href": "/v1/me/library/songs/i.example1",
+              "id": "i.example1",
+              "type": "library-songs"
+            },
+            {
+              "attributes": {
+                "albumName": "Example Album 2",
+                "artistName": "Example Artist 2",
+                "artwork": {
+                  "hasP3": false,
+                  "height": 1200,
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/95/ab/72/95ab727c-93ff-d512-703a-8fc81827f5bd/ticket.zsbxxupu.jpg/{w}x{h}bb.jpg",
+                  "width": 1200
+                },
+                "discNumber": 1,
+                "durationInMillis": 171000,
+                "genreNames": [
+                  "Folk"
+                ],
+                "hasLyrics": false,
+                "name": "Example Song 2",
+                "playParams": {
+                  "catalogId": "1000000002",
+                  "id": "i.example2",
+                  "isLibrary": true,
+                  "kind": "song",
+                  "reporting": true,
+                  "reportingId": "1000000002"
+                },
+                "releaseDate": "2021-04-30",
+                "trackNumber": 3
+              },
+              "href": "/v1/me/library/songs/i.example2",
+              "id": "i.example2",
+              "type": "library-songs"
+            }
+          ],
+          "href": "/v1/me/library/playlists/p.example1/tracks",
+          "meta": {
+            "total": 96
+          }
+        }
+      },
+      "type": "library-playlists"
+    }
+  ]
+}

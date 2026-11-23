@@ -6,7 +6,7 @@ Key facts:
 
 - Platform: Linux, x86_64 only. No aarch64 support (no official Widevine module for aarch64 Linux).
 - Minimum distributions: Debian 13, Ubuntu 26.04 LTS, the two supported Fedora releases (GTK 4.18, libadwaita 1.7, glibc 2.41 or newer).
-- Packages: .deb, .rpm, Flatpak bundle, tarball on GitHub Releases; AUR package `ringomusic-bin`.
+- Packages: .deb, .rpm, Flatpak bundle, AppImage, tarball on GitHub Releases; AUR package `ringomusic-bin`.
 - Audio quality: AAC 256 kbps. No lossless, no Dolby Atmos.
 - No download, export, or recording of audio. This rule is permanent.
 - Privacy: RingoMusic never reads or stores Apple ID credentials. No telemetry.

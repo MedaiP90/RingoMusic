@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  push:
+    # Branches only. A "v*" tag runs the release workflow, not CI.
+    branches: ["**"]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  rust:
+    runs-on: ubuntu-latest
+    container: debian:13
+    steps:
+      - name: Install system packages
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            build-essential ca-certificates curl git pkg-config \
+            libgtk-4-dev libadwaita-1-dev libdbus-1-dev libglib2.0-bin gettext
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Install Rust
+        run: |
+          curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs \
+            | sh -s -- -y --profile minimal --default-toolchain stable \
+              --component rustfmt --component clippy
+          echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+      - uses: Swatinem/rust-cache@d1527c8f67ef9af357290475d4af4b0fab8f12e0 # v2.9.3
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets --all-features --locked -- -D warnings
+      - run: cargo test --workspace --all-features --locked
+
+  pot:
+    runs-on: ubuntu-latest
+    # xgettext reads Rust from GNU gettext 0.24. Debian 13 has an older version.
+    container: fedora:43
+    steps:
+      - name: Install system packages
+        run: dnf install -y --setopt=install_weak_deps=False gettext git diffutils
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Check the translation template
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          po/update-pot.sh
+          git diff --exit-code po/
+
+  data:
+    runs-on: ubuntu-latest
+    container: debian:13
+    steps:
+      - name: Install validators
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            appstream desktop-file-utils libglib2.0-bin
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: desktop-file-validate data/io.github.MedaiP90.RingoMusic.desktop
+      # The screenshots are missing until prompt 47. The id has capital letters
+      # because of the GitHub user name. Both are pedantic notes, not failures.
+      - run: appstreamcli validate --no-net --pedantic data/io.github.MedaiP90.RingoMusic.metainfo.xml
+      - run: glib-compile-schemas --strict --dry-run data/
+
+  engine:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: engine
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: engine/.nvmrc
+          cache: npm
+          cache-dependency-path: engine/package-lock.json
+      - run: npm ci
+      - run: npm run build
+      - run: npm run check
+      - name: Check the generated protocol files
+        working-directory: .
+        run: |
+          RINGO_UPDATE_SCHEMA=1 cargo test -p ringo-engine schema_is_up_to_date
+          (cd engine && npm run gen:protocol)
+          git diff --exit-code protocol/ engine/src/protocol.ts
+
+  reuse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: fsfe/reuse-action@676e2d560c9a403aa252096d99fcab3e1132b0f5 # v6.0.0
+
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: EmbarkStudios/cargo-deny-action@70f81531115945ba6eb6b941ec9d39d063438eb9 # v2.1.2
+        with:
+          command: check

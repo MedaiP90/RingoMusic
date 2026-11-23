@@ -1,0 +1,8 @@
+{"method":"player.state","params":{"state":"loading"}}
+{"method":"player.nowPlaying","params":{"id":"s1","title":"Song 1","artist":"Artist","album":"Album","duration_ms":3000,"artwork_url":null,"queue_index":0}}
+{"method":"player.state","params":{"state":"playing"}}
+{"method":"player.position","params":{"position_ms":0}}
+{"method":"player.position","params":{"position_ms":1000}}
+{"method":"player.position","params":{"position_ms":2000}}
+{"method":"player.position","params":{"position_ms":3000}}
+{"method":"player.state","params":{"state":"ended"}}

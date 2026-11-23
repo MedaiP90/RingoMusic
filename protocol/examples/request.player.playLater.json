@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 6,
+  "method": "player.playLater",
+  "params": {
+    "items": [
+      "1440857781",
+      "i.PkdXYZ"
+    ],
+    "kind": "songs"
+  }
+}

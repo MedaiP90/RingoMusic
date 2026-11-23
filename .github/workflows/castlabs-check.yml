@@ -1,0 +1,48 @@
+name: CastLabs check
+
+on:
+  schedule:
+    - cron: "0 6 * * 1"
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      # contents: read is not granted, so fetch the pinned version through the API.
+      - name: Read pinned version
+        id: pinned
+        run: |
+          content=$(gh api "repos/${GITHUB_REPOSITORY}/contents/engine/package.json" \
+            --jq '.content' | base64 -d)
+          pinned=$(echo "$content" | jq -r '.devDependencies.electron // .dependencies.electron // empty')
+          echo "version=${pinned}" >> "$GITHUB_OUTPUT"
+      - name: Compare with latest release
+        if: steps.pinned.outputs.version != ''
+        env:
+          PINNED: ${{ steps.pinned.outputs.version }}
+        run: |
+          latest=$(gh api repos/castlabs/electron-releases/releases/latest --jq '.tag_name')
+          echo "pinned=${PINNED} latest=${latest}"
+          # The pin looks like "github:castlabs/electron-releases#v36.0.0+wvcus"; keep the tag.
+          if [ "$latest" = "${PINNED##*#}" ]; then
+            echo "Pinned version is current."
+            exit 0
+          fi
+          title="New CastLabs Electron release: ${latest}"
+          existing=$(gh issue list --repo "$GITHUB_REPOSITORY" --label castlabs-update \
+            --state open --search "\"${latest}\" in:title" --json number --jq 'length')
+          if [ "$existing" -gt 0 ]; then
+            echo "Issue for ${latest} already open."
+            exit 0
+          fi
+          gh issue create --repo "$GITHUB_REPOSITORY" --label castlabs-update --title "$title" \
+            --body "CastLabs released ${latest}. The engine pins ${PINNED}."
+      - name: Skip when no pinned version
+        if: steps.pinned.outputs.version == ''
+        run: echo "No Electron version pinned in engine/package.json yet (prompt 06). Skipping."

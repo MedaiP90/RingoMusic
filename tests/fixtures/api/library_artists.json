@@ -1,0 +1,48 @@
+{
+  "data": [
+    {
+      "attributes": {
+        "name": "Example Artist 1"
+      },
+      "href": "/v1/me/library/artists/r.example1",
+      "id": "r.example1",
+      "type": "library-artists"
+    },
+    {
+      "attributes": {
+        "name": "Example Artist 2"
+      },
+      "href": "/v1/me/library/artists/r.example2",
+      "id": "r.example2",
+      "type": "library-artists"
+    },
+    {
+      "attributes": {
+        "name": "Example Artist 3"
+      },
+      "href": "/v1/me/library/artists/r.example3",
+      "id": "r.example3",
+      "type": "library-artists"
+    },
+    {
+      "attributes": {
+        "name": "Example Artist 4"
+      },
+      "href": "/v1/me/library/artists/r.example4",
+      "id": "r.example4",
+      "type": "library-artists"
+    },
+    {
+      "attributes": {
+        "name": "Example Artist 5"
+      },
+      "href": "/v1/me/library/artists/r.example5",
+      "id": "r.example5",
+      "type": "library-artists"
+    }
+  ],
+  "meta": {
+    "total": 50
+  },
+  "next": "/v1/me/library/artists?offset=5"
+}

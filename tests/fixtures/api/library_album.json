@@ -1,0 +1,62 @@
+{
+  "data": [
+    {
+      "id": "l.example1",
+      "type": "library-albums",
+      "href": "/v1/me/library/albums/l.example1",
+      "attributes": {
+        "name": "Example Album",
+        "artistName": "Example Artist",
+        "trackCount": 2,
+        "playParams": {
+          "id": "l.example1",
+          "kind": "album",
+          "isLibrary": true
+        }
+      },
+      "relationships": {
+        "artists": {
+          "data": [{ "id": "r.example1", "type": "library-artists" }]
+        },
+        "tracks": {
+          "data": [
+            {
+              "id": "i.s1",
+              "type": "library-songs",
+              "attributes": {
+                "name": "One",
+                "artistName": "Example Artist",
+                "albumName": "Example Album",
+                "durationInMillis": 1000,
+                "trackNumber": 1,
+                "discNumber": 1,
+                "playParams": {
+                  "id": "i.s1",
+                  "kind": "song",
+                  "isLibrary": true
+                }
+              }
+            },
+            {
+              "id": "i.s2",
+              "type": "library-songs",
+              "attributes": {
+                "name": "Two",
+                "artistName": "Example Artist",
+                "albumName": "Example Album",
+                "durationInMillis": 2000,
+                "trackNumber": 2,
+                "discNumber": 1,
+                "playParams": {
+                  "id": "i.s2",
+                  "kind": "song",
+                  "isLibrary": true
+                }
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

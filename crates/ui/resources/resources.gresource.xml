@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  SPDX-License-Identifier: GPL-3.0-or-later
+  Copyright (C) 2026 RingoMusic contributors
+-->
+<!-- `AdwApplication` loads `style.css` from this prefix by itself. -->
+<gresources>
+  <gresource prefix="/io/github/MedaiP90/RingoMusic">
+    <file>style.css</file>
+  </gresource>
+</gresources>

@@ -41,7 +41,7 @@
     "url": "https://ringomusic.netlify.app/",
     "applicationCategory": "MultimediaApplication",
     "applicationSubCategory": "Music player",
-    "operatingSystem": "Linux (x86_64): Debian 13, Ubuntu 26.04 LTS, Fedora, Arch Linux, any distribution with Flatpak",
+    "operatingSystem": "Linux (x86_64): Debian 13, Ubuntu 26.04 LTS, Fedora, Arch Linux, any distribution with Flatpak, AppImage",
     "processorRequirements": "x86_64",
     "downloadUrl": "https://github.com/MedaiP90/RingoMusic/releases/latest",
     "license": "https://www.gnu.org/licenses/gpl-3.0.html",
@@ -50,7 +50,7 @@
     "author": { "@type": "Person", "name": "MedaiP90", "url": "https://github.com/MedaiP90" },
     "sameAs": ["https://github.com/MedaiP90/RingoMusic"],
     "image": "https://ringomusic.netlify.app/og-image.png",
-    "screenshot": "https://ringomusic.netlify.app/screenshots/main-light.png"
+    "screenshot": "https://raw.githubusercontent.com/MedaiP90/RingoMusic/main/data/screenshots/main-light.png"
   }
   </script>
   <script type="application/ld+json">
@@ -104,8 +104,8 @@
       </div>
       <p class="hero__note">Free. Apple Music subscription required. x86_64 Linux.</p>
       <picture>
-        <source srcset="/screenshots/main-dark.png" media="(prefers-color-scheme: dark)">
-        <img class="hero__shot shot" src="/screenshots/main-light.png" alt="RingoMusic main window: the home page with recommended albums and a song in the player bar" width="1600" height="1000" fetchpriority="high">
+        <source srcset="https://raw.githubusercontent.com/MedaiP90/RingoMusic/main/data/screenshots/main-dark.png" media="(prefers-color-scheme: dark)">
+        <img class="hero__shot shot" src="https://raw.githubusercontent.com/MedaiP90/RingoMusic/main/data/screenshots/main-light.png" alt="RingoMusic main window: the home page with recommended albums and a song in the player bar" width="1600" height="1000" fetchpriority="high">
       </picture>
     </section>
 
@@ -141,27 +141,27 @@
       <p class="section__lead">Browse, search, and play. Every view of RingoMusic follows the GNOME design guidelines.</p>
       <div class="gallery">
         <figure class="gallery__item">
-          <img class="shot" src="/screenshots/library.png" alt="RingoMusic library view with a grid of album covers" width="1600" height="1000" loading="lazy">
+          <img class="shot" src="https://raw.githubusercontent.com/MedaiP90/RingoMusic/main/data/screenshots/library.png" alt="RingoMusic library view with a grid of album covers" width="1600" height="1000" loading="lazy">
           <figcaption>Your library, as an album grid</figcaption>
         </figure>
         <figure class="gallery__item">
-          <img class="shot" src="/screenshots/album.png" alt="RingoMusic album page with the cover and the song list" width="1600" height="1000" loading="lazy">
+          <img class="shot" src="https://raw.githubusercontent.com/MedaiP90/RingoMusic/main/data/screenshots/album.png" alt="RingoMusic album page with the cover and the song list" width="1600" height="1000" loading="lazy">
           <figcaption>Album page with the song list</figcaption>
         </figure>
       </div>
       <div class="gallery gallery--feature">
         <div class="gallery__stack">
           <figure class="gallery__item">
-            <img class="shot" src="/screenshots/search.png" alt="RingoMusic search results for an artist: songs, albums, and playlists" width="1600" height="1000" loading="lazy">
+            <img class="shot" src="https://raw.githubusercontent.com/MedaiP90/RingoMusic/main/data/screenshots/search.png" alt="RingoMusic search results for an artist: songs, albums, and playlists" width="1600" height="1000" loading="lazy">
             <figcaption>Search the full Apple Music catalog</figcaption>
           </figure>
           <figure class="gallery__item">
-            <img class="shot" src="/screenshots/queue.png" alt="RingoMusic with the playback queue panel open at the side" width="1600" height="1000" loading="lazy">
+            <img class="shot" src="https://raw.githubusercontent.com/MedaiP90/RingoMusic/main/data/screenshots/queue.png" alt="RingoMusic with the playback queue panel open at the side" width="1600" height="1000" loading="lazy">
             <figcaption>Playback queue with shuffle and repeat</figcaption>
           </figure>
         </div>
         <figure class="gallery__item gallery__item--narrow">
-          <img class="shot" src="/screenshots/mobile.png" alt="RingoMusic in a narrow window, with the adaptive one-column layout" width="720" height="1440" loading="lazy">
+          <img class="shot" src="https://raw.githubusercontent.com/MedaiP90/RingoMusic/main/data/screenshots/mobile.png" alt="RingoMusic in a narrow window, with the adaptive one-column layout" width="720" height="1440" loading="lazy">
           <figcaption>Adaptive layout for narrow windows</figcaption>
         </figure>
       </div>
@@ -213,15 +213,16 @@
           <ul class="card__list">
             <li>AUR package <code>ringomusic-bin</code></li>
           </ul>
-          <a class="button button--pill button--suggested" href="https://aur.archlinux.org/packages/ringomusic-bin">Open the AUR package</a>
+          <span class="button button--pill button--disabled" role="link" aria-disabled="true">Temporarily unavailable</span>
         </article>
         <article class="card">
           <h3>Other distributions</h3>
           <ul class="card__list">
             <li>Flatpak bundle, with the GNOME runtime</li>
+            <li>AppImage</li>
             <li>Tarball (<code>.tar.gz</code>)</li>
           </ul>
-          <a class="button button--pill button--suggested" href="https://github.com/MedaiP90/RingoMusic/releases/latest">Download Flatpak bundle</a>
+          <a class="button button--pill button--suggested" href="https://github.com/MedaiP90/RingoMusic/releases/latest">Download from GitHub Releases</a>
         </article>
       </div>
       <p class="requirements">Requirements: x86_64 Linux with GTK 4.18, libadwaita 1.7, and glibc 2.41 or newer (not needed for the Flatpak bundle). Each release includes a <code>SHA256SUMS</code> file. You can also <a href="https://github.com/MedaiP90/RingoMusic#build-from-source">build RingoMusic from source</a>.</p>
@@ -237,7 +238,7 @@
         <div class="boxed-list__row property-row"><dt>Toolkit</dt><dd>GTK 4.18 and libadwaita 1.7</dd></div>
         <div class="boxed-list__row property-row"><dt>Language</dt><dd>Rust</dd></div>
         <div class="boxed-list__row property-row"><dt>Audio quality</dt><dd>AAC, 256 kbps</dd></div>
-        <div class="boxed-list__row property-row"><dt>Packages</dt><dd>.deb, .rpm, Flatpak bundle, tarball, AUR</dd></div>
+        <div class="boxed-list__row property-row"><dt>Packages</dt><dd>.deb, .rpm, Flatpak bundle, AppImage, tarball, AUR</dd></div>
         <div class="boxed-list__row property-row"><dt>Price</dt><dd>Free (Apple Music subscription required)</dd></div>
         <div class="boxed-list__row property-row"><dt>License</dt><dd>GPL-3.0-or-later</dd></div>
         <div class="boxed-list__row property-row"><dt>App ID</dt><dd><code>io.github.MedaiP90.RingoMusic</code></dd></div>

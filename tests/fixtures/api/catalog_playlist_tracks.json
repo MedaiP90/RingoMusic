@@ -1,0 +1,164 @@
+{
+  "data": [
+    {
+      "attributes": {
+        "albumArtistName": "Tate McRae",
+        "albumName": "Housewife - Single",
+        "artistName": "Tate McRae",
+        "artwork": {
+          "bgColor": "19180e",
+          "hasP3": false,
+          "height": 3000,
+          "textColor1": "dbaf8f",
+          "textColor2": "ceb08b",
+          "textColor3": "b49075",
+          "textColor4": "aa9172",
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/69/64/e4/6964e483-c02c-e389-14f4-c426e8c65f2c/196874840146.jpg/{w}x{h}bb.jpg",
+          "width": 3000
+        },
+        "audioLocale": "en-US",
+        "audioTraits": [
+          "atmos",
+          "lossless",
+          "lossy-stereo",
+          "spatial"
+        ],
+        "composerName": "Tate McRae, Julia Michaels, Ryan Tedder, Grant Boutin, Jasper Harris & Pablo Diaz-Reixa",
+        "discNumber": 1,
+        "durationInMillis": 208810,
+        "genreNames": [
+          "Pop",
+          "Musica"
+        ],
+        "hasLyrics": true,
+        "hasTimeSyncedLyrics": true,
+        "isAppleDigitalMaster": false,
+        "isMasteredForItunes": false,
+        "isVocalAttenuationAllowed": true,
+        "isrc": "USRC12601916",
+        "name": "Housewife",
+        "playParams": {
+          "id": "6822497774",
+          "kind": "song"
+        },
+        "previews": [
+          {
+            "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/05/27/d4/0527d4f3-f6af-1ef8-6a32-25477b7b00ba/mzaf_9026536433413395761.plus.aac.ep.m4a"
+          }
+        ],
+        "releaseDate": "2026-10-15",
+        "trackNumber": 1,
+        "url": "https://music.apple.com/it/album/housewife/6822497770?i=6822497774"
+      },
+      "href": "/v1/catalog/it/songs/6822497774",
+      "id": "6822497774",
+      "type": "songs"
+    },
+    {
+      "attributes": {
+        "albumArtistName": "Sfera Ebbasta",
+        "albumName": "PUROSANGUE",
+        "artistName": "Sfera Ebbasta",
+        "artwork": {
+          "bgColor": "ae0305",
+          "hasP3": false,
+          "height": 3000,
+          "textColor1": "f6dab4",
+          "textColor2": "ffd7a2",
+          "textColor3": "e8af91",
+          "textColor4": "eeac82",
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/d5/73/40/d5734058-f3c4-1cfb-3cc9-c7cc3271ac48/26UM1IM46734.rgb.jpg/{w}x{h}bb.jpg",
+          "width": 3000
+        },
+        "audioLocale": "it",
+        "audioTraits": [
+          "lossless",
+          "lossy-stereo"
+        ],
+        "composerName": "Diego Vincenzo Vettraino, Alessandro Merli, Fabio Clemente, Luca Faraone & Davide Petrella",
+        "contentRating": "explicit",
+        "discNumber": 1,
+        "durationInMillis": 179613,
+        "genreNames": [
+          "Hip-hop",
+          "Musica",
+          "Hip-Hop/Rap"
+        ],
+        "hasLyrics": false,
+        "hasTimeSyncedLyrics": false,
+        "isAppleDigitalMaster": false,
+        "isMasteredForItunes": false,
+        "isVocalAttenuationAllowed": false,
+        "isrc": "ITS8O2600008",
+        "name": "Ti ricordi",
+        "playParams": {
+          "id": "6835545180",
+          "kind": "song"
+        },
+        "previews": [
+          {
+            "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/b8/e7/45/b8e745ee-ea88-6053-798e-0c1674f4abd0/mzaf_4442053828234394590.plus.aac.ep.m4a"
+          }
+        ],
+        "trackNumber": 8,
+        "url": "https://music.apple.com/it/album/ti-ricordi/6835544984?i=6835545180"
+      },
+      "href": "/v1/catalog/it/songs/6835545180",
+      "id": "6835545180",
+      "type": "songs"
+    },
+    {
+      "attributes": {
+        "albumArtistName": "Gazzelle",
+        "albumName": "Ogni volta che sei qui - Single",
+        "artistName": "Gazzelle",
+        "artwork": {
+          "bgColor": "004dc7",
+          "hasP3": false,
+          "height": 3000,
+          "textColor1": "c2d8f8",
+          "textColor2": "accefd",
+          "textColor3": "9bbcee",
+          "textColor4": "8ab4f2",
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/Music221/v4/3e/97/d5/3e97d52b-7cda-ee97-dc0f-d69427315474/1200220424696.jpg/{w}x{h}bb.jpg",
+          "width": 3000
+        },
+        "audioLocale": "it",
+        "audioTraits": [
+          "lossless",
+          "lossy-stereo"
+        ],
+        "composerName": "Federico Nardelli",
+        "discNumber": 1,
+        "durationInMillis": 193660,
+        "genreNames": [
+          "Pop",
+          "Musica"
+        ],
+        "hasLyrics": true,
+        "hasTimeSyncedLyrics": true,
+        "isAppleDigitalMaster": false,
+        "isMasteredForItunes": false,
+        "isVocalAttenuationAllowed": true,
+        "isrc": "IT8U12600059",
+        "name": "Ogni volta che sei qui",
+        "playParams": {
+          "id": "6830255079",
+          "kind": "song"
+        },
+        "previews": [
+          {
+            "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a9/f1/52/a9f15245-2c04-ed67-62ff-b74a1debff44/mzaf_2325633392154039919.plus.aac.ep.m4a"
+          }
+        ],
+        "releaseDate": "2026-11-13",
+        "trackNumber": 1,
+        "url": "https://music.apple.com/it/album/ogni-volta-che-sei-qui/6830255078?i=6830255079"
+      },
+      "href": "/v1/catalog/it/songs/6830255079",
+      "id": "6830255079",
+      "type": "songs"
+    }
+  ],
+  "next": "/v1/catalog/it/playlists/pl.f4d106fed2bd41149aaacabb233eb5eb/tracks?offset=3"
+}

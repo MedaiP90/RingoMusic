@@ -1,0 +1,19 @@
+# SPDX-License-Identifier: GPL-3.0-or-later
+# Copyright (C) 2026 RingoMusic contributors
+#
+# rpmlint filters. Each tag is expected. Use: rpmlint --config packaging/rpmlint.toml FILE.rpm
+Filters = [
+    # The Chromium sandbox helper must be SUID root (plan section 6.2).
+    "setuid-binary",
+    "non-standard-executable-perm",
+    "missing-call-to-setgroups-before-setuid",
+    # Upstream Electron code uses these. The engine is a third-party binary.
+    "binary-or-shlib-calls-gethostbyname",
+    "unstripped-binary-or-object",
+    # nfpm builds the dependencies from the table in plan section 6.3, by package name.
+    "explicit-lib-dependency",
+    # The package has no changelog and no manual page. The release notes are on GitHub.
+    "no-changelogname-tag",
+    "no-manual-page-for-binary",
+    "no-documentation",
+]

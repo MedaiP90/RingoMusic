@@ -1,0 +1,118 @@
+{
+  "data": [
+    {
+      "attributes": {
+        "canDelete": true,
+        "canEdit": true,
+        "dateAdded": "2024-01-01T00:00:00Z",
+        "description": {
+          "standard": "Example description."
+        },
+        "hasCatalog": false,
+        "hasCollaboration": false,
+        "isPublic": false,
+        "lastModifiedDate": "2024-01-01T00:00:00Z",
+        "name": "Example Playlist 1",
+        "playParams": {
+          "id": "p.example1",
+          "isLibrary": true,
+          "kind": "playlist"
+        }
+      },
+      "href": "/v1/me/library/playlists/p.example1",
+      "id": "p.example1",
+      "type": "library-playlists"
+    },
+    {
+      "attributes": {
+        "canDelete": true,
+        "canEdit": true,
+        "dateAdded": "2024-01-01T00:00:00Z",
+        "hasCatalog": false,
+        "hasCollaboration": false,
+        "isPublic": false,
+        "lastModifiedDate": "2024-01-01T00:00:00Z",
+        "name": "Example Playlist 2",
+        "playParams": {
+          "id": "p.example2",
+          "isLibrary": true,
+          "kind": "playlist"
+        }
+      },
+      "href": "/v1/me/library/playlists/p.example2",
+      "id": "p.example2",
+      "type": "library-playlists"
+    },
+    {
+      "attributes": {
+        "canDelete": true,
+        "canEdit": true,
+        "dateAdded": "2024-01-01T00:00:00Z",
+        "description": {
+          "standard": "Example description."
+        },
+        "hasCatalog": true,
+        "hasCollaboration": false,
+        "isPublic": true,
+        "lastModifiedDate": "2024-01-01T00:00:00Z",
+        "name": "Example Playlist 3",
+        "playParams": {
+          "globalId": "pl.u-ZmbljYoTV35gxkg",
+          "id": "p.example3",
+          "isLibrary": true,
+          "kind": "playlist"
+        }
+      },
+      "href": "/v1/me/library/playlists/p.example3",
+      "id": "p.example3",
+      "type": "library-playlists"
+    },
+    {
+      "attributes": {
+        "canDelete": true,
+        "canEdit": true,
+        "dateAdded": "2024-01-01T00:00:00Z",
+        "description": {
+          "standard": "Example description."
+        },
+        "hasCatalog": false,
+        "hasCollaboration": false,
+        "isPublic": false,
+        "lastModifiedDate": "2024-01-01T00:00:00Z",
+        "name": "Example Playlist 4",
+        "playParams": {
+          "id": "p.example4",
+          "isLibrary": true,
+          "kind": "playlist"
+        }
+      },
+      "href": "/v1/me/library/playlists/p.example4",
+      "id": "p.example4",
+      "type": "library-playlists"
+    },
+    {
+      "attributes": {
+        "canDelete": true,
+        "canEdit": true,
+        "dateAdded": "2024-01-01T00:00:00Z",
+        "hasCatalog": false,
+        "hasCollaboration": false,
+        "isPublic": false,
+        "lastModifiedDate": "2024-01-01T00:00:00Z",
+        "name": "Example Playlist 5",
+        "playParams": {
+          "id": "p.example5",
+          "isLibrary": true,
+          "kind": "playlist"
+        }
+      },
+      "href": "/v1/me/library/playlists/p.example5",
+      "id": "p.example5",
+      "type": "library-playlists"
+    }
+  ],
+  "meta": {
+    "total": 50
+  },
+  "next": "/v1/me/library/playlists?offset=5"
+}

@@ -1,0 +1,1195 @@
+{
+  "data": [
+    {
+      "attributes": {
+        "artwork": {
+          "bgColor": "131313",
+          "defaultCropCode": "bb",
+          "hasP3": true,
+          "height": 1050,
+          "textColor1": "eba140",
+          "textColor2": "e29438",
+          "textColor3": "c08437",
+          "textColor4": "b87a31",
+          "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}bb.jpg",
+          "width": 1050
+        },
+        "genreNames": [
+          "Alternativa"
+        ],
+        "name": "Radiohead",
+        "url": "https://music.apple.com/it/artist/radiohead/657515"
+      },
+      "href": "/v1/catalog/it/artists/657515",
+      "id": "657515",
+      "meta": {
+        "views": {
+          "order": [
+            "top-songs",
+            "full-albums"
+          ]
+        }
+      },
+      "relationships": {
+        "albums": {
+          "data": [
+            {
+              "href": "/v1/catalog/it/albums/1097861387",
+              "id": "1097861387",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1109714933",
+              "id": "1109714933",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1097862703",
+              "id": "1097862703",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1111577743",
+              "id": "1111577743",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1097862870",
+              "id": "1097862870",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1097864180",
+              "id": "1097864180",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1239489060",
+              "id": "1239489060",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1097863576",
+              "id": "1097863576",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1109714965",
+              "id": "1109714965",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1097862062",
+              "id": "1097862062",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1113546075",
+              "id": "1113546075",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1160370310",
+              "id": "1160370310",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1581785974",
+              "id": "1581785974",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1446881820",
+              "id": "1446881820",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1828175826",
+              "id": "1828175826",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1111495817",
+              "id": "1111495817",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1110448315",
+              "id": "1110448315",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1097873905",
+              "id": "1097873905",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1114686637",
+              "id": "1114686637",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1112408383",
+              "id": "1112408383",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1112425223",
+              "id": "1112425223",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1166533619",
+              "id": "1166533619",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1167367262",
+              "id": "1167367262",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1143391524",
+              "id": "1143391524",
+              "type": "albums"
+            },
+            {
+              "href": "/v1/catalog/it/albums/1573936428",
+              "id": "1573936428",
+              "type": "albums"
+            }
+          ],
+          "href": "/v1/catalog/it/artists/657515/albums",
+          "next": "/v1/catalog/it/artists/657515/albums?offset=25"
+        }
+      },
+      "type": "artists",
+      "views": {
+        "full-albums": {
+          "attributes": {
+            "title": "Album"
+          },
+          "data": [
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "cecdd2",
+                  "hasP3": false,
+                  "height": 1400,
+                  "textColor1": "0c0a09",
+                  "textColor2": "171616",
+                  "textColor3": "333131",
+                  "textColor4": "3c3b3b",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/b7/f2/5d/b7f25d91-4320-47c8-146a-6f84d5bc7e78/cover.jpg/{w}x{h}bb.jpg",
+                  "width": 1400
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2016 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "editorialNotes": {
+                  "short": "Rock multiforme, melodie distorte e una bellezza quasi spettrale.",
+                  "standard": "Il nono album dei Radiohead è un'irresistibile e singolare raccolta di rock multiforme, melodie distorte e una bellezza quasi spettrale. Con reminiscenze dei loro lavori precedenti, come il distante rantolio di ‘Daydreaming’, il potente crescendo di ‘Ful Stop’ e i favolosi accordi di Jonny Greenwood, <i>A Moon Shaped Pool</i> è al contempo familiare e magnificamente elusivo, proprio come il suo indimenticabile brano di chiusura. ‘True Love Waits’, uno dei brani più amati dal vivo fin da metà degli anni ’90, è stato reinterpretato in studio come una meditazione al pianoforte che, sempre più raffinata, cresce fino a librarsi delicatamente in volo."
+                },
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Rock",
+                  "Rock progressive/Art-rock",
+                  "Alternativa adulti"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": true,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "A Moon Shaped Pool",
+                "playParams": {
+                  "id": "1111577743",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2016-05-08",
+                "trackCount": 11,
+                "upc": "634904079055",
+                "url": "https://music.apple.com/it/album/a-moon-shaped-pool/1111577743"
+              },
+              "href": "/v1/catalog/it/albums/1111577743",
+              "id": "1111577743",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "934d28",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "f9faec",
+                  "textColor2": "fbe3dd",
+                  "textColor3": "e4d7c5",
+                  "textColor4": "e6c5b9",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/af/b6/7b/afb67b4e-6cf8-10b3-31f1-1389e301166d/634904078768.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2011 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Rock",
+                  "Alternativa adulti",
+                  "Rock progressive/Art-rock"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "The King of Limbs",
+                "playParams": {
+                  "id": "1109714965",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2011-02-18",
+                "trackCount": 8,
+                "upc": "634904078768",
+                "url": "https://music.apple.com/it/album/the-king-of-limbs/1109714965"
+              },
+              "href": "/v1/catalog/it/albums/1109714965",
+              "id": "1109714965",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "0e1019",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "d0bf56",
+                  "textColor2": "e59e44",
+                  "textColor3": "a99c4a",
+                  "textColor4": "ba823b",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/13/39/3c/13393c12-a1cf-445f-5dd0-07988cbe540d/634904032449.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "contentRating": "explicit",
+                "copyright": "℗ 2007 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Rock",
+                  "Rock progressive/Art-rock",
+                  "Alternativa adulti"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "In Rainbows Disk 2",
+                "playParams": {
+                  "id": "1160370310",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2007-12-03",
+                "trackCount": 8,
+                "upc": "634904032449",
+                "url": "https://music.apple.com/it/album/in-rainbows-disk-2/1160370310"
+              },
+              "href": "/v1/catalog/it/albums/1160370310",
+              "id": "1160370310",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "1e1807",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "d0c741",
+                  "textColor2": "e9872e",
+                  "textColor3": "aca436",
+                  "textColor4": "c07126",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/dd/50/c7/dd50c790-99ac-d3d0-5ab8-e3891fb8fd52/634904032463.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2007 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Rock",
+                  "Rock progressive/Art-rock",
+                  "Alternativa adulti"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "In Rainbows",
+                "playParams": {
+                  "id": "1109714933",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2007-10-10",
+                "trackCount": 10,
+                "upc": "634904032463",
+                "url": "https://music.apple.com/it/album/in-rainbows/1109714933"
+              },
+              "href": "/v1/catalog/it/albums/1109714933",
+              "id": "1109714933",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "6f9ebf",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "0e120f",
+                  "textColor2": "251e23",
+                  "textColor3": "212e32",
+                  "textColor4": "343742",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/3c/95/1d/3c951d73-f6c6-12dd-34b4-cc95f63e210c/634904078560.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "contentRating": "explicit",
+                "copyright": "℗ 2003 XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Rock",
+                  "Alternativa adulti",
+                  "Elettronica",
+                  "Rock progressive/Art-rock"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "Hail to the Thief",
+                "playParams": {
+                  "id": "1097863576",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2003-06-09",
+                "trackCount": 14,
+                "upc": "634904078560",
+                "url": "https://music.apple.com/it/album/hail-to-the-thief/1097863576"
+              },
+              "href": "/v1/catalog/it/albums/1097863576",
+              "id": "1097863576",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "000000",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "f84133",
+                  "textColor2": "ee3f30",
+                  "textColor3": "c63429",
+                  "textColor4": "be3226",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/43/d8/ec/43d8ec17-0e96-dba9-21d9-4cdf9d98f2bf/634904078362.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2001 XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Rock",
+                  "Rock progressive/Art-rock",
+                  "Alternativa adulti",
+                  "Elettronica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "Amnesiac",
+                "playParams": {
+                  "id": "1097864180",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2001-06-04",
+                "trackCount": 11,
+                "upc": "634904078362",
+                "url": "https://music.apple.com/it/album/amnesiac/1097864180"
+              },
+              "href": "/v1/catalog/it/albums/1097864180",
+              "id": "1097864180",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "0a0a08",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "e2eaee",
+                  "textColor2": "d3d2d1",
+                  "textColor3": "b7bdc0",
+                  "textColor4": "abaaa8",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/bd/8e/13/bd8e1358-b367-a689-cb84-cebd0b067dc4/634904078263.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2000 XL Recordings Ltd",
+                "editorialNotes": {
+                  "short": "Un bis avveniristico per cavalcare un’avanguardia irreversibile.",
+                  "standard": "In seguito all’uscita di <i>OK Computer</i> nel 1997, Thom Yorke aveva iniziato a mettere in discussione l’idea di fare parte di un gruppo rock in senso tradizionale. Tra tensioni, grida e momenti di follia, i Radiohead si stavano completamente liberando delle regole, e <i>Kid A</i> divenne il secondo atto della loro personale rivoluzione discografica.<br /><br />\nCon le sue sequenze disorientanti e linee vocali che si ripiegano in ogni direzione come un disegno di Escher, ‘Everything In Its Right Place’ è contemporaneamente provocatoria e strategica, una strizzata d’occhio da parte della band che era passata da ‘Creep’ a queste sonorità inquietanti e inafferrabili. Ma è solo l’inizio. Il basso implacabile e i fiati ululanti di ‘The National Anthem’, i tremiti operistici di ‘Motion Picture Soundtrack’, le rifrazioni chitarristiche e le balbettanti tortuosità di ‘In Limbo’: sempre ancorate a un motivo portante, per quanto offuscato, tutte le tracce rappresentano per la formazione un nuovo spazio da esplorare in un terreno sconosciuto.",
+                  "tagline": "I 100 migliori album in evidenza"
+                },
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Rock",
+                  "Rock progressive/Art-rock",
+                  "Elettronica",
+                  "Alternativa adulti"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "Kid A",
+                "playParams": {
+                  "id": "1097862870",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2000-10-02",
+                "trackCount": 11,
+                "upc": "634904078263",
+                "url": "https://music.apple.com/it/album/kid-a/1097862870"
+              },
+              "href": "/v1/catalog/it/albums/1097862870",
+              "id": "1097862870",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "f4f2ef",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "2b221d",
+                  "textColor2": "392a20",
+                  "textColor3": "534c47",
+                  "textColor4": "5e524a",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music125/v4/9c/f5/04/9cf50453-c311-5324-ffe3-805a811efd73/dj.besjjjpd.jpg/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "contentRating": "explicit",
+                "copyright": "℗ 2017 XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Rock",
+                  "Alternativa adulti",
+                  "Pop",
+                  "Britpop",
+                  "Elettronica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": true,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "OK Computer OKNOTOK 1997 2017",
+                "playParams": {
+                  "id": "1239489060",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "1997-06-16",
+                "trackCount": 23,
+                "upc": "634904086862",
+                "url": "https://music.apple.com/it/album/ok-computer-oknotok-1997-2017/1239489060"
+              },
+              "href": "/v1/catalog/it/albums/1239489060",
+              "id": "1239489060",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 1997 XL Recordings Ltd",
+                "editorialNotes": {
+                  "short": "Una sporca dozzina di tracce, a cavallo tra paura, dissoluzione e ottimismo.",
+                  "standard": "Per quanto altrettanto audaci, innovativi e nervosi, pochi album sono stati in grado di colpire l’immaginario collettivo quanto <i>OK Computer</i>. Un trionfo che, oltre ad annunciare una nuova frontiera nell’esplorazione del rock, esprimeva in maniera articolata il nascente interesse (e la preoccupazione) di fine millennio verso i nostri giocattoli tecnologici. In 12 canzoni sul filo tra terrore e oblio, Thom Yorke appare talmente alienato dalla società che gli gira intorno da desiderare di essere rapito da una civiltà aliena, in modo da poter descrivere il mondo che gli piacerebbe vedere [“the world as I’d love to see it”]. Ridisponendo i suoni del rock’n’roll con ambizione classica, il disco rimane un ciclo di brani dall’inquietante magnetismo, che si rivela una delle espressioni più radicali e necessarie del genere.<br /><br />\nNonostante la carica di angoscia, <i>OK Computer</i> è in fin dei conti un atto di speranza rispetto alla convinzione che l’inesorabile strada del progresso non debba per forza comportare una perdita totale di purezza. Il rimedio al ritmo vertiginoso impresso a ogni cosa è in realtà piuttosto semplice: “Idiot, slow down” [“Rallenta, idiota”], recitano gli ultimi versi di ‘The Tourist’, traccia che conclude la scaletta. Nei decenni trascorsi dal momento in cui il lavoro ha investito i Radiohead del ruolo di nuovi portabandiera del rock, i timori e i disagi che incarnava – cioè quelli relativi a un isolamento sempre più spinto – non hanno fatto che crescere. Le risposte e la fiducia che offriva come appiglio sono però ancora intatte.",
+                  "tagline": "I 100 migliori album in evidenza"
+                },
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Elettronica",
+                  "Pop",
+                  "Britpop",
+                  "Rock",
+                  "Alternativa adulti"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "OK Computer",
+                "playParams": {
+                  "id": "1097861387",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "1997-05-21",
+                "trackCount": 12,
+                "upc": "634904078164",
+                "url": "https://music.apple.com/it/album/ok-computer/1097861387"
+              },
+              "href": "/v1/catalog/it/albums/1097861387",
+              "id": "1097861387",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "030101",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "fccbbf",
+                  "textColor2": "fec29a",
+                  "textColor3": "caa399",
+                  "textColor4": "cc9b7b",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/1b/a9/5c/1ba95cac-b245-d386-63fb-6b857aa9dce8/634904078065.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 1995 XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Rock",
+                  "Alternativa adulti",
+                  "Pop",
+                  "Britpop"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "The Bends",
+                "playParams": {
+                  "id": "1097862703",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "1995-03-08",
+                "trackCount": 12,
+                "upc": "634904078065",
+                "url": "https://music.apple.com/it/album/the-bends/1097862703"
+              },
+              "href": "/v1/catalog/it/albums/1097862703",
+              "id": "1097862703",
+              "type": "albums"
+            }
+          ],
+          "href": "/v1/catalog/it/artists/657515/view/full-albums",
+          "next": "/v1/catalog/it/artists/657515/view/full-albums?offset=10"
+        },
+        "top-songs": {
+          "attributes": {
+            "title": "Top brani"
+          },
+          "data": [
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "Pablo Honey",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "ded9d2",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "0e0a03",
+                  "textColor2": "3e2217",
+                  "textColor3": "38332c",
+                  "textColor4": "5e473c",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/78/a4/ec/78a4ec7b-c6d6-c9c8-441b-660486e56a89/634904077969.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Albert Hammond, Colin Greenwood, Ed O'Brien, Jonny Greenwood, Mike Hazlewood, Phil Selway & Thom Yorke",
+                "contentRating": "explicit",
+                "discNumber": 1,
+                "durationInMillis": 238640,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9200070",
+                "name": "Creep",
+                "playParams": {
+                  "id": "1097862231",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/91/07/a1/9107a13f-9179-34a9-89d6-a9569777195c/mzaf_1751672288510867888.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1992-09-21",
+                "trackNumber": 2,
+                "url": "https://music.apple.com/it/album/creep/1097862062?i=1097862231"
+              },
+              "href": "/v1/catalog/it/songs/1097862231",
+              "id": "1097862231",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 299560,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9701374",
+                "name": "Let Down",
+                "playParams": {
+                  "id": "1097861834",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/cd/65/58/cd6558df-2ba2-6f8e-25a0-d2db94494f74/mzaf_13027322608015064266.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 5,
+                "url": "https://music.apple.com/it/album/let-down/1097861387?i=1097861834"
+              },
+              "href": "/v1/catalog/it/songs/1097861834",
+              "id": "1097861834",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 229120,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9700386",
+                "name": "No Surprises",
+                "playParams": {
+                  "id": "1097861842",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f0/2a/fa/f02afaad-0a7f-9ceb-1236-55ef3d388061/mzaf_13028138173967297756.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 10,
+                "url": "https://music.apple.com/it/album/no-surprises/1097861387?i=1097861842"
+              },
+              "href": "/v1/catalog/it/songs/1097861842",
+              "id": "1097861842",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "The Bends",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "030101",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "fccbbf",
+                  "textColor2": "fec29a",
+                  "textColor3": "caa399",
+                  "textColor4": "cc9b7b",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/1b/a9/5c/1ba95cac-b245-d386-63fb-6b857aa9dce8/634904078065.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 290707,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9400056",
+                "name": "Fake Plastic Trees",
+                "playParams": {
+                  "id": "1097862845",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/a8/c2/e6/a8c2e649-2a9d-8c7c-060b-7aced7644752/mzaf_3787984982925108619.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1995-03-08",
+                "trackNumber": 4,
+                "url": "https://music.apple.com/it/album/fake-plastic-trees/1097862703?i=1097862845"
+              },
+              "href": "/v1/catalog/it/songs/1097862845",
+              "id": "1097862845",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 264067,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9701368",
+                "name": "Karma Police",
+                "playParams": {
+                  "id": "1097861836",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/46/21/35/46213520-da4a-1806-0c59-5ca6ad008b4e/mzaf_6176861975179434589.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 6,
+                "url": "https://music.apple.com/it/album/karma-police/1097861387?i=1097861836"
+              },
+              "href": "/v1/catalog/it/songs/1097861836",
+              "id": "1097861836",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "The Bends",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "030101",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "fccbbf",
+                  "textColor2": "fec29a",
+                  "textColor3": "caa399",
+                  "textColor4": "cc9b7b",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/1b/a9/5c/1ba95cac-b245-d386-63fb-6b857aa9dce8/634904078065.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 257480,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9400055",
+                "name": "High and Dry",
+                "playParams": {
+                  "id": "1097862833",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/97/28/68/972868b4-3ee8-24ec-2e38-466feb0218f2/mzaf_1223237960264698698.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1995-02-27",
+                "trackNumber": 3,
+                "url": "https://music.apple.com/it/album/high-and-dry/1097862703?i=1097862833"
+              },
+              "href": "/v1/catalog/it/songs/1097862833",
+              "id": "1097862833",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "In Rainbows",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "1e1807",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "d0c741",
+                  "textColor2": "e9872e",
+                  "textColor3": "aca436",
+                  "textColor4": "c07126",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/dd/50/c7/dd50c790-99ac-d3d0-5ab8-e3891fb8fd52/634904032463.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 248893,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBSTK0700009",
+                "name": "Jigsaw Falling Into Place",
+                "playParams": {
+                  "id": "1109715469",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/76/0b/04/760b0415-ed76-cc02-b688-1a49789dbc34/mzaf_11882321334120712367.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "2007-10-10",
+                "trackNumber": 9,
+                "url": "https://music.apple.com/it/album/jigsaw-falling-into-place/1109714933?i=1109715469"
+              },
+              "href": "/v1/catalog/it/songs/1109715469",
+              "id": "1109715469",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "In Rainbows",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "1e1807",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "d0c741",
+                  "textColor2": "e9872e",
+                  "textColor3": "aca436",
+                  "textColor4": "c07126",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/dd/50/c7/dd50c790-99ac-d3d0-5ab8-e3891fb8fd52/634904032463.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 318187,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBSTK0700004",
+                "name": "Weird Fishes / Arpeggi",
+                "playParams": {
+                  "id": "1109715168",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3a/12/eb/3a12ebaf-89c1-1ac9-6821-3a1de510ef51/mzaf_10989557132964733235.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "2007-10-10",
+                "trackNumber": 4,
+                "url": "https://music.apple.com/it/album/weird-fishes-arpeggi/1109714933?i=1109715168"
+              },
+              "href": "/v1/catalog/it/songs/1109715168",
+              "id": "1109715168",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "The Bends",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "030101",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "fccbbf",
+                  "textColor2": "fec29a",
+                  "textColor3": "caa399",
+                  "textColor4": "cc9b7b",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/1b/a9/5c/1ba95cac-b245-d386-63fb-6b857aa9dce8/634904078065.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 253853,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9400061",
+                "name": "Street Spirit (Fade Out)",
+                "playParams": {
+                  "id": "1097863295",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/48/aa/31/48aa31f7-77d8-e958-a5ae-e53f18632b81/mzaf_13209801293252912685.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1995-03-08",
+                "trackNumber": 12,
+                "url": "https://music.apple.com/it/album/street-spirit-fade-out/1097862703?i=1097863295"
+              },
+              "href": "/v1/catalog/it/songs/1097863295",
+              "id": "1097863295",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "OK Computer",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "fefeff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 267187,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBAYE9701372",
+                "name": "Exit Music (For a Film)",
+                "playParams": {
+                  "id": "1097861833",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/f9/12/e3/f912e3f3-41a6-28f7-251f-dffb260ff0a2/mzaf_564282739378755648.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "1997-05-21",
+                "trackNumber": 4,
+                "url": "https://music.apple.com/it/album/exit-music-for-a-film/1097861387?i=1097861833"
+              },
+              "href": "/v1/catalog/it/songs/1097861833",
+              "id": "1097861833",
+              "type": "songs"
+            }
+          ],
+          "href": "/v1/catalog/it/artists/657515/view/top-songs",
+          "next": "/v1/catalog/it/artists/657515/view/top-songs?offset=10"
+        }
+      }
+    }
+  ]
+}
