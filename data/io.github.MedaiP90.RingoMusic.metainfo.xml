@@ -22,7 +22,7 @@ Copyright (C) 2026 RingoMusic contributors
     <p>The audio quality is AAC 256 kbps.</p>
     <p>RingoMusic is not affiliated with Apple Inc. Apple Music is a trademark of Apple Inc.</p>
   </description>
-  <url type="homepage">https://github.com/MedaiP90/RingoMusic</url>
+  <url type="homepage">https://ringomusic.netlify.app/</url>
   <url type="bugtracker">https://github.com/MedaiP90/RingoMusic/issues</url>
   <url type="vcs-browser">https://github.com/MedaiP90/RingoMusic</url>
   <content_rating type="oars-1.1" />

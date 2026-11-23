@@ -18,7 +18,7 @@ pub fn present(parent: &impl IsA<gtk::Widget>) {
         .application_icon(APP_ID)
         .version(env!("CARGO_PKG_VERSION"))
         .developer_name(gettext("RingoMusic contributors"))
-        .website(repository)
+        .website(env!("CARGO_PKG_HOMEPAGE"))
         .issue_url(format!("{repository}/issues"))
         .license_type(gtk::License::Gpl30)
         .comments(gettext(

@@ -12,7 +12,7 @@ release: "1"
 section: sound
 priority: optional
 maintainer: ${MAINTAINER}
-homepage: https://github.com/MedaiP90/RingoMusic
+homepage: https://ringomusic.netlify.app/
 license: GPL-3.0-or-later
 description: |
   Apple Music client for GNOME
