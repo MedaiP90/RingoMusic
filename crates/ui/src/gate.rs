@@ -10,6 +10,7 @@ use relm4::gtk;
 use relm4::gtk::gio::SimpleAction;
 use relm4::gtk::prelude::*;
 use relm4::prelude::*;
+use ringo_core::paths::PackageFormat;
 use ringo_core::runner::CoreHandle;
 use ringo_core::state::{AppState, AuthState, EngineStatus, Message};
 
@@ -35,6 +36,19 @@ const NO_SUBSCRIPTION_PAGE: &str = "no-subscription";
 const INCOMPATIBLE_PAGE: &str = "incompatible";
 const GAVE_UP_PAGE: &str = "gave-up";
 const SANDBOX_FAILED_PAGE: &str = "sandbox-failed";
+
+/// Text of the sandbox error page. The `AppImage` has no SUID helper, so it
+/// needs unprivileged user namespaces. Ubuntu blocks them.
+fn sandbox_description(package: PackageFormat) -> String {
+    match package {
+        PackageFormat::AppImage => gettext(
+            "The security sandbox of the player cannot start. The AppImage needs unprivileged user namespaces, and Ubuntu blocks them. On Ubuntu, use the .deb package or the Flatpak. RingoMusic does not start the player without the sandbox.",
+        ),
+        PackageFormat::Flatpak | PackageFormat::Native => gettext(
+            "The security sandbox of the player cannot start. This often means that the installation is not complete, or that the system blocks the sandbox. RingoMusic does not start the player without the sandbox.",
+        ),
+    }
+}
 
 /// What the gate shows.
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -278,9 +292,7 @@ impl SimpleComponent for Gate {
                 set_content = &adw::StatusPage {
                     set_icon_name: Some("dialog-error-symbolic"),
                     set_title: &gettext("The player cannot start"),
-                    set_description: Some(&gettext(
-                        "The security sandbox of the player cannot start. This often means that the installation is not complete, or that the system blocks the sandbox. RingoMusic does not start the player without the sandbox.",
-                    )),
+                    set_description: Some(&sandbox_description(PackageFormat::detect())),
 
                     #[wrap(Some)]
                     set_child = &gtk::Box {

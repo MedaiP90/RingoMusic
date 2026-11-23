@@ -12,6 +12,10 @@ RingoMusic is not affiliated with, endorsed by, or sponsored by Apple. You need 
 
 **Status: Under development. Not ready for use.**
 
+<p align="center">
+  <img src="assets/promo.png" alt="RingoMusic screenshot">
+</p>
+
 ## Supported platforms
 
 RingoMusic supports x86_64 Linux only. The minimum distributions are:

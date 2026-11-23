@@ -44,10 +44,10 @@ pub struct BackgroundPlayback {
 }
 
 impl BackgroundPlayback {
-    /// Native packages need no permission. Flatpak must ask the portal.
+    /// Native packages and `AppImage` packages need no permission. Flatpak must ask the portal.
     pub fn new(settings: Settings, package: PackageFormat) -> Self {
         let permission = match package {
-            PackageFormat::Native => Permission::Granted,
+            PackageFormat::Native | PackageFormat::AppImage => Permission::Granted,
             PackageFormat::Flatpak => Permission::Unknown,
         };
         Self {

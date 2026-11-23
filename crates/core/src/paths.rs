@@ -19,6 +19,8 @@ const APP_DIR: &str = "ringomusic";
 /// How the application is installed.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum PackageFormat {
+    /// Runs from an `AppImage`. Paths are the native XDG paths.
+    AppImage,
     /// Runs inside a Flatpak sandbox.
     Flatpak,
     /// Runs on the host system.
@@ -29,8 +31,17 @@ impl PackageFormat {
     /// Detects the package format of the running process.
     #[must_use]
     pub fn detect() -> Self {
-        if Path::new(FLATPAK_MARKER).exists() {
+        Self::detect_with(Path::new(FLATPAK_MARKER).exists(), |name| env::var_os(name))
+    }
+
+    /// Detects the package format from the Flatpak marker and the environment
+    /// that `lookup` gives. The `AppImage` runtime sets `APPIMAGE` and `APPDIR`.
+    fn detect_with(flatpak_marker: bool, lookup: impl Fn(&str) -> Option<OsString>) -> Self {
+        let is_set = |name: &str| lookup(name).is_some_and(|value| !value.is_empty());
+        if flatpak_marker {
             Self::Flatpak
+        } else if is_set("APPIMAGE") && is_set("APPDIR") {
+            Self::AppImage
         } else {
             Self::Native
         }
@@ -213,6 +224,47 @@ mod tests {
             result,
             Err(Error::MissingEnvironment { name: "HOME" })
         ));
+    }
+
+    #[test]
+    fn appimage_is_detected_from_the_runtime_variables() {
+        let both = lookup(&[
+            ("APPIMAGE", "/home/u/Ringo.AppImage"),
+            ("APPDIR", "/tmp/.mount_x"),
+        ]);
+        assert_eq!(
+            PackageFormat::detect_with(false, both),
+            PackageFormat::AppImage
+        );
+        let only_one = lookup(&[("APPIMAGE", "/home/u/Ringo.AppImage")]);
+        assert_eq!(
+            PackageFormat::detect_with(false, only_one),
+            PackageFormat::Native
+        );
+        let empty = lookup(&[("APPIMAGE", ""), ("APPDIR", "")]);
+        assert_eq!(
+            PackageFormat::detect_with(false, empty),
+            PackageFormat::Native
+        );
+    }
+
+    #[test]
+    fn flatpak_marker_wins_over_appimage_variables() {
+        let both = lookup(&[("APPIMAGE", "/a"), ("APPDIR", "/b")]);
+        assert_eq!(
+            PackageFormat::detect_with(true, both),
+            PackageFormat::Flatpak
+        );
+    }
+
+    #[test]
+    fn install_prefix_is_the_usr_directory_of_the_appdir() {
+        let paths = Paths::resolve(
+            lookup(&[("HOME", "/home/u"), ("XDG_RUNTIME_DIR", "/run")]),
+            Path::new("/tmp/.mount_x/usr/bin/ringomusic"),
+        )
+        .expect("paths are valid");
+        assert_eq!(paths.install_prefix, Path::new("/tmp/.mount_x/usr"));
     }
 
     #[test]

@@ -26,6 +26,7 @@ path = [
   "po/*.pot",
   "po/*.po",
   "packaging/castlabs.sha256",
+  "packaging/appimage/tools.sha256",
   "packaging/aur/.SRCINFO",
   "packaging/copyright",
   "website/llms.txt",
