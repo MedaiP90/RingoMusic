@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!-- Copyright (C) 2026 RingoMusic contributors -->
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>RingoMusic: Apple Music client for Linux with a native GNOME look</title>
+  <meta name="description" content="RingoMusic is a free, open-source Apple Music client for Linux. Native GTK 4 and libadwaita app for GNOME. Media keys, keyboard shortcuts, no telemetry.">
+  <link rel="canonical" href="https://ringomusic.netlify.app/">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#2e2e32" media="(prefers-color-scheme: dark)">
+
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="RingoMusic">
+  <meta property="og:title" content="RingoMusic: Apple Music on Linux, native GNOME style">
+  <meta property="og:description" content="Free, open-source Apple Music client for Linux. Built with Rust, GTK 4, and libadwaita.">
+  <meta property="og:url" content="https://ringomusic.netlify.app/">
+  <meta property="og:image" content="https://ringomusic.netlify.app/og-image.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="RingoMusic logo: red headphones and the text 'Apple Music for Linux, native GNOME style'">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&amp;display=swap">
+  <link rel="stylesheet" href="/css/style.css">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "RingoMusic",
+    "alternateName": "io.github.MedaiP90.RingoMusic",
+    "description": "RingoMusic is a free, open-source Apple Music client for Linux with a native GNOME look. It uses GTK 4 and libadwaita. An Apple Music subscription is required.",
+    "url": "https://ringomusic.netlify.app/",
+    "applicationCategory": "MultimediaApplication",
+    "applicationSubCategory": "Music player",
+    "operatingSystem": "Linux (x86_64): Debian 13, Ubuntu 26.04 LTS, Fedora, Arch Linux, any distribution with Flatpak",
+    "processorRequirements": "x86_64",
+    "downloadUrl": "https://github.com/MedaiP90/RingoMusic/releases/latest",
+    "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+    "isAccessibleForFree": true,
+    "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+    "author": { "@type": "Person", "name": "MedaiP90", "url": "https://github.com/MedaiP90" },
+    "sameAs": ["https://github.com/MedaiP90/RingoMusic"],
+    "image": "https://ringomusic.netlify.app/og-image.png",
+    "screenshot": "https://ringomusic.netlify.app/screenshots/main-light.png"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      { "@type": "Question", "name": "What is RingoMusic?", "acceptedAnswer": { "@type": "Answer", "text": "RingoMusic is a free, open-source Apple Music client for Linux. It is a native GNOME app, written in Rust with GTK 4 and libadwaita. Use it to browse your library, search the catalog, and play songs, albums, and playlists." } },
+      { "@type": "Question", "name": "Is RingoMusic made by Apple?", "acceptedAnswer": { "@type": "Answer", "text": "No. RingoMusic is an independent project. It is not affiliated with, endorsed by, or sponsored by Apple Inc. Apple Music is a trademark of Apple Inc." } },
+      { "@type": "Question", "name": "Do I need an Apple Music subscription?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. RingoMusic plays music from your Apple Music account. You must have an active Apple Music subscription." } },
+      { "@type": "Question", "name": "Which Linux distributions does RingoMusic support?", "acceptedAnswer": { "@type": "Answer", "text": "RingoMusic supports x86_64 Linux with GTK 4.18, libadwaita 1.7, and glibc 2.41 or newer. The minimum distributions are Debian 13, Ubuntu 26.04 LTS, and the two supported Fedora releases. Older distributions, such as Ubuntu 24.04, are not supported." } },
+      { "@type": "Question", "name": "Which audio quality does RingoMusic play?", "acceptedAnswer": { "@type": "Answer", "text": "RingoMusic plays AAC at 256 kbps. The web playback path of Apple Music gives this quality only. Lossless and Dolby Atmos audio are not available." } },
+      { "@type": "Question", "name": "Can I download songs with RingoMusic?", "acceptedAnswer": { "@type": "Answer", "text": "No. RingoMusic does not download, export, or record audio. This rule is permanent." } },
+      { "@type": "Question", "name": "Does RingoMusic store my Apple ID password?", "acceptedAnswer": { "@type": "Answer", "text": "No. You sign in on the Apple Music web page inside the playback engine. RingoMusic never reads or stores your credentials. RingoMusic has no telemetry." } },
+      { "@type": "Question", "name": "Does RingoMusic work on ARM (aarch64)?", "acceptedAnswer": { "@type": "Answer", "text": "No. No official Widevine module exists for aarch64 Linux. RingoMusic supports x86_64 only." } },
+      { "@type": "Question", "name": "Is RingoMusic free?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. RingoMusic is free software under the GNU General Public License, version 3 or later. The Apple Music subscription is not free." } }
+    ]
+  }
+  </script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="headerbar">
+    <div class="container headerbar__inner">
+      <a class="headerbar__brand" href="/">
+        <img src="/favicon.svg" alt="" width="28" height="28">
+        RingoMusic
+      </a>
+      <nav class="headerbar__nav" aria-label="Sections">
+        <a class="button button--flat" href="#features">Features</a>
+        <a class="button button--flat" href="#screenshots">Screenshots</a>
+        <a class="button button--flat" href="#faq">FAQ</a>
+      </nav>
+      <a class="button button--flat" href="https://github.com/MedaiP90/RingoMusic">GitHub</a>
+      <a class="button button--suggested" href="#download">Download</a>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero container" aria-labelledby="hero-title">
+      <img class="hero__icon" src="/favicon.svg" alt="" width="128" height="128">
+      <h1 class="hero__title" id="hero-title">Apple Music, native on your GNOME desktop</h1>
+      <p class="hero__text">RingoMusic is a free, open-source Apple Music client for Linux. It looks and works like a GNOME app, because it is one: Rust, GTK 4, and libadwaita.</p>
+      <div class="hero__actions">
+        <a class="button button--pill button--suggested" href="#download">
+          <svg class="button__icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M7 1h2v8.6l2.8-2.8 1.4 1.4L8 13.4 2.8 8.2l1.4-1.4L7 9.6zM2 14h12v2H2z"/></svg>
+          Download for Linux
+        </a>
+        <a class="button button--pill" href="https://github.com/MedaiP90/RingoMusic">View source on GitHub</a>
+      </div>
+      <p class="hero__note">Free. Apple Music subscription required. x86_64 Linux.</p>
+      <picture>
+        <source srcset="/screenshots/main-dark.png" media="(prefers-color-scheme: dark)">
+        <img class="hero__shot shot" src="/screenshots/main-light.png" alt="RingoMusic main window: the home page with recommended albums and a song in the player bar" width="1600" height="1000" fetchpriority="high">
+      </picture>
+    </section>
+
+    <section class="section container" id="features" aria-labelledby="features-title">
+      <h2 id="features-title">Why RingoMusic</h2>
+      <p class="section__lead">RingoMusic brings your Apple Music library to the Linux desktop without a browser tab.</p>
+      <div class="grid grid--4">
+        <article class="card">
+          <div class="card__icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2zm0 2h10v2H3zm0 4h10v6H3z"/></svg></div>
+          <h3>Native GNOME look</h3>
+          <p class="card__text">RingoMusic uses GTK 4 and libadwaita. It follows your light or dark style and your accent color. The layout adapts to narrow windows down to 360 pixels.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 2v12l10-6z"/></svg></div>
+          <h3>Desktop integration</h3>
+          <p class="card__text">Control playback with media keys and the GNOME Shell media controls (MPRIS). Every command has a keyboard shortcut.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 1a4 4 0 0 0-4 4v2H3v8h10V7h-1V5a4 4 0 0 0-4-4zm0 2a2 2 0 0 1 2 2v2H6V5a2 2 0 0 1 2-2z"/></svg></div>
+          <h3>Privacy</h3>
+          <p class="card__text">RingoMusic never reads or stores your Apple ID credentials. It has no telemetry and no tracking.</p>
+        </article>
+        <article class="card">
+          <div class="card__icon"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 14.5 1.9 8.6A3.6 3.6 0 0 1 8 3.4a3.6 3.6 0 0 1 6.1 5.2z"/></svg></div>
+          <h3>Free software</h3>
+          <p class="card__text">RingoMusic is written in Rust and licensed under GPL-3.0-or-later. Development is open on GitHub.</p>
+        </article>
+      </div>
+    </section>
+
+    <section class="section container" id="screenshots" aria-labelledby="screenshots-title">
+      <h2 id="screenshots-title">Screenshots</h2>
+      <p class="section__lead">Browse, search, and play. Every view of RingoMusic follows the GNOME design guidelines.</p>
+      <div class="gallery">
+        <figure class="gallery__item">
+          <img class="shot" src="/screenshots/library.png" alt="RingoMusic library view with a grid of album covers" width="1600" height="1000" loading="lazy">
+          <figcaption>Your library, as an album grid</figcaption>
+        </figure>
+        <figure class="gallery__item">
+          <img class="shot" src="/screenshots/album.png" alt="RingoMusic album page with the cover and the song list" width="1600" height="1000" loading="lazy">
+          <figcaption>Album page with the song list</figcaption>
+        </figure>
+      </div>
+      <div class="gallery gallery--feature">
+        <div class="gallery__stack">
+          <figure class="gallery__item">
+            <img class="shot" src="/screenshots/search.png" alt="RingoMusic search results for an artist: songs, albums, and playlists" width="1600" height="1000" loading="lazy">
+            <figcaption>Search the full Apple Music catalog</figcaption>
+          </figure>
+          <figure class="gallery__item">
+            <img class="shot" src="/screenshots/queue.png" alt="RingoMusic with the playback queue panel open at the side" width="1600" height="1000" loading="lazy">
+            <figcaption>Playback queue with shuffle and repeat</figcaption>
+          </figure>
+        </div>
+        <figure class="gallery__item gallery__item--narrow">
+          <img class="shot" src="/screenshots/mobile.png" alt="RingoMusic in a narrow window, with the adaptive one-column layout" width="720" height="1440" loading="lazy">
+          <figcaption>Adaptive layout for narrow windows</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <section class="section container" id="shortcuts" aria-labelledby="shortcuts-title">
+      <h2 id="shortcuts-title">Keyboard shortcuts</h2>
+      <p class="section__lead">Control RingoMusic without the mouse.</p>
+      <div class="boxed-list">
+        <table class="shortcuts">
+          <caption class="visually-hidden">RingoMusic keyboard shortcuts</caption>
+          <tbody>
+            <tr><th scope="row">Play or pause</th><td><kbd>Ctrl</kbd> + <kbd>Space</kbd></td></tr>
+            <tr><th scope="row">Next song</th><td><kbd>Ctrl</kbd> + <kbd>→</kbd></td></tr>
+            <tr><th scope="row">Previous song</th><td><kbd>Ctrl</kbd> + <kbd>←</kbd></td></tr>
+            <tr><th scope="row">Toggle shuffle</th><td><kbd>Ctrl</kbd> + <kbd>S</kbd></td></tr>
+            <tr><th scope="row">Cycle repeat mode</th><td><kbd>Ctrl</kbd> + <kbd>R</kbd></td></tr>
+            <tr><th scope="row">Search</th><td><kbd>Ctrl</kbd> + <kbd>F</kbd></td></tr>
+            <tr><th scope="row">Show or hide the queue</th><td><kbd>F9</kbd></td></tr>
+            <tr><th scope="row">Refresh the home page</th><td><kbd>F5</kbd></td></tr>
+            <tr><th scope="row">Preferences</th><td><kbd>Ctrl</kbd> + <kbd>,</kbd></td></tr>
+            <tr><th scope="row">Quit</th><td><kbd>Ctrl</kbd> + <kbd>Q</kbd></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="section container" id="download" aria-labelledby="download-title">
+      <h2 id="download-title">Download RingoMusic</h2>
+      <p class="section__lead">Get the package for your distribution from GitHub Releases. You need an Apple Music subscription.</p>
+      <div class="grid">
+        <article class="card">
+          <h3>Debian and Ubuntu</h3>
+          <ul class="card__list">
+            <li>Debian 13 or newer</li>
+            <li>Ubuntu 26.04 LTS or newer</li>
+          </ul>
+          <a class="button button--pill button--suggested" href="https://github.com/MedaiP90/RingoMusic/releases/latest">Download .deb package</a>
+        </article>
+        <article class="card">
+          <h3>Fedora</h3>
+          <ul class="card__list">
+            <li>The two supported Fedora releases</li>
+          </ul>
+          <a class="button button--pill button--suggested" href="https://github.com/MedaiP90/RingoMusic/releases/latest">Download .rpm package</a>
+        </article>
+        <article class="card">
+          <h3>Arch Linux</h3>
+          <ul class="card__list">
+            <li>AUR package <code>ringomusic-bin</code></li>
+          </ul>
+          <a class="button button--pill button--suggested" href="https://aur.archlinux.org/packages/ringomusic-bin">Open the AUR package</a>
+        </article>
+        <article class="card">
+          <h3>Other distributions</h3>
+          <ul class="card__list">
+            <li>Flatpak bundle, with the GNOME runtime</li>
+            <li>Tarball (<code>.tar.gz</code>)</li>
+          </ul>
+          <a class="button button--pill button--suggested" href="https://github.com/MedaiP90/RingoMusic/releases/latest">Download Flatpak bundle</a>
+        </article>
+      </div>
+      <p class="requirements">Requirements: x86_64 Linux with GTK 4.18, libadwaita 1.7, and glibc 2.41 or newer (not needed for the Flatpak bundle). Each release includes a <code>SHA256SUMS</code> file. You can also <a href="https://github.com/MedaiP90/RingoMusic#build-from-source">build RingoMusic from source</a>.</p>
+    </section>
+
+    <section class="section container" id="facts" aria-labelledby="facts-title">
+      <h2 id="facts-title">RingoMusic at a glance</h2>
+      <p class="section__lead">The key facts about RingoMusic.</p>
+      <dl class="boxed-list">
+        <div class="boxed-list__row property-row"><dt>Type</dt><dd>Apple Music client (music player)</dd></div>
+        <div class="boxed-list__row property-row"><dt>Platform</dt><dd>Linux, x86_64 only</dd></div>
+        <div class="boxed-list__row property-row"><dt>Desktop</dt><dd>GNOME (works on other desktops)</dd></div>
+        <div class="boxed-list__row property-row"><dt>Toolkit</dt><dd>GTK 4.18 and libadwaita 1.7</dd></div>
+        <div class="boxed-list__row property-row"><dt>Language</dt><dd>Rust</dd></div>
+        <div class="boxed-list__row property-row"><dt>Audio quality</dt><dd>AAC, 256 kbps</dd></div>
+        <div class="boxed-list__row property-row"><dt>Packages</dt><dd>.deb, .rpm, Flatpak bundle, tarball, AUR</dd></div>
+        <div class="boxed-list__row property-row"><dt>Price</dt><dd>Free (Apple Music subscription required)</dd></div>
+        <div class="boxed-list__row property-row"><dt>License</dt><dd>GPL-3.0-or-later</dd></div>
+        <div class="boxed-list__row property-row"><dt>App ID</dt><dd><code>io.github.MedaiP90.RingoMusic</code></dd></div>
+      </dl>
+    </section>
+
+    <section class="section container" id="faq" aria-labelledby="faq-title">
+      <h2 id="faq-title">Frequently asked questions</h2>
+      <p class="section__lead">Short answers about RingoMusic.</p>
+      <div class="boxed-list">
+        <details class="boxed-list__row expander">
+          <summary class="expander__title">What is RingoMusic?</summary>
+          <p class="expander__body">RingoMusic is a free, open-source Apple Music client for Linux. It is a native GNOME app, written in Rust with GTK 4 and libadwaita. Use it to browse your library, search the catalog, and play songs, albums, and playlists.</p>
+        </details>
+        <details class="boxed-list__row expander">
+          <summary class="expander__title">Is RingoMusic made by Apple?</summary>
+          <p class="expander__body">No. RingoMusic is an independent project. It is not affiliated with, endorsed by, or sponsored by Apple Inc. Apple Music is a trademark of Apple Inc.</p>
+        </details>
+        <details class="boxed-list__row expander">
+          <summary class="expander__title">Do I need an Apple Music subscription?</summary>
+          <p class="expander__body">Yes. RingoMusic plays music from your Apple Music account. You must have an active Apple Music subscription.</p>
+        </details>
+        <details class="boxed-list__row expander">
+          <summary class="expander__title">Which Linux distributions does RingoMusic support?</summary>
+          <p class="expander__body">RingoMusic supports x86_64 Linux with GTK 4.18, libadwaita 1.7, and glibc 2.41 or newer. The minimum distributions are Debian 13, Ubuntu 26.04 LTS, and the two supported Fedora releases. Older distributions, such as Ubuntu 24.04, are not supported.</p>
+        </details>
+        <details class="boxed-list__row expander">
+          <summary class="expander__title">Which audio quality does RingoMusic play?</summary>
+          <p class="expander__body">RingoMusic plays AAC at 256 kbps. The web playback path of Apple Music gives this quality only. Lossless and Dolby Atmos audio are not available.</p>
+        </details>
+        <details class="boxed-list__row expander">
+          <summary class="expander__title">Can I download songs with RingoMusic?</summary>
+          <p class="expander__body">No. RingoMusic does not download, export, or record audio. This rule is permanent.</p>
+        </details>
+        <details class="boxed-list__row expander">
+          <summary class="expander__title">Does RingoMusic store my Apple ID password?</summary>
+          <p class="expander__body">No. You sign in on the Apple Music web page inside the playback engine. RingoMusic never reads or stores your credentials. RingoMusic has no telemetry.</p>
+        </details>
+        <details class="boxed-list__row expander">
+          <summary class="expander__title">Does RingoMusic work on ARM (aarch64)?</summary>
+          <p class="expander__body">No. No official Widevine module exists for aarch64 Linux. RingoMusic supports x86_64 only.</p>
+        </details>
+        <details class="boxed-list__row expander">
+          <summary class="expander__title">Is RingoMusic free?</summary>
+          <p class="expander__body">Yes. RingoMusic is free software under the GNU General Public License, version 3 or later. The Apple Music subscription is not free.</p>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <ul class="footer__links">
+        <li><a href="https://github.com/MedaiP90/RingoMusic">Source code</a></li>
+        <li><a href="https://github.com/MedaiP90/RingoMusic/issues">Report a problem</a></li>
+        <li><a href="https://github.com/MedaiP90/RingoMusic/blob/main/CONTRIBUTING.md">Contribute</a></li>
+        <li><a href="https://github.com/MedaiP90/RingoMusic/blob/main/LICENSE">License (GPL-3.0-or-later)</a></li>
+      </ul>
+      <p class="footer__legal">RingoMusic is not affiliated with, endorsed by, or sponsored by Apple Inc. Apple Music is a trademark of Apple Inc., registered in the U.S. and other countries.</p>
+    </div>
+  </footer>
+</body>
+</html>

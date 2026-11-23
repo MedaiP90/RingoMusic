@@ -1,0 +1,604 @@
+/* SPDX-License-Identifier: GPL-3.0-or-later */
+/* Copyright (C) 2026 RingoMusic contributors */
+
+/* RingoMusic website. The look copies libadwaita 1.7, so the site matches the app. */
+
+@layer reset, tokens, base, layout, components;
+
+/* ---------- Reset ---------- */
+@layer reset {
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+
+  body,
+  h1,
+  h2,
+  h3,
+  p,
+  dl,
+  dd,
+  figure {
+    margin: 0;
+  }
+
+  img {
+    display: block;
+    max-inline-size: 100%;
+    block-size: auto;
+  }
+}
+
+/* ---------- Tokens: libadwaita palette, light style ---------- */
+@layer tokens {
+  :root {
+    color-scheme: light dark;
+
+    --window-bg-color: #fafafb;
+    --window-fg-color: rgb(0 0 6 / 80%);
+    --view-bg-color: #ffffff;
+    --headerbar-bg-color: #ffffff;
+    --card-bg-color: #ffffff;
+    --card-shade-color: rgb(0 0 6 / 7%);
+    --border-color: rgb(0 0 6 / 15%);
+    --dim-fg-color: rgb(0 0 6 / 60%);
+    --button-bg-color: rgb(0 0 6 / 8%);
+    --button-hover-bg-color: rgb(0 0 6 / 13%);
+
+    /* Accent: GNOME red, the color of the app icon. */
+    --accent-bg-color: #e01b24;
+    --accent-fg-color: #ffffff;
+    --accent-color: #c01c28;
+
+    --radius-sm: 6px;
+    --radius-md: 12px;
+    --radius-pill: 9999px;
+
+    --shadow-window: 0 0 0 1px rgb(0 0 6 / 9%), 0 2px 8px 2px rgb(0 0 6 / 10%),
+      0 16px 40px rgb(0 0 6 / 12%);
+
+    --space-xs: 0.375rem;
+    --space-sm: 0.75rem;
+    --space-md: 1.5rem;
+    --space-lg: 3rem;
+    --space-xl: 5rem;
+
+    --content-max: 68.75rem; /* 1100 px */
+    --font-body: "Inter", "Adwaita Sans", Cantarell, system-ui, sans-serif;
+    --font-mono: "Adwaita Mono", "Source Code Pro", ui-monospace, monospace;
+  }
+
+  /* Dark style, like libadwaita with the dark system preference. */
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --window-bg-color: #222226;
+      --window-fg-color: #ffffff;
+      --view-bg-color: #1d1d20;
+      --headerbar-bg-color: #2e2e32;
+      --card-bg-color: rgb(255 255 255 / 8%);
+      --card-shade-color: rgb(0 0 6 / 36%);
+      --border-color: rgb(255 255 255 / 15%);
+      --dim-fg-color: rgb(255 255 255 / 65%);
+      --button-bg-color: rgb(255 255 255 / 10%);
+      --button-hover-bg-color: rgb(255 255 255 / 15%);
+      --accent-color: #ff7b7f;
+      --shadow-window: 0 0 0 1px rgb(255 255 255 / 8%), 0 2px 8px 2px rgb(0 0 6 / 30%),
+        0 16px 40px rgb(0 0 6 / 40%);
+    }
+  }
+}
+
+/* ---------- Base ---------- */
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-block-start: 4rem; /* Height of the sticky header bar. */
+  }
+
+  body {
+    background-color: var(--window-bg-color);
+    color: var(--window-fg-color);
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3 {
+    line-height: 1.2;
+    font-weight: 800;
+  }
+
+  h2 {
+    font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2rem);
+    text-align: center;
+  }
+
+  h3 {
+    font-size: 1.125rem;
+    font-weight: 700;
+  }
+
+  a {
+    color: var(--accent-color);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  kbd,
+  code {
+    font-family: var(--font-mono);
+    font-size: 0.875em;
+  }
+
+  kbd {
+    padding: 0.1em 0.45em;
+    border: 1px solid var(--border-color);
+    border-block-end-width: 2px;
+    border-radius: var(--radius-sm);
+    background-color: var(--view-bg-color);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+/* ---------- Layout ---------- */
+@layer layout {
+  .container {
+    inline-size: 100%;
+    max-inline-size: var(--content-max);
+    margin-inline: auto;
+    padding-inline: var(--space-md);
+  }
+
+  .section {
+    padding-block: var(--space-xl) 0;
+  }
+
+  .section__lead {
+    max-inline-size: 40rem;
+    margin: var(--space-sm) auto var(--space-lg);
+    color: var(--dim-fg-color);
+    text-align: center;
+  }
+
+  /* One column on phones, two from 48rem (tablet), four for the feature cards on wide screens. */
+  .grid {
+    display: grid;
+    gap: var(--space-md);
+  }
+
+  @media (min-width: 48rem) {
+    .grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 64rem) {
+    .grid--4 {
+      grid-template-columns: repeat(4, 1fr);
+    }
+  }
+}
+
+/* ---------- Components ---------- */
+@layer components {
+  /* Skip link: hidden until it gets keyboard focus. */
+  .skip-link {
+    position: absolute;
+    inset-block-start: -10rem;
+    inset-inline-start: var(--space-sm);
+    z-index: 20;
+    padding: var(--space-xs) var(--space-sm);
+    background-color: var(--accent-bg-color);
+    color: var(--accent-fg-color);
+    border-radius: var(--radius-sm);
+  }
+
+  .skip-link:focus {
+    inset-block-start: var(--space-sm);
+  }
+
+  /* AdwHeaderBar */
+  .headerbar {
+    position: sticky;
+    inset-block-start: 0;
+    z-index: 10;
+    background-color: var(--headerbar-bg-color);
+    box-shadow: 0 1px 0 var(--border-color);
+  }
+
+  .headerbar__inner {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-block-size: 3.25rem;
+  }
+
+  .headerbar__brand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
+    margin-inline-end: auto;
+    color: inherit;
+    font-weight: 700;
+    text-decoration: none;
+  }
+
+  .headerbar__nav {
+    display: none;
+    gap: var(--space-xs);
+  }
+
+  @media (min-width: 48rem) {
+    .headerbar__nav {
+      display: flex;
+    }
+  }
+
+  /* Buttons: flat, pill, suggested-action. */
+  .button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs);
+    min-block-size: 2.25rem;
+    padding: 0.4rem 1rem;
+    border-radius: var(--radius-sm);
+    background-color: var(--button-bg-color);
+    color: inherit;
+    font-weight: 700;
+    text-decoration: none;
+    transition: background-color 150ms ease-out;
+  }
+
+  .button:hover {
+    background-color: var(--button-hover-bg-color);
+  }
+
+  .button--flat {
+    background-color: transparent;
+    font-weight: 600;
+  }
+
+  .button--pill {
+    min-block-size: 3rem;
+    padding-inline: 2rem;
+    border-radius: var(--radius-pill);
+  }
+
+  .button--suggested {
+    background-color: var(--accent-bg-color);
+    color: var(--accent-fg-color);
+  }
+
+  .button--suggested:hover {
+    background-color: color-mix(in srgb, var(--accent-bg-color), black 10%);
+  }
+
+  .button__icon {
+    inline-size: 1rem;
+    block-size: 1rem;
+    fill: currentcolor;
+  }
+
+  /* Hero */
+  .hero {
+    padding-block: var(--space-xl) 0;
+    text-align: center;
+  }
+
+  .hero__icon {
+    margin-inline: auto;
+  }
+
+  .hero__title {
+    max-inline-size: 18ch;
+    margin: var(--space-md) auto var(--space-sm);
+    font-size: clamp(2.25rem, 1.5rem + 3vw, 3.75rem);
+    letter-spacing: -0.02em;
+  }
+
+  .hero__text {
+    max-inline-size: 38rem;
+    margin-inline: auto;
+    color: var(--dim-fg-color);
+    font-size: 1.125rem;
+  }
+
+  .hero__actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-sm);
+    margin-block: var(--space-md) var(--space-sm);
+  }
+
+  .hero__note {
+    color: var(--dim-fg-color);
+    font-size: 0.875rem;
+  }
+
+  .hero__shot {
+    margin-block-start: var(--space-lg);
+  }
+
+  /* Screenshot with the look of a GNOME window. */
+  .shot {
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-window);
+    background-color: var(--view-bg-color);
+  }
+
+  .gallery {
+    display: grid;
+    gap: var(--space-lg) var(--space-md);
+  }
+
+  @media (min-width: 48rem) {
+    .gallery {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  .gallery__item figcaption {
+    margin-block-start: var(--space-sm);
+    color: var(--dim-fg-color);
+    font-size: 0.9375rem;
+    text-align: center;
+  }
+
+  /* The phone screenshot is narrow; keep it at a readable size. */
+  .gallery__item--narrow .shot {
+    max-inline-size: 20rem;
+    margin-inline: auto;
+  }
+
+  .gallery__stack {
+    display: grid;
+    gap: var(--space-lg) var(--space-md);
+  }
+
+  .gallery + .gallery {
+    margin-block-start: var(--space-lg);
+  }
+
+  /* Two landscape screenshots stacked at the left, the phone screenshot at
+     the right with the same height. 8:6 columns: two 16:10 images are about
+     1.6 times as wide as one 1:2 image of the same total height; the extra
+     space keeps the phone image inside its column. `contain: size` stops the
+     tall image from setting the row height; the grid stretch sets it. */
+  @media (min-width: 48rem) {
+    .gallery--feature {
+      grid-template-columns: 8fr 6fr;
+    }
+
+    .gallery__item--narrow {
+      display: grid;
+      grid-template-rows: minmax(0, 1fr) auto;
+      contain: size;
+    }
+
+    .gallery__item--narrow .shot {
+      block-size: 100%;
+      inline-size: auto;
+      max-inline-size: 100%;
+      object-fit: contain;
+    }
+  }
+
+  /* AdwCard */
+  .card {
+    padding: var(--space-md);
+    border-radius: var(--radius-md);
+    background-color: var(--card-bg-color);
+    box-shadow: 0 0 0 1px rgb(0 0 6 / 3%), 0 1px 3px 1px rgb(0 0 6 / 7%),
+      0 2px 6px 2px var(--card-shade-color);
+  }
+
+  .card__icon {
+    display: grid;
+    place-items: center;
+    inline-size: 3rem;
+    block-size: 3rem;
+    margin-block-end: var(--space-sm);
+    border-radius: var(--radius-md);
+    background-color: color-mix(in srgb, var(--accent-bg-color) 15%, transparent);
+    color: var(--accent-color);
+  }
+
+  .card__icon svg {
+    inline-size: 1.5rem;
+    block-size: 1.5rem;
+    fill: currentcolor;
+  }
+
+  .card__text {
+    margin-block-start: var(--space-xs);
+    color: var(--dim-fg-color);
+  }
+
+  .card__list {
+    margin-block: var(--space-sm);
+    padding-inline-start: 1.25rem;
+    color: var(--dim-fg-color);
+  }
+
+  .card .button {
+    margin-block-start: var(--space-xs);
+  }
+
+  /* boxed-list: rows inside one card, split by a thin line. */
+  .boxed-list {
+    max-inline-size: 48rem;
+    margin-inline: auto;
+    padding: 0;
+    border-radius: var(--radius-md);
+    background-color: var(--card-bg-color);
+    box-shadow: 0 0 0 1px var(--border-color);
+    overflow: hidden;
+    list-style: none;
+  }
+
+  .boxed-list__row + .boxed-list__row {
+    border-block-start: 1px solid var(--border-color);
+  }
+
+  /* AdwExpanderRow, built on <details>. */
+  .expander__title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    min-block-size: 3.5rem;
+    padding: var(--space-sm) var(--space-md);
+    font-weight: 600;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .expander__title::-webkit-details-marker {
+    display: none;
+  }
+
+  /* Chevron, like the expander arrow of libadwaita. */
+  .expander__title::after {
+    content: "";
+    flex: none;
+    inline-size: 0.5rem;
+    block-size: 0.5rem;
+    border-inline-end: 2px solid currentcolor;
+    border-block-end: 2px solid currentcolor;
+    transform: rotate(45deg);
+    opacity: 0.6;
+  }
+
+  .expander[open] .expander__title::after {
+    transform: rotate(-135deg);
+  }
+
+  .expander__title:hover {
+    background-color: var(--button-bg-color);
+  }
+
+  .expander__body {
+    padding: 0 var(--space-md) var(--space-md);
+    color: var(--dim-fg-color);
+  }
+
+  /* Property rows: label left, value right (AdwActionRow with a subtitle). */
+  .property-row {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: var(--space-xs) var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+  }
+
+  .property-row dt {
+    font-weight: 600;
+  }
+
+  .property-row dd {
+    color: var(--dim-fg-color);
+    text-align: end;
+  }
+
+  /* Shortcut table inside a boxed list. */
+  .shortcuts {
+    inline-size: 100%;
+    border-collapse: collapse;
+  }
+
+  .shortcuts th,
+  .shortcuts td {
+    padding: var(--space-sm) var(--space-md);
+    text-align: start;
+  }
+
+  .shortcuts td {
+    white-space: nowrap;
+    text-align: end;
+  }
+
+  .shortcuts tr + tr {
+    border-block-start: 1px solid var(--border-color);
+  }
+
+  .shortcuts th {
+    font-weight: 400;
+  }
+
+  .requirements {
+    max-inline-size: 40rem;
+    margin: var(--space-md) auto 0;
+    color: var(--dim-fg-color);
+    font-size: 0.9375rem;
+    text-align: center;
+  }
+
+  /* Footer */
+  .footer {
+    margin-block-start: var(--space-xl);
+    padding-block: var(--space-lg);
+    border-block-start: 1px solid var(--border-color);
+    color: var(--dim-fg-color);
+    font-size: 0.875rem;
+    text-align: center;
+  }
+
+  .footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-xs) var(--space-md);
+    margin-block-end: var(--space-sm);
+    padding: 0;
+    list-style: none;
+  }
+
+  .footer__legal {
+    max-inline-size: 40rem;
+    margin-inline: auto;
+  }
+
+  /* Text for screen readers only. */
+  .visually-hidden {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  /* AdwStatusPage, used by the 404 page. */
+  .status-page {
+    display: grid;
+    place-items: center;
+    gap: var(--space-sm);
+    min-block-size: 100vh;
+    padding: var(--space-md);
+    text-align: center;
+  }
+
+  .status-page__icon {
+    opacity: 0.5;
+  }
+
+  .status-page__text {
+    color: var(--dim-fg-color);
+  }
+}
