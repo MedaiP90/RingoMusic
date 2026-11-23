@@ -1,5 +1,8 @@
 <?xml version="1.0"?>
-<!-- SPDX-License-Identifier: GPL-3.0-or-later -->
+<!--
+SPDX-License-Identifier: GPL-3.0-or-later
+Copyright (C) 2026 RingoMusic contributors
+-->
 <!-- ITS rules for the metainfo file. They keep xgettext output the same on every
      gettext version: some versions skip the release notes, some skip the captions. -->
 <its:rules xmlns:its="http://www.w3.org/2005/11/its" version="2.0">
