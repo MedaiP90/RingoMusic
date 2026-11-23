@@ -11,7 +11,8 @@ arch=(x86_64)
 url='https://github.com/MedaiP90/RingoMusic'
 license=('GPL-3.0-or-later')
 # Electron also needs gtk3, cups, at-spi2 and xkbcommon (namcap finds them as implicit).
-depends=(gtk4 libadwaita nss alsa-lib mesa dbus gtk3 libcups at-spi2-core libxkbcommon)
+# glib2 is a direct dependency. dconf is the GSettings backend. hicolor-icon-theme owns the icon directories.
+depends=(gtk4 libadwaita nss alsa-lib mesa dbus gtk3 libcups at-spi2-core libxkbcommon glib2 dconf hicolor-icon-theme)
 provides=(ringomusic)
 conflicts=(ringomusic)
 # The Electron binaries must stay as built.
