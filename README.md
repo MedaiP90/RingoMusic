@@ -10,7 +10,7 @@ Website: <https://ringomusic.netlify.app/>
 
 RingoMusic is not affiliated with, endorsed by, or sponsored by Apple. You need an Apple Music subscription to use it.
 
-**Status: Under development. Not ready for use.**
+**Status: Beta.**
 
 <p align="center">
   <img src="assets/promo.png" alt="RingoMusic screenshot">
@@ -25,6 +25,41 @@ RingoMusic supports x86_64 Linux only. The minimum distributions are:
 - The two supported Fedora releases
 
 These distributions have GTK 4.18, libadwaita 1.7, and glibc 2.41 or newer. Older distributions, such as Ubuntu 24.04, are not supported.
+
+## Install
+
+Download the files from the [releases page](https://github.com/MedaiP90/RingoMusic/releases).
+Pick one format. RingoMusic is not in the distribution repositories.
+
+| Format | Systems | Command |
+|---|---|---|
+| `.deb` | Debian 13, Ubuntu 26.04 | `sudo apt install ./ringomusic_<version>_amd64.deb` |
+| `.rpm` | Fedora | `sudo dnf install ./ringomusic-<version>-1.x86_64.rpm` |
+| Flatpak bundle | Any system with Flatpak | `flatpak install --user RingoMusic-<version>-x86_64.flatpak` |
+| AppImage | Any system except Ubuntu | `chmod +x RingoMusic-<version>-x86_64.AppImage && ./RingoMusic-<version>-x86_64.AppImage` |
+| AUR | Arch Linux | `yay -S ringomusic-bin` |
+| Tarball | Other systems | See below |
+
+Notes:
+
+- **Flatpak:** the bundle adds no remote, so `flatpak update` does not update it. Install the new bundle to update.
+- **AppImage:** the AppImage needs unprivileged user namespaces. Ubuntu blocks them, so it is not supported on Ubuntu (use the `.deb` or the Flatpak). To update, run `appimageupdatetool RingoMusic-<version>-x86_64.AppImage`. The application also shows a notice when a new version exists.
+- **Tarball:** the archive has a `usr/` tree. Extract it into a prefix, for example `sudo tar -xzf ringomusic-<version>-x86_64.tar.gz -C /usr/local`. Then set the Chromium sandbox helper: `sudo chown root:root /usr/local/lib/ringomusic/engine/chrome-sandbox && sudo chmod 4755 /usr/local/lib/ringomusic/engine/chrome-sandbox`. Install GTK 4.18, libadwaita 1.7, NSS, and the other libraries of the `.deb` package yourself.
+- If the player does not start, see [docs/troubleshooting.md](docs/troubleshooting.md).
+
+### Verify the download
+
+Each release has a `SHA256SUMS` file. Check your file:
+
+```sh
+sha256sum --check --ignore-missing SHA256SUMS
+```
+
+The release files also have build provenance attestations. Verify a file with the GitHub CLI:
+
+```sh
+gh attestation verify <file> --repo MedaiP90/RingoMusic
+```
 
 ## Architecture
 
@@ -46,6 +81,17 @@ These distributions have GTK 4.18, libadwaita 1.7, and glibc 2.41 or newer. Olde
 ```
 
 Rust owns all state. The engine plays audio and sends Apple Music API requests. The engine keeps the login session. RingoMusic never reads or stores your credentials.
+
+## Memory use
+
+The player is a Chromium engine with several processes, so it uses more memory than a native player. Measured values (CastLabs Electron `v45.2.1+wvcus`, Manjaro, during playback):
+
+| Measure | Engine processes (sum) |
+|---|---|
+| RSS | about 2590 MB |
+| PSS | about 1265 MB |
+
+RSS counts shared pages more than one time for each process, so PSS is the real cost. RSS stayed flat over 75 minutes (2588 to 2591 MB), so there is no sign of a leak. No 8-hour measurement exists, and the memory of the `ringomusic` process was not measured.
 
 ## Non-goals
 

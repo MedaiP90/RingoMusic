@@ -23,6 +23,10 @@ const SUBSCRIBE_URL: &str = "https://music.apple.com/subscribe";
 const SANDBOX_HELP_URL: &str =
     "https://github.com/MedaiP90/RingoMusic/blob/main/docs/troubleshooting.md#chromium-sandbox";
 
+/// Page with the help for all common problems.
+const TROUBLESHOOTING_URL: &str =
+    "https://github.com/MedaiP90/RingoMusic/blob/main/docs/troubleshooting.md";
+
 /// Page where users report problems.
 const ISSUES_URL: &str = "https://github.com/MedaiP90/RingoMusic/issues";
 
@@ -251,10 +255,20 @@ impl SimpleComponent for Gate {
                     set_description: Some(&model.state.screen.incompatible_description()),
 
                     #[wrap(Some)]
-                    set_child = &gtk::LinkButton {
+                    set_child = &gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+                        set_spacing: 12,
                         set_halign: gtk::Align::Center,
-                        set_uri: ISSUES_URL,
-                        set_label: &gettext("Report Problem"),
+
+                        gtk::LinkButton {
+                            set_uri: &format!("{TROUBLESHOOTING_URL}#engine-incompatible"),
+                            set_label: &gettext("Open Troubleshooting Guide"),
+                        },
+
+                        gtk::LinkButton {
+                            set_uri: ISSUES_URL,
+                            set_label: &gettext("Report Problem"),
+                        },
                     },
                 },
             },
@@ -273,12 +287,22 @@ impl SimpleComponent for Gate {
                     )),
 
                     #[wrap(Some)]
-                    set_child = &gtk::Button {
+                    set_child = &gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+                        set_spacing: 12,
                         set_halign: gtk::Align::Center,
-                        set_label: &gettext("Try Again"),
-                        set_action_name: Some("app.restart-engine"),
-                        add_css_class: "suggested-action",
-                        add_css_class: "pill",
+
+                        gtk::LinkButton {
+                            set_uri: TROUBLESHOOTING_URL,
+                            set_label: &gettext("Open Troubleshooting Guide"),
+                        },
+
+                        gtk::Button {
+                            set_label: &gettext("Try Again"),
+                            set_action_name: Some("app.restart-engine"),
+                            add_css_class: "suggested-action",
+                            add_css_class: "pill",
+                        },
                     },
                 },
             },
