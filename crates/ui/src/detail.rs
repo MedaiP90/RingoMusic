@@ -384,9 +384,13 @@ pub async fn load_artist(api: &ApiClient, storefront: &str, id: &str) -> ApiResu
     Ok(ArtistData::from_catalog(&artist))
 }
 
-/// A library artist has a name and albums. The name comes from the first
-/// album, because the API has no request for one library artist.
-async fn load_library_artist(api: &ApiClient, id: &str) -> ApiResult<ArtistData> {
+/// Loads the albums of the library artist `id`, up to
+/// [`ARTIST_ALBUM_PAGES_LIMIT`] pages.
+///
+/// # Errors
+///
+/// Returns an error if a request fails.
+pub async fn load_library_artist_albums(api: &ApiClient, id: &str) -> ApiResult<Vec<TileItem>> {
     let id = LibraryArtistId::from(id.to_owned());
     let mut albums = Vec::new();
     let mut offset = Some(0);
@@ -398,6 +402,13 @@ async fn load_library_artist(api: &ApiClient, id: &str) -> ApiResult<ArtistData>
         albums.extend(page.items.iter().map(TileItem::from));
         offset = page.next_offset;
     }
+    Ok(albums)
+}
+
+/// A library artist has a name and albums. The name comes from the first
+/// album, because the API has no request for one library artist.
+async fn load_library_artist(api: &ApiClient, id: &str) -> ApiResult<ArtistData> {
+    let albums = load_library_artist_albums(api, id).await?;
     let name = albums
         .first()
         .map(|album| album.subtitle.clone())

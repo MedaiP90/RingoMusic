@@ -9,8 +9,9 @@ use std::sync::Arc;
 
 use gettextrs::gettext;
 use relm4::adw;
+use relm4::adw::prelude::*;
 use relm4::gtk;
-use relm4::gtk::prelude::*;
+use relm4::gtk::glib;
 use relm4::prelude::*;
 use relm4::typed_view::grid::TypedGridView;
 use relm4::typed_view::list::TypedListView;
@@ -20,12 +21,14 @@ use ringo_core::runner::CoreHandle;
 use tokio::task::JoinHandle;
 use tracing::warn;
 
-use crate::item::{SongItem, TileItem};
+use crate::app::narrow_breakpoint;
+use crate::item::{LibraryArtistItem, SongItem, TileItem};
 use crate::item_actions::{self, SongCatalog};
 use crate::name_filter::NameFilter;
 use crate::paged::{self, PageCursor};
 use crate::section::Section;
 use crate::services::{ApiClient, AppServices};
+use crate::views::artist_albums::{ArtistAlbumsInit, ArtistAlbumsInput, ArtistAlbumsView};
 use crate::views::phase::Phase;
 use crate::widgets::library_tile::{ArtistRow, GridTile};
 use crate::widgets::song_row::{self, SongRow};
@@ -63,10 +66,15 @@ impl LibraryKind {
     }
 }
 
+/// Width in sp under which the artists page shows the list and the albums
+/// one at a time.
+const ARTISTS_COLLAPSE_WIDTH_SP: f64 = 600.0;
+
 /// One item of a library list.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum Entry {
     Tile(TileItem),
+    Artist(LibraryArtistItem),
     Song(SongItem),
 }
 
@@ -76,9 +84,12 @@ enum Content {
         view: TypedGridView<GridTile, gtk::SingleSelection>,
         items: Vec<TileItem>,
     },
+    /// The artist list, next to the albums of the selected artist.
     Artists {
         view: TypedListView<ArtistRow, gtk::SingleSelection>,
-        items: Vec<TileItem>,
+        items: Vec<LibraryArtistItem>,
+        albums: Controller<ArtistAlbumsView>,
+        split_view: adw::NavigationSplitView,
     },
     Songs {
         view: TypedListView<SongRow, gtk::SingleSelection>,
@@ -88,7 +99,13 @@ enum Content {
 
 impl Content {
     /// Makes an empty list for `kind`. A press on an item sends its position.
-    fn new(kind: LibraryKind, filter: &NameFilter, sender: &ComponentSender<LibraryView>) -> Self {
+    /// For artists, a selection also sends the position.
+    fn new(
+        kind: LibraryKind,
+        filter: &NameFilter,
+        sender: &ComponentSender<LibraryView>,
+        services: &AppServices,
+    ) -> Self {
         let input = sender.input_sender().clone();
         let activated = move |position| input.emit(LibraryInput::Activated(position));
         match kind {
@@ -108,12 +125,37 @@ impl Content {
                 let mut view = TypedListView::<ArtistRow, gtk::SingleSelection>::new();
                 let filter = filter.clone();
                 view.add_filter(move |row| row.matches(&filter));
-                view.view.set_single_click_activate(true);
+                // A click selects the artist, so the shown artist stays marked.
+                let selection = &view.selection_model;
+                selection.set_autoselect(false);
+                selection.set_can_unselect(true);
+                let on_select = activated.clone();
+                selection.connect_selected_notify(move |selection| {
+                    let position = selection.selected();
+                    if position != gtk::INVALID_LIST_POSITION {
+                        on_select(position);
+                    }
+                });
                 view.view
                     .connect_activate(move |_, position| activated(position));
+                let split_view = adw::NavigationSplitView::builder()
+                    .min_sidebar_width(300.0)
+                    .max_sidebar_width(420.0)
+                    .sidebar_width_fraction(0.35)
+                    .build();
+                let albums = ArtistAlbumsView::builder()
+                    .launch(ArtistAlbumsInit {
+                        services: services.clone(),
+                        split_view: split_view.clone(),
+                    })
+                    .detach();
+                split_view.set_content(Some(albums.widget()));
+                clear_selection_on_back(&split_view, selection);
                 Self::Artists {
                     view,
                     items: Vec::new(),
+                    albums,
+                    split_view,
                 }
             }
             LibraryKind::Songs => {
@@ -133,6 +175,28 @@ impl Content {
         }
     }
 
+    /// The widget that holds `list`, the scrolled list with its spinner. For
+    /// artists, it is a split view that collapses on a narrow page.
+    fn body(&self, list: &gtk::Box) -> gtk::Widget {
+        let Self::Artists { split_view, .. } = self else {
+            return list.clone().upcast();
+        };
+        // The list takes the background of the title area of the albums.
+        list.add_css_class("library-artist-list");
+        let sidebar = adw::NavigationPage::new(list, &gettext("Artists"));
+        split_view.set_sidebar(Some(&sidebar));
+        let breakpoint = narrow_breakpoint(ARTISTS_COLLAPSE_WIDTH_SP);
+        breakpoint.add_setter(split_view, "collapsed", Some(&true.to_value()));
+        // A breakpoint bin needs a minimum size.
+        let bin = adw::BreakpointBin::builder()
+            .width_request(360)
+            .height_request(200)
+            .child(split_view)
+            .build();
+        bin.add_breakpoint(breakpoint);
+        bin.upcast()
+    }
+
     /// The list widget.
     fn widget(&self) -> gtk::Widget {
         match self {
@@ -144,7 +208,8 @@ impl Content {
 
     fn is_empty(&self) -> bool {
         match self {
-            Self::Tiles { items, .. } | Self::Artists { items, .. } => items.is_empty(),
+            Self::Tiles { items, .. } => items.is_empty(),
+            Self::Artists { items, .. } => items.is_empty(),
             Self::Songs { items, .. } => items.is_empty(),
         }
     }
@@ -161,9 +226,11 @@ impl Content {
     /// Number of items that the filter shows.
     fn visible_count(&self, filter: &NameFilter) -> usize {
         match self {
-            Self::Tiles { items, .. } | Self::Artists { items, .. } => {
-                items.iter().filter(|item| item.matches(filter)).count()
-            }
+            Self::Tiles { items, .. } => items.iter().filter(|item| item.matches(filter)).count(),
+            Self::Artists { items, .. } => items
+                .iter()
+                .filter(|artist| artist.tile.matches(filter))
+                .count(),
             Self::Songs { items, .. } => items.iter().filter(|song| song.matches(filter)).count(),
         }
     }
@@ -174,7 +241,7 @@ impl Content {
                 view.clear();
                 items.clear();
             }
-            Self::Artists { view, items } => {
+            Self::Artists { view, items, .. } => {
                 view.clear();
                 items.clear();
             }
@@ -194,9 +261,9 @@ impl Content {
                     view.append(GridTile::new(tile.clone()));
                     items.push(tile);
                 }
-                (Self::Artists { view, items }, Entry::Tile(tile)) => {
-                    view.append(ArtistRow::new(tile.clone()));
-                    items.push(tile);
+                (Self::Artists { view, items, .. }, Entry::Artist(artist)) => {
+                    view.append(ArtistRow::new(artist.tile.clone()));
+                    items.push(artist);
                 }
                 (Self::Songs { view, items }, Entry::Song(song)) => {
                     catalog.remember(std::slice::from_ref(&song));
@@ -204,19 +271,29 @@ impl Content {
                     items.push(song);
                 }
                 (Self::Tiles { .. } | Self::Artists { .. }, Entry::Song(_))
-                | (Self::Songs { .. }, Entry::Tile(_)) => {
+                | (Self::Tiles { .. } | Self::Songs { .. }, Entry::Artist(_))
+                | (Self::Artists { .. } | Self::Songs { .. }, Entry::Tile(_)) => {
                     warn!("a library entry does not fit the list");
                 }
             }
         }
     }
 
-    /// Runs the action of the shown item at `position`: it opens a tile, and
-    /// it plays the shown songs from a song.
+    /// Runs the action of the shown item at `position`: it opens a tile, it
+    /// shows the albums of an artist, and it plays the shown songs from a song.
     fn activate(&self, position: u32, filter: &NameFilter, core: &CoreHandle) {
         let index = usize::try_from(position).unwrap_or(usize::MAX);
         match self {
-            Self::Tiles { items, .. } | Self::Artists { items, .. } => {
+            Self::Artists { items, albums, .. } => {
+                let artist = items
+                    .iter()
+                    .filter(|artist| artist.tile.matches(filter))
+                    .nth(index);
+                if let Some(artist) = artist {
+                    albums.emit(ArtistAlbumsInput::Show(artist.clone()));
+                }
+            }
+            Self::Tiles { items, .. } => {
                 let item = items.iter().filter(|item| item.matches(filter)).nth(index);
                 let Some(item) = item else {
                     return;
@@ -276,6 +353,8 @@ pub struct LibraryView {
     cursor: PageCursor,
     pending: Option<JoinHandle<()>>,
     content: Content,
+    /// Tells the user that the next page loads. It shows under the list.
+    spinner: adw::Spinner,
 }
 
 #[relm4::component(pub)]
@@ -335,24 +414,7 @@ impl SimpleComponent for LibraryView {
                     },
                 },
 
-                add_named[Some(Phase::Content.page())] = &gtk::Box {
-                    set_orientation: gtk::Orientation::Vertical,
-
-                    append = &scrolled.clone() -> gtk::ScrolledWindow {
-                        set_vexpand: true,
-                    },
-
-                    // Tells the user that the next page loads.
-                    append = &adw::Spinner {
-                        set_halign: gtk::Align::Center,
-                        set_width_request: 24,
-                        set_height_request: 24,
-                        set_margin_top: 12,
-                        set_margin_bottom: 12,
-                        #[watch]
-                        set_visible: model.cursor.is_loading() && model.phase == Phase::Content,
-                    },
-                },
+                add_named[Some(Phase::Content.page())] = &body.clone() -> gtk::Widget {},
             },
         }
     }
@@ -368,12 +430,18 @@ impl SimpleComponent for LibraryView {
             catalog,
         } = init;
         let filter = NameFilter::default();
-        let content = Content::new(kind, &filter, &sender);
+        let content = Content::new(kind, &filter, &sender, &services);
         let filter_entry = build_filter_entry(&sender);
         let scrolled = gtk::ScrolledWindow::builder()
             .hscrollbar_policy(gtk::PolicyType::Never)
+            .vexpand(true)
             .child(&content.widget())
             .build();
+        let spinner = build_next_page_spinner();
+        let list = gtk::Box::new(gtk::Orientation::Vertical, 0);
+        list.append(&scrolled);
+        list.append(&spinner);
+        let body = content.body(&list);
         let input = sender.input_sender().clone();
         paged::connect_near_end(&scrolled, move || input.emit(LibraryInput::NearEnd));
         // The page can show again later. Only the first show loads.
@@ -390,6 +458,7 @@ impl SimpleComponent for LibraryView {
             cursor: PageCursor::default(),
             pending: None,
             content,
+            spinner,
         };
         let widgets = view_output!();
         ComponentParts { model, widgets }
@@ -419,6 +488,8 @@ impl SimpleComponent for LibraryView {
                 self.load_for_filter(&sender);
             }
         }
+        let loads_next = self.cursor.is_loading() && self.phase == Phase::Content;
+        self.spinner.set_visible(loads_next);
     }
 }
 
@@ -500,6 +571,35 @@ impl LibraryView {
     }
 }
 
+/// Clears the artist selection when the user goes back to the list of a
+/// collapsed split view. A press on the same artist then shows it again.
+fn clear_selection_on_back(
+    split_view: &adw::NavigationSplitView,
+    selection: &gtk::SingleSelection,
+) {
+    split_view.connect_show_content_notify(glib::clone!(
+        #[weak]
+        selection,
+        move |split_view| {
+            if split_view.is_collapsed() && !split_view.shows_content() {
+                selection.set_selected(gtk::INVALID_LIST_POSITION);
+            }
+        }
+    ));
+}
+
+/// Builds the spinner that shows under the list while the next page loads.
+fn build_next_page_spinner() -> adw::Spinner {
+    adw::Spinner::builder()
+        .halign(gtk::Align::Center)
+        .width_request(24)
+        .height_request(24)
+        .margin_top(12)
+        .margin_bottom(12)
+        .visible(false)
+        .build()
+}
+
 /// Builds the entry that filters the list by name.
 fn build_filter_entry(sender: &ComponentSender<LibraryView>) -> gtk::SearchEntry {
     let entry = gtk::SearchEntry::builder()
@@ -535,7 +635,7 @@ async fn request(api: &ApiClient, kind: LibraryKind, offset: u32) -> ApiResult<P
         }),
         LibraryKind::Artists => {
             convert(&endpoints::library_artists(api, offset).await?, |artist| {
-                Entry::Tile(TileItem::from(artist))
+                Entry::Artist(LibraryArtistItem::from(artist))
             })
         }
         LibraryKind::Songs => convert(&endpoints::library_songs(api, offset).await?, |song| {
@@ -581,6 +681,7 @@ mod tests {
             .iter()
             .map(|entry| match entry {
                 Entry::Tile(tile) => tile.id.clone(),
+                Entry::Artist(artist) => artist.tile.id.clone(),
                 Entry::Song(song) => song.id().to_owned(),
             })
             .collect();

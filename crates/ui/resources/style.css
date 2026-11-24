@@ -73,3 +73,13 @@ button.artwork-button { padding: 0; min-height: 0; min-width: 0; background: non
   transition: background-color 300ms;
 }
 .track-badge label { color: var(--window-fg-color); opacity: 1; }
+
+/* The library artist list has the background of the title area of the
+   albums next to it, not the sidebar and view backgrounds. */
+.library-artist-list {
+  background-color: var(--window-bg-color);
+}
+
+.library-artist-list listview {
+  background: none;
+}

@@ -180,11 +180,7 @@ impl From<&LibraryArtist> for TileItem {
     /// A library artist has no photo. The tile uses the photo of the linked
     /// catalog artist, if the request included it.
     fn from(artist: &LibraryArtist) -> Self {
-        let artwork_template = artist
-            .relationships
-            .as_ref()
-            .and_then(|links| links.catalog.as_ref())
-            .and_then(|catalog| catalog.data.iter().next())
+        let artwork_template = catalog_artist(artist)
             .and_then(|catalog_artist| catalog_artist.attributes.artwork.as_ref())
             .map(|artwork| artwork.url.clone());
         Self {
@@ -193,6 +189,40 @@ impl From<&LibraryArtist> for TileItem {
             title: artist.attributes.name.clone(),
             subtitle: String::new(),
             artwork_template,
+        }
+    }
+}
+
+/// The catalog artist that `artist` links to, if the request included it.
+fn catalog_artist(artist: &LibraryArtist) -> Option<&Artist> {
+    artist
+        .relationships
+        .as_ref()
+        .and_then(|links| links.catalog.as_ref())
+        .and_then(|catalog| catalog.data.iter().next())
+}
+
+/// An artist of the library list. It keeps the ID of the linked catalog
+/// artist, because only the catalog artist has a full artist page.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct LibraryArtistItem {
+    pub tile: TileItem,
+    pub catalog_id: Option<String>,
+}
+
+impl LibraryArtistItem {
+    /// ID of the full artist page: the catalog artist if the link is
+    /// present, else the library artist.
+    pub fn page_id(&self) -> &str {
+        self.catalog_id.as_deref().unwrap_or(&self.tile.id)
+    }
+}
+
+impl From<&LibraryArtist> for LibraryArtistItem {
+    fn from(artist: &LibraryArtist) -> Self {
+        Self {
+            tile: TileItem::from(artist),
+            catalog_id: catalog_artist(artist).map(|catalog| catalog.id.to_string()),
         }
     }
 }
@@ -325,5 +355,24 @@ mod tests {
         );
         assert_eq!(tile.id, "r.1");
         assert_eq!(TileItem::from(&without_catalog).artwork_template, None);
+    }
+
+    #[test]
+    fn library_artist_item_opens_the_catalog_artist_if_linked() {
+        let with_catalog: LibraryArtist = serde_json::from_value(json!({
+            "id": "r.1",
+            "attributes": { "name": "Band" },
+            "relationships": { "catalog": { "data": [{
+                "id": "5",
+                "attributes": { "name": "Band" }
+            }] } }
+        }))
+        .expect("the test artist is valid");
+        let without_catalog: LibraryArtist =
+            serde_json::from_value(json!({ "id": "r.2", "attributes": { "name": "Solo" } }))
+                .expect("the test artist is valid");
+
+        assert_eq!(LibraryArtistItem::from(&with_catalog).page_id(), "5");
+        assert_eq!(LibraryArtistItem::from(&without_catalog).page_id(), "r.2");
     }
 }

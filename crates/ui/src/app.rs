@@ -616,8 +616,8 @@ fn close_queue_on_escape(page: &adw::ToolbarView, sender: &ComponentSender<App>)
     page.add_controller(keys);
 }
 
-/// Builds the breakpoint for a window narrower than `width` sp.
-fn narrow_breakpoint(width: f64) -> adw::Breakpoint {
+/// Builds the breakpoint for a window or a bin narrower than `width` sp.
+pub(crate) fn narrow_breakpoint(width: f64) -> adw::Breakpoint {
     adw::Breakpoint::new(adw::BreakpointCondition::new_length(
         adw::BreakpointConditionLengthType::MaxWidth,
         width,

@@ -83,7 +83,7 @@ msgid ""
 msgstr ""
 
 #: crates/ui/src/detail.rs crates/ui/src/section.rs
-#: crates/ui/src/views/search.rs
+#: crates/ui/src/views/artist_albums.rs crates/ui/src/views/search.rs
 msgid "Albums"
 msgstr ""
 
@@ -204,9 +204,9 @@ msgid ""
 "subscription to play music."
 msgstr ""
 
-#: crates/ui/src/gate.rs crates/ui/src/views/detail_frame.rs
-#: crates/ui/src/views/library.rs crates/ui/src/views/search.rs
-#: crates/ui/src/views/sections.rs
+#: crates/ui/src/gate.rs crates/ui/src/views/artist_albums.rs
+#: crates/ui/src/views/detail_frame.rs crates/ui/src/views/library.rs
+#: crates/ui/src/views/search.rs crates/ui/src/views/sections.rs
 msgid "Try Again"
 msgstr ""
 
@@ -351,7 +351,8 @@ msgstr ""
 msgid "{used} of {limit}"
 msgstr ""
 
-#: crates/ui/src/section.rs crates/ui/src/views/search.rs
+#: crates/ui/src/section.rs crates/ui/src/views/library.rs
+#: crates/ui/src/views/search.rs
 msgid "Artists"
 msgstr ""
 
@@ -455,6 +456,40 @@ msgstr ""
 msgid "Top Songs"
 msgstr ""
 
+#: crates/ui/src/views/artist_albums.rs
+msgid "Back"
+msgstr ""
+
+#: crates/ui/src/views/artist_albums.rs crates/ui/src/views/library.rs
+msgid "Cannot Load Albums"
+msgstr ""
+
+#: crates/ui/src/views/artist_albums.rs crates/ui/src/views/detail_frame.rs
+#: crates/ui/src/views/library.rs crates/ui/src/views/search.rs
+#: crates/ui/src/views/sections.rs
+msgid "Check your connection and try again."
+msgstr ""
+
+#: crates/ui/src/views/artist_albums.rs
+msgid "No Albums"
+msgstr ""
+
+#: crates/ui/src/views/artist_albums.rs
+msgid "No Artist Selected"
+msgstr ""
+
+#: crates/ui/src/views/artist_albums.rs
+msgid "Open Artist Page"
+msgstr ""
+
+#: crates/ui/src/views/artist_albums.rs
+msgid "Select an artist to see the albums in your library."
+msgstr ""
+
+#: crates/ui/src/views/artist_albums.rs
+msgid "Your library has no albums of this artist."
+msgstr ""
+
 #: crates/ui/src/views/artist_info.rs
 msgid "Biography"
 msgstr ""
@@ -485,11 +520,6 @@ msgstr ""
 msgid "Cannot Load This Page"
 msgstr ""
 
-#: crates/ui/src/views/detail_frame.rs crates/ui/src/views/library.rs
-#: crates/ui/src/views/search.rs crates/ui/src/views/sections.rs
-msgid "Check your connection and try again."
-msgstr ""
-
 #: crates/ui/src/views/home.rs
 msgid "Cannot Load Recommendations"
 msgstr ""
@@ -508,10 +538,6 @@ msgstr ""
 
 #: crates/ui/src/views/library.rs
 msgid "Add music to your library to see it here."
-msgstr ""
-
-#: crates/ui/src/views/library.rs
-msgid "Cannot Load Albums"
 msgstr ""
 
 #: crates/ui/src/views/library.rs
@@ -780,6 +806,14 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "Made For You page in the library: your personal mixes from Apple Music."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The Artists page in the library shows the artist list and, next to it, the "
+"albums in your library of the selected artist. The Open Artist Page button "
+"over the albums opens the full artist page. In a narrow window, the list and "
+"the albums show one at a time."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

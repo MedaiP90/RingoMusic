@@ -5,6 +5,7 @@
 
 pub mod album;
 pub mod artist;
+pub mod artist_albums;
 pub mod artist_info;
 pub mod artist_more;
 pub mod detail_frame;
