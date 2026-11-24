@@ -56,6 +56,11 @@ Copyright (C) 2026 RingoMusic contributors
     <control>pointing</control>
   </recommends>
   <releases>
+    <release version="1.1.0" date="2026-11-24">
+      <description>
+        <p>Release 1.1.0.</p>
+      </description>
+    </release>
     <release version="1.0.2" date="2026-11-23">
       <description>
         <ul>
