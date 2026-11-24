@@ -658,10 +658,6 @@ msgstr ""
 msgid "Play"
 msgstr ""
 
-#: crates/ui/src/widgets/detail_header.rs
-msgid "Show Less"
-msgstr ""
-
 #: crates/ui/src/widgets/detail_header.rs crates/ui/src/widgets/player_bar.rs
 msgid "Shuffle"
 msgstr ""
@@ -809,6 +805,18 @@ msgstr ""
 msgid ""
 "On the artist page, each list with more items has a small Show More button "
 "at the right of its title."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"A playlist description shows in one line. When it is longer, a small Show "
+"More button opens all of it."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"A long album or playlist title wraps next to the artwork. The text moves "
+"under the artwork only in a narrow window."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

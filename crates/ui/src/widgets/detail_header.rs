@@ -8,6 +8,7 @@ use gettextrs::gettext;
 use relm4::adw;
 use relm4::gtk;
 use relm4::gtk::gio::{SimpleAction, SimpleActionGroup};
+use relm4::gtk::glib;
 use relm4::gtk::pango::{EllipsizeMode, WrapMode};
 use relm4::gtk::prelude::*;
 
@@ -22,14 +23,16 @@ const SPACING: i32 = 18;
 /// Width that the text needs before it moves under the artwork.
 const TEXT_MIN_WIDTH: i32 = 240;
 
-/// Lines of the description before the user expands it.
-const COLLAPSED_LINES: i32 = 3;
+/// Natural width of the title and of the other texts, in characters. A
+/// longer text wraps or is cut in the space next to the artwork. Without
+/// this limit, the natural width of a long text moves all the texts under
+/// the artwork, also in a wide window.
+const TITLE_NATURAL_CHARS: i32 = 12;
+const TEXT_NATURAL_CHARS: i32 = 30;
 
-/// Height limit of the expanded description, in pixels. A longer text scrolls.
-const EXPANDED_MAX_HEIGHT: i32 = 160;
-
-/// Text length from which the description gets the expand button.
-const LONG_DESCRIPTION_CHARS: usize = 150;
+/// Size of the description dialog, in pixels.
+const DESCRIPTION_DIALOG_WIDTH: i32 = 480;
+const DESCRIPTION_DIALOG_HEIGHT: i32 = 480;
 
 /// Name of the action group that the page installs.
 const ACTION_GROUP: &str = "detail";
@@ -78,16 +81,18 @@ impl DetailHeader {
             .xalign(0.0)
             .wrap(true)
             .wrap_mode(WrapMode::WordChar)
+            .max_width_chars(TITLE_NATURAL_CHARS)
             .css_classes(["title-1"])
             .build();
         let byline = gtk::Box::new(gtk::Orientation::Horizontal, 0);
         let details = gtk::Label::builder()
             .xalign(0.0)
             .wrap(true)
+            .max_width_chars(TEXT_NATURAL_CHARS)
             .css_classes(["dim-label"])
             .visible(false)
             .build();
-        let description = Description::new();
+        let description = Description::new(&title);
         let (buttons, shuffle_button) = build_buttons();
 
         let texts = gtk::Box::builder()
@@ -171,7 +176,7 @@ impl DetailHeader {
         self.details.set_visible(!text.is_empty());
     }
 
-    /// Shows a description of plain text. `None` hides it.
+    /// Shows the first line of a description of plain text. `None` hides it.
     pub fn set_description(&self, text: Option<&str>) {
         self.description.set_text(text);
     }
@@ -266,109 +271,110 @@ fn link_button(text: &str, link: BylineLink<'_>) -> gtk::Button {
         .build()
 }
 
-/// A description that shows three lines. A long text has a button that shows
-/// all of it.
+/// A description in one line. When the text does not fit, it is cut and a
+/// small Show More button opens a dialog with all of it.
 struct Description {
-    root: gtk::Box,
+    root: gtk::Overlay,
     label: gtk::Label,
-    toggle: gtk::Button,
+    more: gtk::Button,
 }
 
 impl Description {
-    fn new() -> Self {
+    /// `title` is the page title. The dialog shows it.
+    fn new(title: &gtk::Label) -> Self {
         let label = gtk::Label::builder()
             .xalign(0.0)
-            .wrap(true)
-            .wrap_mode(WrapMode::WordChar)
-            .lines(COLLAPSED_LINES)
+            .hexpand(true)
+            .single_line_mode(true)
+            .max_width_chars(TEXT_NATURAL_CHARS)
             .ellipsize(EllipsizeMode::End)
             .build();
-        let scroller = gtk::ScrolledWindow::builder()
-            .hscrollbar_policy(gtk::PolicyType::Never)
-            .propagate_natural_height(true)
-            .max_content_height(EXPANDED_MAX_HEIGHT)
-            .child(&label)
-            .build();
-        let toggle = gtk::Button::builder()
+        let more = gtk::Button::builder()
             .label(gettext("Show More"))
-            .halign(gtk::Align::Start)
-            .css_classes(["flat"])
-            .build();
-        let root = gtk::Box::builder()
-            .orientation(gtk::Orientation::Vertical)
+            .valign(gtk::Align::Center)
+            .css_classes(["flat", "section-more"])
             .visible(false)
             .build();
-        root.append(&scroller);
-        root.append(&toggle);
-        let weak_label = label.downgrade();
-        toggle.connect_clicked(move |toggle| {
-            if let Some(label) = weak_label.upgrade() {
-                switch_expanded(&label, toggle);
+        let row = gtk::Box::new(gtk::Orientation::Horizontal, 6);
+        row.append(&label);
+        row.append(&more);
+        // GTK has no signal for a new label width. An empty drawing area on
+        // the row gets the same size and sends `resize`.
+        let size_probe = gtk::DrawingArea::builder().can_target(false).build();
+        let root = gtk::Overlay::builder().child(&row).visible(false).build();
+        root.add_overlay(&size_probe);
+        let (weak_label, weak_more) = (label.downgrade(), more.downgrade());
+        size_probe.connect_resize(move |_, _, _| {
+            if let (Some(label), Some(more)) = (weak_label.upgrade(), weak_more.upgrade()) {
+                update_more_later(&label, &more);
             }
         });
-        Self {
-            root,
-            label,
-            toggle,
-        }
+        let (weak_label, weak_title) = (label.downgrade(), title.downgrade());
+        more.connect_clicked(move |button| {
+            if let (Some(label), Some(title)) = (weak_label.upgrade(), weak_title.upgrade()) {
+                present_description(button, &title.label(), &label.label());
+            }
+        });
+        Self { root, label, more }
     }
 
-    fn widget(&self) -> &gtk::Box {
+    fn widget(&self) -> &gtk::Overlay {
         &self.root
     }
 
     fn set_text(&self, text: Option<&str>) {
-        self.collapse();
         self.root.set_visible(text.is_some());
-        let Some(text) = text else {
-            return;
-        };
-        self.label.set_label(text);
-        self.toggle.set_visible(is_long(text));
+        self.label.set_label(text.unwrap_or_default());
+        update_more_later(&self.label, &self.more);
     }
+}
 
-    fn collapse(&self) {
-        if self.label.lines() != COLLAPSED_LINES {
-            switch_expanded(&self.label, &self.toggle);
+/// Shows `more` only when `label` is cut. The check waits for the next idle
+/// moment: the label has its new width then, and GTK does not let a widget
+/// change its visibility while it gets its size.
+fn update_more_later(label: &gtk::Label, more: &gtk::Button) {
+    let (weak_label, weak_more) = (label.downgrade(), more.downgrade());
+    glib::idle_add_local_once(move || {
+        if let (Some(label), Some(more)) = (weak_label.upgrade(), weak_more.upgrade()) {
+            // The button stays while it is visible and the label is cut. If
+            // the label fits next to the button, it also fits without it.
+            more.set_visible(label.layout().is_ellipsized());
         }
-    }
+    });
 }
 
-/// Shows all lines of `label`, or only the first lines again.
-fn switch_expanded(label: &gtk::Label, toggle: &gtk::Button) {
-    if label.lines() == COLLAPSED_LINES {
-        label.set_lines(-1);
-        label.set_ellipsize(EllipsizeMode::None);
-        toggle.set_label(&gettext("Show Less"));
-    } else {
-        label.set_lines(COLLAPSED_LINES);
-        label.set_ellipsize(EllipsizeMode::End);
-        toggle.set_label(&gettext("Show More"));
-    }
-}
+/// Shows a dialog over the window of `parent` with the full `text` and the
+/// heading `title`.
+fn present_description(parent: &impl IsA<gtk::Widget>, title: &str, text: &str) {
+    use relm4::adw::prelude::AdwDialogExt;
 
-/// Tells if `text` can need more than the collapsed lines.
-fn is_long(text: &str) -> bool {
-    text.chars().count() > LONG_DESCRIPTION_CHARS
-        || text.lines().count() > usize::try_from(COLLAPSED_LINES).unwrap_or(usize::MAX)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn is_long_is_false_for_a_short_text() {
-        assert!(!is_long("A short text."));
-    }
-
-    #[test]
-    fn is_long_is_true_for_many_characters() {
-        assert!(is_long(&"a".repeat(LONG_DESCRIPTION_CHARS + 1)));
-    }
-
-    #[test]
-    fn is_long_is_true_for_many_lines() {
-        assert!(is_long("a\nb\nc\nd"));
-    }
+    let label = gtk::Label::builder()
+        .label(text)
+        .xalign(0.0)
+        .valign(gtk::Align::Start)
+        .wrap(true)
+        .wrap_mode(WrapMode::WordChar)
+        .selectable(true)
+        .margin_top(SPACING)
+        .margin_bottom(SPACING)
+        .margin_start(SPACING)
+        .margin_end(SPACING)
+        .build();
+    let toolbar = adw::ToolbarView::builder()
+        .content(
+            &gtk::ScrolledWindow::builder()
+                .hscrollbar_policy(gtk::PolicyType::Never)
+                .propagate_natural_height(true)
+                .child(&label)
+                .build(),
+        )
+        .build();
+    toolbar.add_top_bar(&adw::HeaderBar::new());
+    adw::Dialog::builder()
+        .title(title)
+        .content_width(DESCRIPTION_DIALOG_WIDTH)
+        .content_height(DESCRIPTION_DIALOG_HEIGHT)
+        .child(&toolbar)
+        .build()
+        .present(Some(parent));
 }

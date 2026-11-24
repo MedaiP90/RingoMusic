@@ -66,6 +66,8 @@ Copyright (C) 2026 RingoMusic contributors
           <li>The artist page shows the genre, the origin, and the start year under the name. The Info button opens all the information about the artist, with the biography.</li>
           <li>The artist page and its information take a tint from the artist photo.</li>
           <li>On the artist page, each list with more items has a small Show More button at the right of its title.</li>
+          <li>A playlist description shows in one line. When it is longer, a small Show More button opens all of it.</li>
+          <li>A long album or playlist title wraps next to the artwork. The text moves under the artwork only in a narrow window.</li>
           <li>Songs on the Search, New, and artist pages show in columns that scroll sideways, like in Apple Music.</li>
           <li>Fix: some albums and songs on the New page had no artwork.</li>
           <li>Fix: on a slow start, the Widevine module and the session could go to the wrong folder, and autoplay could be blocked.</li>
