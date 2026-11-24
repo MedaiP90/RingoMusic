@@ -21,6 +21,7 @@ use crate::detail::storefront;
 use crate::item::{SongItem, TileItem};
 use crate::item_actions::{self, SongCatalog};
 use crate::services::{ApiClient, AppServices};
+use crate::views::detail_frame;
 use crate::widgets::song_carousel::SongCarousel;
 use crate::widgets::tile::{self, TileRow};
 
@@ -163,12 +164,7 @@ impl SimpleComponent for SearchView {
                     set_description: Some(&gettext("Look for songs, albums, artists, and playlists.")),
                 },
 
-                add_named[Some(Phase::Loading.page())] = &adw::Spinner {
-                    set_halign: gtk::Align::Center,
-                    set_valign: gtk::Align::Center,
-                    set_width_request: 32,
-                    set_height_request: 32,
-                },
+                add_named[Some(Phase::Loading.page())] = &detail_frame::loading_spinner() -> adw::Spinner {},
 
                 add_named[Some(Phase::Empty.page())] = &adw::StatusPage {
                     set_icon_name: Some("edit-find-symbolic"),
@@ -176,20 +172,7 @@ impl SimpleComponent for SearchView {
                     set_description: Some(&gettext("Try a different term.")),
                 },
 
-                add_named[Some(Phase::Failed.page())] = &adw::StatusPage {
-                    set_icon_name: Some("dialog-error-symbolic"),
-                    set_title: &gettext("Search Failed"),
-                    set_description: Some(&gettext("Check your connection and try again.")),
-
-                    #[wrap(Some)]
-                    set_child = &gtk::Button {
-                        set_label: &gettext("Try Again"),
-                        set_halign: gtk::Align::Center,
-                        add_css_class: "boxy",
-                        add_css_class: "suggested-action",
-                        connect_clicked => SearchInput::Retry,
-                    },
-                },
+                add_named[Some(Phase::Failed.page())] = &failed_status.clone() -> adw::StatusPage {},
 
                 add_named[Some(Phase::Results.page())] = &results_page.clone() -> gtk::ScrolledWindow {},
             },
@@ -230,6 +213,10 @@ impl SimpleComponent for SearchView {
             artists,
             playlists,
         };
+        let input = sender.input_sender().clone();
+        let failed_status = detail_frame::failed_page(&gettext("Search Failed"), move || {
+            input.emit(SearchInput::Retry);
+        });
         let widgets = view_output!();
         ComponentParts { model, widgets }
     }

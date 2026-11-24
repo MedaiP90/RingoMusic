@@ -27,10 +27,21 @@ impl NameFilter {
     /// Tells if one of `names` contains the term. An empty term matches all.
     pub fn matches(&self, names: &[&str]) -> bool {
         let term = self.term.borrow();
-        term.is_empty()
-            || names
-                .iter()
-                .any(|name| name.to_lowercase().contains(&*term))
+        term.is_empty() || names.iter().any(|name| contains_term(name, &term))
+    }
+}
+
+/// Tells if `name` contains `term`, without case. `term` is lowercase.
+/// An ASCII name needs no lowercase copy, so the filter does not allocate
+/// for each item at each key press.
+fn contains_term(name: &str, term: &str) -> bool {
+    if name.is_ascii() {
+        // A non-ASCII term cannot match: the lowercase of ASCII is ASCII.
+        name.as_bytes()
+            .windows(term.len())
+            .any(|window| window.eq_ignore_ascii_case(term.as_bytes()))
+    } else {
+        name.to_lowercase().contains(term)
     }
 }
 
@@ -63,6 +74,12 @@ mod tests {
     #[test]
     fn matches_rejects_a_name_without_the_term() {
         assert!(!filter("xyz").matches(&["Creep", "Radiohead"]));
+    }
+
+    #[test]
+    fn matches_non_ascii_names_without_case() {
+        assert!(filter("björk").matches(&["BJÖRK"]));
+        assert!(!filter("björk").matches(&["Bjork"]));
     }
 
     #[test]

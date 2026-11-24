@@ -6,10 +6,12 @@
 
 use std::cell::RefCell;
 use std::collections::{HashMap, VecDeque};
+use std::rc::Rc;
 
 use relm4::gtk::gdk::Texture;
 use relm4::gtk::gio;
 use ringo_core::artwork::ArtworkStore;
+use tokio::sync::OnceCell;
 use tracing::warn;
 
 /// Number of textures that the memory cache keeps.
@@ -54,6 +56,15 @@ thread_local! {
         RefCell::new(BoundedCache::new(MEMORY_ENTRIES));
 }
 
+/// A texture load that more than one caller can wait for.
+type SharedLoad = Rc<OnceCell<Option<Texture>>>;
+
+thread_local! {
+    // Loads that run now, by URL. Rows that show the same artwork at the same
+    // time share one download and one decode.
+    static LOADS: RefCell<HashMap<String, SharedLoad>> = RefCell::default();
+}
+
 thread_local! {
     // A list item is set up without any context, so its image gets the store here.
     static STORE: RefCell<Option<ArtworkStore>> = const { RefCell::new(None) };
@@ -90,6 +101,18 @@ pub async fn load_texture(store: &ArtworkStore, url: String) -> Option<Texture> 
     if let Some(texture) = cached_texture(&url) {
         return Some(texture);
     }
+    let load = LOADS.with_borrow_mut(|loads| Rc::clone(loads.entry(url.clone()).or_default()));
+    let texture = load
+        .get_or_init(|| download_and_decode(store, url.clone()))
+        .await
+        .clone();
+    LOADS.with_borrow_mut(|loads| loads.remove(&url));
+    texture
+}
+
+/// Downloads the file of `url` if needed, decodes it on a blocking thread, and
+/// puts the texture in the memory cache.
+async fn download_and_decode(store: &ArtworkStore, url: String) -> Option<Texture> {
     let download = {
         let (store, url) = (store.clone(), url.clone());
         relm4::spawn(async move { store.fetch(&url).await })

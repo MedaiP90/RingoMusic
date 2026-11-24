@@ -20,6 +20,7 @@ use tracing::warn;
 use crate::detail;
 use crate::item::{LibraryArtistItem, TileItem, TileKind};
 use crate::services::{ApiClient, AppServices};
+use crate::views::detail_frame;
 use crate::views::phase::Phase;
 use crate::widgets::library_tile::GridTile;
 
@@ -122,12 +123,7 @@ impl SimpleComponent for ArtistAlbumsView {
                         set_description: Some(&gettext("Select an artist to see the albums in your library.")),
                     },
 
-                    add_named[Some(Phase::Loading.page())] = &adw::Spinner {
-                        set_halign: gtk::Align::Center,
-                        set_valign: gtk::Align::Center,
-                        set_width_request: 32,
-                        set_height_request: 32,
-                    },
+                    add_named[Some(Phase::Loading.page())] = &detail_frame::loading_spinner() -> adw::Spinner {},
 
                     add_named[Some(Phase::Empty.page())] = &adw::StatusPage {
                         set_icon_name: Some("media-optical-symbolic"),
@@ -135,20 +131,7 @@ impl SimpleComponent for ArtistAlbumsView {
                         set_description: Some(&gettext("Your library has no albums of this artist.")),
                     },
 
-                    add_named[Some(Phase::Failed.page())] = &adw::StatusPage {
-                        set_icon_name: Some("dialog-error-symbolic"),
-                        set_title: &gettext("Cannot Load Albums"),
-                        set_description: Some(&gettext("Check your connection and try again.")),
-
-                        #[wrap(Some)]
-                        set_child = &gtk::Button {
-                            set_label: &gettext("Try Again"),
-                            set_halign: gtk::Align::Center,
-                            add_css_class: "boxy",
-                            add_css_class: "suggested-action",
-                            connect_clicked => ArtistAlbumsInput::Retry,
-                        },
-                    },
+                    add_named[Some(Phase::Failed.page())] = &failed_status.clone() -> adw::StatusPage {},
 
                     add_named[Some(Phase::Content.page())] = &gtk::ScrolledWindow {
                         set_hscrollbar_policy: gtk::PolicyType::Never,
@@ -185,6 +168,10 @@ impl SimpleComponent for ArtistAlbumsView {
             grid,
             albums: Vec::new(),
         };
+        let input = sender.input_sender().clone();
+        let failed_status = detail_frame::failed_page(&gettext("Cannot Load Albums"), move || {
+            input.emit(ArtistAlbumsInput::Retry);
+        });
         let widgets = view_output!();
         connect_back_button(&widgets.back_button, &model.split_view);
         ComponentParts { model, widgets }

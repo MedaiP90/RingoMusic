@@ -29,6 +29,7 @@ use crate::paged::{self, PageCursor};
 use crate::section::Section;
 use crate::services::{ApiClient, AppServices};
 use crate::views::artist_albums::{ArtistAlbumsInit, ArtistAlbumsInput, ArtistAlbumsView};
+use crate::views::detail_frame;
 use crate::views::phase::Phase;
 use crate::widgets::library_tile::{ArtistRow, GridTile};
 use crate::widgets::song_row::{self, SongRow};
@@ -380,12 +381,7 @@ impl SimpleComponent for LibraryView {
                 #[watch]
                 set_visible_child_name: model.phase.page(),
 
-                add_named[Some(Phase::Loading.page())] = &adw::Spinner {
-                    set_halign: gtk::Align::Center,
-                    set_valign: gtk::Align::Center,
-                    set_width_request: 32,
-                    set_height_request: 32,
-                },
+                add_named[Some(Phase::Loading.page())] = &detail_frame::loading_spinner() -> adw::Spinner {},
 
                 add_named[Some(Phase::Empty.page())] = &adw::StatusPage {
                     set_icon_name: Some(model.kind.section().icon_name()),
@@ -399,20 +395,7 @@ impl SimpleComponent for LibraryView {
                     set_description: Some(&gettext("Try a different name.")),
                 },
 
-                add_named[Some(Phase::Failed.page())] = &adw::StatusPage {
-                    set_icon_name: Some("dialog-error-symbolic"),
-                    set_title: &model.kind.failed_title(),
-                    set_description: Some(&gettext("Check your connection and try again.")),
-
-                    #[wrap(Some)]
-                    set_child = &gtk::Button {
-                        set_label: &gettext("Try Again"),
-                        set_halign: gtk::Align::Center,
-                        add_css_class: "boxy",
-                        add_css_class: "suggested-action",
-                        connect_clicked => LibraryInput::Retry,
-                    },
-                },
+                add_named[Some(Phase::Failed.page())] = &failed_status.clone() -> adw::StatusPage {},
 
                 add_named[Some(Phase::Content.page())] = &body.clone() -> gtk::Widget {},
             },
@@ -460,6 +443,10 @@ impl SimpleComponent for LibraryView {
             content,
             spinner,
         };
+        let input = sender.input_sender().clone();
+        let failed_status = detail_frame::failed_page(&model.kind.failed_title(), move || {
+            input.emit(LibraryInput::Retry);
+        });
         let widgets = view_output!();
         ComponentParts { model, widgets }
     }

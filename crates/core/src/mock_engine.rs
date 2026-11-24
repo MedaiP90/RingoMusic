@@ -109,11 +109,6 @@ impl MockEngine {
         }
     }
 
-    /// Sets the answer of `auth_status`.
-    pub fn set_auth_status(&self, status: AuthStatus) {
-        *lock(&self.auth) = status;
-    }
-
     /// Makes each next call take `delay` after it is recorded. Use it with a
     /// paused clock to test a slow engine.
     pub fn set_delay(&self, delay: Duration) {

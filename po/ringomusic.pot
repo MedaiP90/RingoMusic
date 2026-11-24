@@ -204,9 +204,7 @@ msgid ""
 "subscription to play music."
 msgstr ""
 
-#: crates/ui/src/gate.rs crates/ui/src/views/artist_albums.rs
-#: crates/ui/src/views/detail_frame.rs crates/ui/src/views/library.rs
-#: crates/ui/src/views/search.rs crates/ui/src/views/sections.rs
+#: crates/ui/src/gate.rs crates/ui/src/views/detail_frame.rs
 msgid "Try Again"
 msgstr ""
 
@@ -464,12 +462,6 @@ msgstr ""
 msgid "Cannot Load Albums"
 msgstr ""
 
-#: crates/ui/src/views/artist_albums.rs crates/ui/src/views/detail_frame.rs
-#: crates/ui/src/views/library.rs crates/ui/src/views/search.rs
-#: crates/ui/src/views/sections.rs
-msgid "Check your connection and try again."
-msgstr ""
-
 #: crates/ui/src/views/artist_albums.rs
 msgid "No Albums"
 msgstr ""
@@ -518,6 +510,10 @@ msgstr ""
 
 #: crates/ui/src/views/detail_frame.rs
 msgid "Cannot Load This Page"
+msgstr ""
+
+#: crates/ui/src/views/detail_frame.rs
+msgid "Check your connection and try again."
 msgstr ""
 
 #: crates/ui/src/views/home.rs
@@ -902,6 +898,21 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "The window stays responsive while a queue change waits for the network."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The cache of Apple Music data saves new responses faster when it is large."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Artwork that shows in many places at the same time loads and decodes only "
+"once."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "The filter of the library lists reacts faster in large libraries."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

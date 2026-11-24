@@ -78,6 +78,9 @@ Copyright (C) 2026 RingoMusic contributors
           <li>If the app and its player have different versions, RingoMusic tells you to install it again.</li>
           <li>Fix: after a crash of the player, RingoMusic plays the song again from the position where it stopped. If the music was paused, it stays paused.</li>
           <li>The window stays responsive while a queue change waits for the network.</li>
+          <li>The cache of Apple Music data saves new responses faster when it is large.</li>
+          <li>Artwork that shows in many places at the same time loads and decodes only once.</li>
+          <li>The filter of the library lists reacts faster in large libraries.</li>
         </ul>
       </description>
     </release>

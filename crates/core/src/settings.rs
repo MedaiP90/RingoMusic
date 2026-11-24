@@ -125,31 +125,10 @@ impl Settings {
         self.inner.boolean(QUIT_ON_CLOSE)
     }
 
-    /// Sets whether closing the window stops the application.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the key cannot be written.
-    pub fn set_quit_on_close(&self, value: bool) -> Result<()> {
-        Self::write(QUIT_ON_CLOSE, self.inner.set_boolean(QUIT_ON_CLOSE, value))
-    }
-
     /// Whether the application shows track notifications.
     #[must_use]
     pub fn show_notifications(&self) -> bool {
         self.inner.boolean(SHOW_NOTIFICATIONS)
-    }
-
-    /// Sets whether the application shows track notifications.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the key cannot be written.
-    pub fn set_show_notifications(&self, value: bool) -> Result<()> {
-        Self::write(
-            SHOW_NOTIFICATIONS,
-            self.inner.set_boolean(SHOW_NOTIFICATIONS, value),
-        )
     }
 
     /// Whether the background portal refused the permission and the user was
@@ -177,15 +156,6 @@ impl Settings {
         self.inner.boolean(CHECK_UPDATES)
     }
 
-    /// Sets whether the application checks for updates.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if the key cannot be written.
-    pub fn set_check_updates(&self, value: bool) -> Result<()> {
-        Self::write(CHECK_UPDATES, self.inner.set_boolean(CHECK_UPDATES, value))
-    }
-
     /// Unix time, in seconds, of the last update check. Zero means never.
     #[must_use]
     pub fn last_update_check(&self) -> i64 {
@@ -208,18 +178,6 @@ impl Settings {
     #[must_use]
     pub fn api_cache_max_mb(&self) -> u32 {
         self.inner.uint(API_CACHE_MAX_MB)
-    }
-
-    /// Sets the size limit of the API cache.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if `value` is not between 16 and 4096.
-    pub fn set_api_cache_max_mb(&self, value: u32) -> Result<()> {
-        Self::write(
-            API_CACHE_MAX_MB,
-            self.inner.set_uint(API_CACHE_MAX_MB, value),
-        )
     }
 
     /// Color scheme: `system`, `light`, or `dark`.
@@ -256,18 +214,6 @@ impl Settings {
     #[must_use]
     pub fn artwork_cache_max_mb(&self) -> u32 {
         self.inner.uint(ARTWORK_CACHE_MAX_MB)
-    }
-
-    /// Sets the size limit of the artwork cache.
-    ///
-    /// # Errors
-    ///
-    /// Returns an error if `value` is not between 16 and 4096.
-    pub fn set_artwork_cache_max_mb(&self, value: u32) -> Result<()> {
-        Self::write(
-            ARTWORK_CACHE_MAX_MB,
-            self.inner.set_uint(ARTWORK_CACHE_MAX_MB, value),
-        )
     }
 
     /// Adds the key name to a failed write.

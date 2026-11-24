@@ -23,6 +23,7 @@ use crate::detail::storefront;
 use crate::item::{SongItem, TileItem};
 use crate::item_actions::{self, SongCatalog};
 use crate::services::{ApiClient, AppServices};
+use crate::views::detail_frame;
 use crate::views::phase::Phase;
 use crate::widgets::song_carousel::SongCarousel;
 use crate::widgets::tile::{self, TileRow};
@@ -222,12 +223,7 @@ impl SimpleComponent for SectionsView {
                 #[watch]
                 set_visible_child_name: model.phase.page(),
 
-                add_named[Some(Phase::Loading.page())] = &adw::Spinner {
-                    set_halign: gtk::Align::Center,
-                    set_valign: gtk::Align::Center,
-                    set_width_request: 32,
-                    set_height_request: 32,
-                },
+                add_named[Some(Phase::Loading.page())] = &detail_frame::loading_spinner() -> adw::Spinner {},
 
                 add_named[Some(Phase::Empty.page())] = &adw::StatusPage {
                     set_icon_name: Some(model.empty_icon),
@@ -235,20 +231,7 @@ impl SimpleComponent for SectionsView {
                     set_description: Some(&model.empty_description),
                 },
 
-                add_named[Some(Phase::Failed.page())] = &adw::StatusPage {
-                    set_icon_name: Some("dialog-error-symbolic"),
-                    set_title: &model.error_title,
-                    set_description: Some(&gettext("Check your connection and try again.")),
-
-                    #[wrap(Some)]
-                    set_child = &gtk::Button {
-                        set_label: &gettext("Try Again"),
-                        set_halign: gtk::Align::Center,
-                        add_css_class: "boxy",
-                        add_css_class: "suggested-action",
-                        connect_clicked => SectionsInput::Refresh,
-                    },
-                },
+                add_named[Some(Phase::Failed.page())] = &failed_status.clone() -> adw::StatusPage {},
 
                 add_named[Some(Phase::Content.page())] = &gtk::ScrolledWindow {
                     set_hscrollbar_policy: gtk::PolicyType::Never,
@@ -297,6 +280,10 @@ impl SimpleComponent for SectionsView {
             container: container.clone(),
             shown: Vec::new(),
         };
+        let input = sender.input_sender().clone();
+        let failed_status = detail_frame::failed_page(&model.error_title, move || {
+            input.emit(SectionsInput::Refresh);
+        });
         let widgets = view_output!();
         ComponentParts { model, widgets }
     }

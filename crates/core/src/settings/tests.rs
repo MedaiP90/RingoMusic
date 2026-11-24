@@ -101,10 +101,16 @@ fn accent_color_accepts_only_the_choices() {
 #[test]
 fn artwork_cache_size_rejects_values_outside_the_range() {
     let settings = test_settings();
-    assert!(settings.set_artwork_cache_max_mb(15).is_err());
-    assert!(settings.set_artwork_cache_max_mb(4097).is_err());
+    assert!(settings.raw().set_uint("artwork-cache-max-mb", 15).is_err());
+    assert!(
+        settings
+            .raw()
+            .set_uint("artwork-cache-max-mb", 4097)
+            .is_err()
+    );
     settings
-        .set_artwork_cache_max_mb(4096)
+        .raw()
+        .set_uint("artwork-cache-max-mb", 4096)
         .expect("value is in range");
     assert_eq!(settings.artwork_cache_max_mb(), 4096);
 }
@@ -113,10 +119,12 @@ fn artwork_cache_size_rejects_values_outside_the_range() {
 fn api_cache_size_accepts_the_range_limits() {
     let settings = test_settings();
     settings
-        .set_api_cache_max_mb(16)
+        .raw()
+        .set_uint("api-cache-max-mb", 16)
         .expect("value is in range");
     settings
-        .set_api_cache_max_mb(4096)
+        .raw()
+        .set_uint("api-cache-max-mb", 4096)
         .expect("value is in range");
     assert_eq!(settings.api_cache_max_mb(), 4096);
 }
@@ -124,8 +132,8 @@ fn api_cache_size_accepts_the_range_limits() {
 #[test]
 fn api_cache_size_rejects_values_outside_the_range() {
     let settings = test_settings();
-    assert!(settings.set_api_cache_max_mb(15).is_err());
-    assert!(settings.set_api_cache_max_mb(4097).is_err());
+    assert!(settings.raw().set_uint("api-cache-max-mb", 15).is_err());
+    assert!(settings.raw().set_uint("api-cache-max-mb", 4097).is_err());
     assert_eq!(settings.api_cache_max_mb(), 50);
 }
 

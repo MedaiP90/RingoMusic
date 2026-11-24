@@ -123,8 +123,9 @@ impl ArtworkStore {
     /// The call returns `None` if the download fails. The next call tries again.
     /// Run it on the Tokio runtime.
     pub async fn fetch(&self, url: &str) -> Option<PathBuf> {
-        if let Some(path) = self.cached_path(url) {
-            touch(&path);
+        let path = self.inner.dir.join(cache_file_name(url));
+        let target = path.clone();
+        if let Ok(true) = tokio::task::spawn_blocking(move || touch(&target)).await {
             return Some(path);
         }
         let download = self.downloads().entry(url.to_owned()).or_default().clone();
@@ -203,15 +204,20 @@ enum DownloadError {
 
 /// Sets the modification time of `path` to now. [`ArtworkStore::prune`] uses the
 /// time, so the files that the user shows stay in the cache. A failure only
-/// makes the file look older.
-fn touch(path: &Path) {
-    let result = fs::File::options()
-        .append(true)
-        .open(path)
-        .and_then(|file| file.set_modified(SystemTime::now()));
-    if let Err(error) = result {
+/// makes the file look older. Returns `false` if the file is not on disk.
+fn touch(path: &Path) -> bool {
+    let file = match fs::File::options().append(true).open(path) {
+        Ok(file) => file,
+        Err(error) if error.kind() == io::ErrorKind::NotFound => return false,
+        Err(error) => {
+            warn!(%error, "cannot open an artwork file");
+            return path.is_file();
+        }
+    };
+    if let Err(error) = file.set_modified(SystemTime::now()) {
         warn!(%error, "cannot update the time of an artwork file");
     }
+    true
 }
 
 /// Writes `bytes` to a temporary file, and then renames it to `path`. A reader
@@ -340,6 +346,13 @@ mod tests {
     }
 
     #[test]
+    fn touch_returns_false_for_a_missing_file() {
+        let dir = temp_dir("touch-missing");
+        assert!(!touch(&dir.join("a.jpg")));
+        fs::remove_dir_all(dir).expect("test directory is removed");
+    }
+
+    #[test]
     fn touch_sets_the_modification_time_to_now() {
         let dir = temp_dir("touch");
         let path = dir.join("a.jpg");
@@ -350,7 +363,7 @@ mod tests {
             .open(&path)
             .and_then(|file| file.set_modified(old))
             .expect("time is set");
-        touch(&path);
+        assert!(touch(&path));
         let modified = fs::metadata(&path)
             .and_then(|metadata| metadata.modified())
             .expect("time is known");
