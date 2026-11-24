@@ -63,6 +63,17 @@ ringo-cli api-get /v1/me/library/search term=<a word from your library> types=li
 ringo-cli api-get /v1/me/recommendations > $F/recommendations.json
 ```
 
+### New and Made For You pages
+
+The New page is public editorial data (the fixture is large, about 1.6 MB).
+The Made For You response is personal: apply the privacy rule. Replace the
+playlist ID, `playParams.versionHash`, and `dateAdded` by hand.
+
+```sh
+ringo-cli api-get '/v1/editorial/{storefront}/groupings' name=music platform=web tabs=subscriber 'format[resources]=map' 'art[url]=c,f' 'extend=artistUrl,editorialArtwork,plainEditorialNotes' 'extend[station-events]=editorialVideo' 'fields[albums]=artistName,artistUrl,artwork,contentRating,editorialArtwork,plainEditorialNotes,name,playParams,releaseDate,url,trackCount' 'fields[artists]=name,url,artwork,editorialArtwork,genreNames,plainEditorialNotes' 'include[albums]=artists' 'include[music-videos]=artists' 'include[songs]=artists' 'include[stations]=events,radio-show' 'omit[resource:artists]=autos' 'relate[songs]=albums' l=it > $F/editorial_new.json
+ringo-cli api-get /v1/me/library/playlists 'filter[featured]=made-for-you' 'format[resources]=map' 'include[library-playlists]=catalog' 'art[url]=f' 'fields[library-playlists]=artwork,dateAdded,name,playParams' 'fields[playlists]=lastModifiedDate' sort=type platform=web l=it > $F/made_for_you.json
+```
+
 ### Broken item (lenient parsing test)
 
 1. Copy `catalog_search.json` to `catalog_search_broken_item.json`.
@@ -86,6 +97,8 @@ ringo-cli api-get /v1/me/recommendations > $F/recommendations.json
 | `catalog_search_top.json` | `/v1/catalog/{storefront}/search` with `with=topResults` |
 | `library_search.json` | `/v1/me/library/search` with `types=library-songs,...` |
 | `recommendations.json` | `/v1/me/recommendations` |
+| `editorial_new.json` | `/v1/editorial/{storefront}/groupings` with `name=music`, `tabs=subscriber`, `format[resources]=map` |
+| `made_for_you.json` | `/v1/me/library/playlists` with `filter[featured]=made-for-you`, `format[resources]=map` |
 | `catalog_search_broken_item.json` | `catalog_search.json` with one damaged item |
 
 ## Hand-made files
