@@ -29,7 +29,7 @@ use crate::views::detail_frame::DetailFrame;
 use crate::views::phase::Phase;
 use crate::widgets::detail_header::{ArtworkShape, DetailHeader, PlayActions};
 use crate::widgets::song_carousel::SongCarousel;
-use crate::widgets::tile::{TileRow, heading_row};
+use crate::widgets::tile::{TileRow, heading_row, more_button};
 
 /// Size of the artwork of a similar artist, in pixels. It is smaller than the
 /// album artwork, like in Apple Music.
@@ -282,19 +282,6 @@ impl ListRow {
         self.more
             .set_visible(tiles.is_some_and(|tiles| tiles.next_offset.is_some()));
     }
-}
-
-/// Builds a small hidden Show More button for the right end of a heading. It
-/// opens a page with all items. `show` gives it the target.
-fn more_button(action: &str) -> gtk::Button {
-    gtk::Button::builder()
-        .label(gettext("Show More"))
-        .valign(gtk::Align::Center)
-        .margin_end(12)
-        .css_classes(["flat", "section-more"])
-        .action_name(action)
-        .visible(false)
-        .build()
 }
 
 /// Builds the heading with the Show More button, and the carousel of the top

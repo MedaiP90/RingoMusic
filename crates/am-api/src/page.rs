@@ -15,6 +15,16 @@ pub struct Page<T> {
     pub next_offset: Option<u32>,
 }
 
+/// An empty last page. A derive would add a `T: Default` bound.
+impl<T> Default for Page<T> {
+    fn default() -> Self {
+        Self {
+            items: Vec::new(),
+            next_offset: None,
+        }
+    }
+}
+
 impl<T> From<ApiPage<T>> for Page<T> {
     fn from(page: ApiPage<T>) -> Self {
         let next_offset = page.next.as_deref().and_then(parse_next_offset);

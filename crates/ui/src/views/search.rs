@@ -2,7 +2,8 @@
 // Copyright (C) 2026 RingoMusic contributors
 
 //! Search of the catalog or of the library: a search entry and a scope
-//! switch in the header bar, and the results in four sections.
+//! switch in the header bar, and the results in four sections. The Show More
+//! button of a section opens a page with all its results.
 
 use std::sync::Arc;
 
@@ -13,6 +14,7 @@ use relm4::gtk::prelude::*;
 use relm4::prelude::*;
 use ringo_am_api::endpoints::{self, CatalogSearchType, LibrarySearchType};
 use ringo_am_api::models::{ApiPage, LibrarySearchResults, SearchResults};
+use ringo_am_api::{Page, Result as ApiResult};
 use ringo_core::runner::CoreHandle;
 use tokio::task::JoinHandle;
 use tracing::warn;
@@ -22,6 +24,7 @@ use crate::item::{SongItem, TileItem};
 use crate::item_actions::{self, SongCatalog};
 use crate::services::{ApiClient, AppServices};
 use crate::views::detail_frame;
+use crate::views::more::MorePage;
 use crate::widgets::song_carousel::SongCarousel;
 use crate::widgets::tile::{self, TileRow};
 
@@ -31,19 +34,57 @@ const SEARCH_DELAY_MS: u32 = 300;
 /// Maximum number of results for each type. Apple allows at most 25.
 const RESULT_LIMIT: u32 = 25;
 
-const SEARCH_TYPES: [CatalogSearchType; 4] = [
-    CatalogSearchType::Songs,
-    CatalogSearchType::Albums,
-    CatalogSearchType::Artists,
-    CatalogSearchType::Playlists,
-];
+/// A section of the search results.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum SearchSection {
+    Songs,
+    Albums,
+    Artists,
+    Playlists,
+}
 
-const LIBRARY_SEARCH_TYPES: [LibrarySearchType; 4] = [
-    LibrarySearchType::Songs,
-    LibrarySearchType::Albums,
-    LibrarySearchType::Artists,
-    LibrarySearchType::Playlists,
-];
+impl SearchSection {
+    /// All sections, in the order of the page.
+    pub const ALL: [Self; 4] = [Self::Songs, Self::Albums, Self::Artists, Self::Playlists];
+
+    pub fn title(self) -> String {
+        match self {
+            Self::Songs => gettext("Songs"),
+            Self::Albums => gettext("Albums"),
+            Self::Artists => gettext("Artists"),
+            Self::Playlists => gettext("Playlists"),
+        }
+    }
+
+    /// Name of the action that opens all results of the section, without
+    /// the `win.` prefix. Its target is the scope name and the term.
+    pub fn action_name(self) -> &'static str {
+        match self {
+            Self::Songs => "open-search-songs",
+            Self::Albums => "open-search-albums",
+            Self::Artists => "open-search-artists",
+            Self::Playlists => "open-search-playlists",
+        }
+    }
+
+    fn catalog_type(self) -> CatalogSearchType {
+        match self {
+            Self::Songs => CatalogSearchType::Songs,
+            Self::Albums => CatalogSearchType::Albums,
+            Self::Artists => CatalogSearchType::Artists,
+            Self::Playlists => CatalogSearchType::Playlists,
+        }
+    }
+
+    fn library_type(self) -> LibrarySearchType {
+        match self {
+            Self::Songs => LibrarySearchType::Songs,
+            Self::Albums => LibrarySearchType::Albums,
+            Self::Artists => LibrarySearchType::Artists,
+            Self::Playlists => LibrarySearchType::Playlists,
+        }
+    }
+}
 
 /// Where the search looks.
 #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
@@ -58,15 +99,17 @@ pub enum Scope {
 impl Scope {
     const ALL: [Self; 2] = [Self::Catalog, Self::Library];
 
-    /// Name of the toggle in the scope switch.
-    fn name(self) -> &'static str {
+    /// Name of the toggle in the scope switch and of the scope in action
+    /// targets.
+    pub fn name(self) -> &'static str {
         match self {
             Self::Catalog => "catalog",
             Self::Library => "library",
         }
     }
 
-    fn from_name(name: &str) -> Self {
+    /// The scope of `name`. An unknown name gives the default scope.
+    pub fn from_name(name: &str) -> Self {
         Self::ALL
             .into_iter()
             .find(|scope| scope.name() == name)
@@ -90,48 +133,76 @@ impl Scope {
     }
 }
 
-/// The results of one search, ready for the widgets.
-#[derive(Clone, Debug, Default, Eq, PartialEq)]
+/// The results of one search, ready for the widgets. Each section keeps the
+/// offset of its next page.
+#[derive(Clone, Debug, Default, PartialEq)]
 pub struct SearchSections {
-    songs: Vec<SongItem>,
-    albums: Vec<TileItem>,
-    artists: Vec<TileItem>,
-    playlists: Vec<TileItem>,
+    songs: Page<SongItem>,
+    albums: Page<TileItem>,
+    artists: Page<TileItem>,
+    playlists: Page<TileItem>,
 }
 
 impl SearchSections {
     fn is_empty(&self) -> bool {
-        self.songs.is_empty()
-            && self.albums.is_empty()
-            && self.artists.is_empty()
-            && self.playlists.is_empty()
+        self.songs.items.is_empty()
+            && self.albums.items.is_empty()
+            && self.artists.items.is_empty()
+            && self.playlists.items.is_empty()
     }
-}
 
-impl From<&SearchResults> for SearchSections {
-    fn from(results: &SearchResults) -> Self {
-        Self {
-            songs: convert(results.songs.as_ref()),
-            albums: convert(results.albums.as_ref()),
-            artists: convert(results.artists.as_ref()),
-            playlists: convert(results.playlists.as_ref()),
+    /// Tells if `section` has more results than this page.
+    fn has_more(&self, section: SearchSection) -> bool {
+        let next_offset = match section {
+            SearchSection::Songs => self.songs.next_offset,
+            SearchSection::Albums => self.albums.next_offset,
+            SearchSection::Artists => self.artists.next_offset,
+            SearchSection::Playlists => self.playlists.next_offset,
+        };
+        next_offset.is_some()
+    }
+
+    /// Takes the page of `section`.
+    fn into_more_page(self, section: SearchSection) -> MorePage {
+        match section {
+            SearchSection::Songs => MorePage::Songs(self.songs),
+            SearchSection::Albums => MorePage::Tiles(self.albums),
+            SearchSection::Artists => MorePage::Tiles(self.artists),
+            SearchSection::Playlists => MorePage::Tiles(self.playlists),
         }
     }
 }
 
-impl From<&LibrarySearchResults> for SearchSections {
-    fn from(results: &LibrarySearchResults) -> Self {
+impl From<SearchResults> for SearchSections {
+    fn from(results: SearchResults) -> Self {
         Self {
-            songs: convert(results.songs.as_ref()),
-            albums: convert(results.albums.as_ref()),
-            artists: convert(results.artists.as_ref()),
-            playlists: convert(results.playlists.as_ref()),
+            songs: convert(results.songs),
+            albums: convert(results.albums),
+            artists: convert(results.artists),
+            playlists: convert(results.playlists),
         }
     }
 }
 
-fn convert<T, U: for<'a> From<&'a T>>(page: Option<&ApiPage<T>>) -> Vec<U> {
-    page.map_or_else(Vec::new, |page| page.data.iter().map(U::from).collect())
+impl From<LibrarySearchResults> for SearchSections {
+    fn from(results: LibrarySearchResults) -> Self {
+        Self {
+            songs: convert(results.songs),
+            albums: convert(results.albums),
+            artists: convert(results.artists),
+            playlists: convert(results.playlists),
+        }
+    }
+}
+
+/// Converts the items of `page` and keeps the offset of the next page. A
+/// missing page is empty.
+fn convert<T, U: for<'a> From<&'a T>>(page: Option<ApiPage<T>>) -> Page<U> {
+    let page = page.map(Page::from).unwrap_or_default();
+    Page {
+        items: page.items.iter().map(U::from).collect(),
+        next_offset: page.next_offset,
+    }
 }
 
 /// What the view shows.
@@ -199,6 +270,8 @@ pub struct SearchView {
     albums: TileRow,
     artists: TileRow,
     playlists: TileRow,
+    /// The Show More buttons, in the order of [`SearchSection::ALL`].
+    more_buttons: [gtk::Button; 4],
 }
 
 #[relm4::component(pub)]
@@ -261,12 +334,18 @@ impl SimpleComponent for SearchView {
         let input = sender.input_sender().clone();
         let songs =
             SongCarousel::new(move |position| input.emit(SearchInput::SongActivated(position)));
-        let songs_section = build_songs_section(&songs);
+        let more_buttons = SearchSection::ALL
+            .map(|section| tile::more_button(&format!("win.{}", section.action_name())));
+        let [more_songs, more_albums, more_artists, more_playlists] = &more_buttons;
+        let songs_section = build_songs_section(&songs, more_songs);
         let (albums, artists, playlists) = (
-            TileRow::new(&gettext("Albums")),
-            TileRow::new(&gettext("Artists")),
-            TileRow::new(&gettext("Playlists")),
+            TileRow::new(&SearchSection::Albums.title()),
+            TileRow::new(&SearchSection::Artists.title()),
+            TileRow::new(&SearchSection::Playlists.title()),
         );
+        albums.append_header_button(more_albums);
+        artists.append_header_button(more_artists);
+        playlists.append_header_button(more_playlists);
         let results_page = build_results_page(&songs_section, [&albums, &artists, &playlists]);
 
         let model = Self {
@@ -285,6 +364,7 @@ impl SimpleComponent for SearchView {
             albums,
             artists,
             playlists,
+            more_buttons,
         };
         let input = sender.input_sender().clone();
         let failed_status = detail_frame::failed_page(&gettext("Search Failed"), move || {
@@ -335,13 +415,13 @@ impl SearchView {
             self.show(SearchSections::default());
             return;
         }
-        let storefront = storefront(&self.core.subscribe().borrow());
+        let storefront = storefront(&self.core.subscribe().borrow()).unwrap_or_default();
         self.phase = Phase::Loading;
         let (api, term, generation) = (Arc::clone(&self.api), self.term.clone(), self.generation);
         let scope = self.scope;
         let input = sender.input_sender().clone();
         self.pending = Some(relm4::spawn(async move {
-            let sections = fetch(&api, scope, storefront.as_deref(), &term).await;
+            let sections = fetch(&api, scope, &storefront, &term).await;
             input.emit(SearchInput::Loaded(generation, sections));
         }));
     }
@@ -360,43 +440,89 @@ impl SearchView {
         self.show(sections);
     }
 
-    /// Puts `sections` in the widgets. An empty section hides itself.
+    /// Puts `sections` in the widgets. An empty section hides itself. A
+    /// section with more results shows its Show More button.
     fn show(&mut self, sections: SearchSections) {
-        self.catalog.remember(&sections.songs);
-        self.songs.set_songs(&sections.songs);
-        self.songs_section.set_visible(!sections.songs.is_empty());
-        self.albums.set_items(&sections.albums);
-        self.artists.set_items(&sections.artists);
-        self.playlists.set_items(&sections.playlists);
-        self.song_items = sections.songs;
+        let target = (self.scope.name(), self.term.as_str()).to_variant();
+        for (section, button) in SearchSection::ALL.into_iter().zip(&self.more_buttons) {
+            button.set_action_target_value(Some(&target));
+            button.set_visible(sections.has_more(section));
+        }
+        self.catalog.remember(&sections.songs.items);
+        self.songs.set_songs(&sections.songs.items);
+        self.songs_section
+            .set_visible(!sections.songs.items.is_empty());
+        self.albums.set_items(&sections.albums.items);
+        self.artists.set_items(&sections.artists.items);
+        self.playlists.set_items(&sections.playlists.items);
+        self.song_items = sections.songs.items;
     }
 }
 
-/// Searches `scope` for `term`. The catalog search needs `storefront`.
-/// Returns `None` if the request fails or the storefront is not known.
+/// Searches `scope` for `term`. Returns `None` if the request fails.
 async fn fetch(
     api: &ApiClient,
     scope: Scope,
-    storefront: Option<&str>,
+    storefront: &str,
     term: &str,
 ) -> Option<SearchSections> {
-    let sections = match scope {
-        Scope::Catalog => {
-            let Some(storefront) = storefront else {
-                warn!("cannot search the catalog: the storefront is not known");
-                return None;
-            };
-            endpoints::search(api, storefront, term, &SEARCH_TYPES, RESULT_LIMIT)
-                .await
-                .map(|results| SearchSections::from(&results))
-        }
-        Scope::Library => endpoints::library_search(api, term, &LIBRARY_SEARCH_TYPES, RESULT_LIMIT)
-            .await
-            .map(|results| SearchSections::from(&results)),
-    };
-    sections
+    request(api, scope, storefront, term, &SearchSection::ALL, 0)
+        .await
         .inspect_err(|error| warn!(%error, ?scope, "search failed"))
         .ok()
+}
+
+/// Loads the results of `section` from `offset`, for the page with all
+/// results of the section. The catalog search needs `storefront`.
+///
+/// # Errors
+///
+/// Returns an error if the request fails.
+pub async fn load_section(
+    api: &ApiClient,
+    scope: Scope,
+    storefront: &str,
+    term: &str,
+    section: SearchSection,
+    offset: u32,
+) -> ApiResult<MorePage> {
+    let sections = request(api, scope, storefront, term, &[section], offset).await?;
+    Ok(sections.into_more_page(section))
+}
+
+/// Searches `scope` for `term` in `sections`, from the result at `offset`.
+/// The catalog search needs `storefront`. The library search ignores it.
+async fn request(
+    api: &ApiClient,
+    scope: Scope,
+    storefront: &str,
+    term: &str,
+    sections: &[SearchSection],
+    offset: u32,
+) -> ApiResult<SearchSections> {
+    let results = match scope {
+        Scope::Catalog => {
+            let types: Vec<CatalogSearchType> = sections
+                .iter()
+                .copied()
+                .map(SearchSection::catalog_type)
+                .collect();
+            let results =
+                endpoints::search(api, storefront, term, &types, RESULT_LIMIT, offset).await?;
+            SearchSections::from(results)
+        }
+        Scope::Library => {
+            let types: Vec<LibrarySearchType> = sections
+                .iter()
+                .copied()
+                .map(SearchSection::library_type)
+                .collect();
+            let results =
+                endpoints::library_search(api, term, &types, RESULT_LIMIT, offset).await?;
+            SearchSections::from(results)
+        }
+    };
+    Ok(results)
 }
 
 /// Builds the entry. It sends the term after a short pause, and at once on Enter.
@@ -437,14 +563,17 @@ fn build_scope_switch(sender: &ComponentSender<SearchView>) -> adw::ToggleGroup 
     switch
 }
 
-/// Builds the songs heading with the list under it. It hides itself when empty.
-fn build_songs_section(carousel: &SongCarousel) -> gtk::Box {
+/// Builds the songs heading with the Show More button, and the list under
+/// it. It hides itself when empty.
+fn build_songs_section(carousel: &SongCarousel, more: &gtk::Button) -> gtk::Box {
     let section = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .spacing(6)
         .visible(false)
         .build();
-    section.append(&tile::heading(&gettext("Songs")));
+    let title_row = tile::heading_row(&SearchSection::Songs.title());
+    title_row.append(more);
+    section.append(&title_row);
     section.append(carousel.widget());
     section
 }
@@ -483,15 +612,15 @@ mod tests {
 
     #[test]
     fn sections_of_results_without_data_are_empty() {
-        let sections = SearchSections::from(&results(json!({})));
+        let sections = SearchSections::from(results(json!({})));
         assert!(sections.is_empty());
     }
 
     #[test]
     fn sections_keep_the_order_of_the_songs() {
         let value = json!({ "songs": { "data": [song_json("1"), song_json("2")] } });
-        let sections = SearchSections::from(&results(value));
-        let ids: Vec<&str> = sections.songs.iter().map(SongItem::id).collect();
+        let sections = SearchSections::from(results(value));
+        let ids: Vec<&str> = sections.songs.items.iter().map(SongItem::id).collect();
         assert_eq!(ids, ["1", "2"]);
         assert!(!sections.is_empty());
     }
@@ -506,16 +635,43 @@ mod tests {
         });
         let results: LibrarySearchResults =
             serde_json::from_value(value).expect("the test results are valid");
-        let sections = SearchSections::from(&results);
+        let sections = SearchSections::from(results);
         assert_eq!(
             (
-                sections.songs.len(),
-                sections.albums.len(),
-                sections.artists.len(),
-                sections.playlists.len()
+                sections.songs.items.len(),
+                sections.albums.items.len(),
+                sections.artists.items.len(),
+                sections.playlists.items.len()
             ),
             (1, 1, 1, 1)
         );
+    }
+
+    #[test]
+    fn has_more_follows_the_next_link_of_each_section() {
+        let value = json!({
+            "songs": { "data": [song_json("1")], "next": "/v1/catalog/it/search?offset=25&term=x&types=songs" },
+            "albums": { "data": [] }
+        });
+        let sections = SearchSections::from(results(value));
+        let more: Vec<bool> = SearchSection::ALL
+            .into_iter()
+            .map(|section| sections.has_more(section))
+            .collect();
+        assert_eq!(more, [true, false, false, false]);
+    }
+
+    #[test]
+    fn into_more_page_keeps_the_next_offset() {
+        let value = json!({
+            "songs": { "data": [song_json("1")], "next": "/v1/catalog/it/search?offset=25&term=x&types=songs" }
+        });
+        let MorePage::Songs(page) =
+            SearchSections::from(results(value)).into_more_page(SearchSection::Songs)
+        else {
+            panic!("the songs section gives a page of songs");
+        };
+        assert_eq!((page.items.len(), page.next_offset), (1, Some(25)));
     }
 
     #[test]
@@ -532,12 +688,12 @@ mod tests {
             "artists": { "data": [{ "id": "b", "type": "artists", "attributes": { "name": "B" } }] },
             "playlists": { "data": [{ "id": "c", "type": "playlists", "attributes": { "name": "C" } }] }
         });
-        let sections = SearchSections::from(&results(value));
+        let sections = SearchSections::from(results(value));
         assert_eq!(
             (
-                sections.albums.len(),
-                sections.artists.len(),
-                sections.playlists.len()
+                sections.albums.items.len(),
+                sections.artists.items.len(),
+                sections.playlists.items.len()
             ),
             (1, 1, 1)
         );

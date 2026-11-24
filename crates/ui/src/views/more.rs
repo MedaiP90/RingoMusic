@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
-//! Page with all top songs or all tiles of one list of an artist, for
-//! example all singles. The items load page by
-//! page when the user scrolls near the end.
+//! Page with all items of one list: the top songs or one list of an artist,
+//! for example all singles, or one section of the search results. The items
+//! load page by page when the user scrolls near the end.
 
 use std::sync::Arc;
 
@@ -24,6 +24,7 @@ use crate::paged::{self, PageCursor};
 use crate::services::{ApiClient, AppServices};
 use crate::views::detail_frame::DetailFrame;
 use crate::views::phase::Phase;
+use crate::views::search::{self, Scope, SearchSection};
 use crate::widgets::song_list::SongList;
 use crate::widgets::song_row::Lead;
 use crate::widgets::tile::TileGrid;
@@ -34,8 +35,12 @@ const MORE_SPINNER_SIZE: i32 = 24;
 /// What the page lists.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum MoreKind {
+    /// The top songs of an artist.
     TopSongs,
+    /// One list of an artist.
     Tiles(ArtistList),
+    /// One section of the search results in a scope.
+    Search(Scope, SearchSection),
 }
 
 impl MoreKind {
@@ -43,6 +48,7 @@ impl MoreKind {
         match self {
             Self::TopSongs => gettext("Top Songs"),
             Self::Tiles(list) => list.title(),
+            Self::Search(_, section) => section.title(),
         }
     }
 
@@ -50,41 +56,48 @@ impl MoreKind {
     fn build_list(
         self,
         catalog: SongCatalog,
-        input: relm4::Sender<ArtistMoreInput>,
+        input: relm4::Sender<MoreInput>,
     ) -> Box<dyn MoreList> {
         match self {
-            Self::TopSongs => Box::new(SongsList::new(catalog, input)),
-            Self::Tiles(list) => Box::new(TilesList::new(&list.title())),
+            Self::TopSongs | Self::Search(_, SearchSection::Songs) => {
+                Box::new(SongsList::new(catalog, input))
+            }
+            Self::Tiles(_) | Self::Search(..) => Box::new(TilesList::new(&self.title())),
         }
     }
 
-    /// Loads the page of this kind at `offset`.
+    /// Loads the page of this kind at `offset`. `subject` is the artist ID or
+    /// the search term.
     async fn load(
         self,
         api: &ApiClient,
         storefront: &str,
-        id: &str,
+        subject: &str,
         offset: u32,
     ) -> ringo_am_api::Result<MorePage> {
         match self {
-            Self::TopSongs => detail::load_artist_top_songs(api, storefront, id, offset)
+            Self::TopSongs => detail::load_artist_top_songs(api, storefront, subject, offset)
                 .await
                 .map(MorePage::Songs),
-            Self::Tiles(list) => detail::load_artist_tiles(api, storefront, id, list, offset)
+            Self::Tiles(list) => detail::load_artist_tiles(api, storefront, subject, list, offset)
                 .await
                 .map(MorePage::Tiles),
+            Self::Search(scope, section) => {
+                search::load_section(api, scope, storefront, subject, section, offset).await
+            }
         }
     }
 }
 
 /// What the page needs to start.
-pub struct ArtistMoreInit {
+pub struct MoreInit {
     pub services: AppServices,
     pub catalog: SongCatalog,
-    /// ID of a catalog artist.
-    pub id: String,
-    /// Shown in the title.
-    pub artist_name: String,
+    /// ID of a catalog artist, or the search term.
+    pub subject: String,
+    /// Shown in the title before the name of the list: the artist name or
+    /// the search term.
+    pub name: String,
     pub kind: MoreKind,
 }
 
@@ -106,7 +119,7 @@ impl MorePage {
 
 /// Input of the page.
 #[derive(Debug)]
-pub enum ArtistMoreInput {
+pub enum MoreInput {
     /// Loads the list again.
     Retry,
     /// The user scrolled near the end of the list.
@@ -136,8 +149,8 @@ struct SongsList {
 }
 
 impl SongsList {
-    fn new(catalog: SongCatalog, input: relm4::Sender<ArtistMoreInput>) -> Self {
-        let list = SongList::new(move |position| input.emit(ArtistMoreInput::PlaySong(position)));
+    fn new(catalog: SongCatalog, input: relm4::Sender<MoreInput>) -> Self {
+        let list = SongList::new(move |position| input.emit(MoreInput::PlaySong(position)));
         Self {
             list,
             songs: Vec::new(),
@@ -205,9 +218,9 @@ impl MoreList for TilesList {
     fn play(&self, _core: &CoreHandle, _position: usize) {}
 }
 
-/// The page of all top songs or all tiles of one list of an artist.
-pub struct ArtistMoreView {
-    id: String,
+/// The page of all items of one list.
+pub struct MoreView {
+    subject: String,
     kind: MoreKind,
     api: Arc<ApiClient>,
     core: CoreHandle,
@@ -222,9 +235,9 @@ pub struct ArtistMoreView {
 }
 
 #[relm4::component(pub)]
-impl SimpleComponent for ArtistMoreView {
-    type Init = ArtistMoreInit;
-    type Input = ArtistMoreInput;
+impl SimpleComponent for MoreView {
+    type Init = MoreInit;
+    type Input = MoreInput;
     type Output = ();
 
     view! {
@@ -246,14 +259,14 @@ impl SimpleComponent for ArtistMoreView {
         root: Self::Root,
         sender: ComponentSender<Self>,
     ) -> ComponentParts<Self> {
-        let ArtistMoreInit {
+        let MoreInit {
             services,
             catalog,
-            id,
-            artist_name,
+            subject,
+            name,
             kind,
         } = init;
-        let title = format!("{artist_name} - {}", kind.title());
+        let title = format!("{name} - {}", kind.title());
         let list = kind.build_list(catalog.clone(), sender.input_sender().clone());
         let list_widget = list.widget();
         let scrolled = gtk::ScrolledWindow::builder()
@@ -262,19 +275,19 @@ impl SimpleComponent for ArtistMoreView {
             .child(&list_widget)
             .build();
         let near_end = sender.input_sender().clone();
-        paged::connect_near_end(&scrolled, move || near_end.emit(ArtistMoreInput::NearEnd));
+        paged::connect_near_end(&scrolled, move || near_end.emit(MoreInput::NearEnd));
         let more_spinner = build_more_spinner();
         let content = gtk::Box::new(gtk::Orientation::Vertical, 0);
         content.append(&scrolled);
         content.append(&more_spinner);
         let retry = sender.input_sender().clone();
         let frame = DetailFrame::new(&content, &gettext("Nothing to show"), move || {
-            retry.emit(ArtistMoreInput::Retry);
+            retry.emit(MoreInput::Retry);
         });
         let frame_widget = frame.widget().clone();
 
         let mut model = Self {
-            id,
+            subject,
             kind,
             api: Arc::clone(services.api()),
             core: services.core().clone(),
@@ -293,21 +306,21 @@ impl SimpleComponent for ArtistMoreView {
 
     fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
-            ArtistMoreInput::Retry => self.reload(&sender),
-            ArtistMoreInput::NearEnd => {
+            MoreInput::Retry => self.reload(&sender),
+            MoreInput::NearEnd => {
                 if self.phase == Phase::Content {
                     self.load_next(&sender);
                 }
             }
-            ArtistMoreInput::PageLoaded(generation, page) => self.finish_page(generation, page),
-            ArtistMoreInput::PlaySong(position) => {
+            MoreInput::PageLoaded(generation, page) => self.finish_page(generation, page),
+            MoreInput::PlaySong(position) => {
                 self.list.play(&self.core, position);
             }
         }
     }
 }
 
-impl ArtistMoreView {
+impl MoreView {
     /// Clears the page and loads the list from the first page.
     fn reload(&mut self, sender: &ComponentSender<Self>) {
         if let Some(task) = self.pending.take() {
@@ -332,18 +345,18 @@ impl ArtistMoreView {
             return;
         };
         self.more_spinner.set_visible(self.phase == Phase::Content);
-        let (api, id, kind) = (Arc::clone(&self.api), self.id.clone(), self.kind);
+        let (api, subject, kind) = (Arc::clone(&self.api), self.subject.clone(), self.kind);
         let storefront = detail::storefront(&self.core.subscribe().borrow()).unwrap_or_default();
         let input = sender.input_sender().clone();
         self.pending = Some(relm4::spawn(async move {
-            let page = match kind.load(&api, &storefront, &id, offset).await {
+            let page = match kind.load(&api, &storefront, &subject, offset).await {
                 Ok(page) => Some(page),
                 Err(error) => {
-                    warn!(%error, id, offset, "cannot load a page of the artist");
+                    warn!(%error, ?kind, offset, "cannot load a page of the list");
                     None
                 }
             };
-            input.emit(ArtistMoreInput::PageLoaded(generation, page));
+            input.emit(MoreInput::PageLoaded(generation, page));
         }));
     }
 

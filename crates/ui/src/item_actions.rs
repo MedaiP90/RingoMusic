@@ -174,9 +174,10 @@ pub fn item_action(name: &str) -> SimpleAction {
     SimpleAction::new(name, Some(VariantTy::STRING))
 }
 
-/// Creates an action that opens a list of an artist. Its parameter is the
-/// artist ID and the artist name. Build it with [`artist_list_target`].
-pub fn artist_list_action(name: &str) -> SimpleAction {
+/// Creates an action that opens a page with all items of a list. Its
+/// parameter is two strings: the artist ID and the artist name (build it
+/// with [`artist_list_target`]), or the search scope and the search term.
+pub fn list_action(name: &str) -> SimpleAction {
     SimpleAction::new(name, Some(&<(String, String)>::static_variant_type()))
 }
 

@@ -28,6 +28,7 @@ async fn search_returns_results_with_top_results() {
             ("term", "radiohead"),
             ("types", "songs,albums,artists,playlists"),
             ("limit", "5"),
+            ("offset", "0"),
             ("with", "topResults"),
             ("include[songs]", "albums,artists"),
         ],
@@ -40,7 +41,7 @@ async fn search_returns_results_with_top_results() {
         CatalogSearchType::Playlists,
     ];
 
-    let results = endpoints::search(&transport, STOREFRONT, " radiohead ", &types, 5)
+    let results = endpoints::search(&transport, STOREFRONT, " radiohead ", &types, 5, 0)
         .await
         .unwrap();
 
@@ -52,9 +53,16 @@ async fn search_returns_results_with_top_results() {
 async fn search_rejects_an_empty_term_without_a_request() {
     let transport = FixtureTransport::new();
 
-    let error = endpoints::search(&transport, STOREFRONT, "  ", &[CatalogSearchType::Songs], 5)
-        .await
-        .unwrap_err();
+    let error = endpoints::search(
+        &transport,
+        STOREFRONT,
+        "  ",
+        &[CatalogSearchType::Songs],
+        5,
+        0,
+    )
+    .await
+    .unwrap_err();
 
     assert!(matches!(error, Error::InvalidInput { .. }), "got {error:?}");
 }
@@ -63,7 +71,7 @@ async fn search_rejects_an_empty_term_without_a_request() {
 async fn search_rejects_empty_types_without_a_request() {
     let transport = FixtureTransport::new();
 
-    let error = endpoints::search(&transport, STOREFRONT, "radiohead", &[], 5)
+    let error = endpoints::search(&transport, STOREFRONT, "radiohead", &[], 5, 0)
         .await
         .unwrap_err();
 
@@ -78,6 +86,7 @@ async fn library_search_returns_results() {
             ("term", "example"),
             ("types", "library-songs,library-artists"),
             ("limit", "5"),
+            ("offset", "25"),
             ("include[library-artists]", "catalog"),
             ("fields[artists]", "artwork,name"),
         ],
@@ -85,7 +94,7 @@ async fn library_search_returns_results() {
     );
     let types = [LibrarySearchType::Songs, LibrarySearchType::Artists];
 
-    let results = endpoints::library_search(&transport, "example", &types, 5)
+    let results = endpoints::library_search(&transport, "example", &types, 5, 25)
         .await
         .unwrap();
 
@@ -97,7 +106,7 @@ async fn library_search_returns_results() {
 async fn library_search_rejects_an_empty_term_without_a_request() {
     let transport = FixtureTransport::new();
 
-    let error = endpoints::library_search(&transport, "", &[LibrarySearchType::Songs], 5)
+    let error = endpoints::library_search(&transport, "", &[LibrarySearchType::Songs], 5, 0)
         .await
         .unwrap_err();
 

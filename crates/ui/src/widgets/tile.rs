@@ -7,6 +7,7 @@
 
 use std::cell::RefCell;
 
+use gettextrs::gettext;
 use relm4::gtk;
 use relm4::gtk::pango::EllipsizeMode;
 use relm4::gtk::prelude::*;
@@ -161,6 +162,20 @@ pub fn heading_row(title: &str) -> gtk::Box {
     label.set_hexpand(true);
     row.append(&label);
     row
+}
+
+/// Builds a small hidden Show More button for the right end of a heading. It
+/// activates `action`, which opens a page with all items. The caller sets the
+/// target and shows the button when more items exist.
+pub fn more_button(action: &str) -> gtk::Button {
+    gtk::Button::builder()
+        .label(gettext("Show More"))
+        .valign(gtk::Align::Center)
+        .margin_end(12)
+        .css_classes(["flat", "section-more"])
+        .action_name(action)
+        .visible(false)
+        .build()
 }
 
 /// Builds the heading of a section.

@@ -446,11 +446,7 @@ msgstr ""
 msgid "Nothing to show for this artist"
 msgstr ""
 
-#: crates/ui/src/views/artist.rs crates/ui/src/widgets/detail_header.rs
-msgid "Show More"
-msgstr ""
-
-#: crates/ui/src/views/artist.rs crates/ui/src/views/artist_more.rs
+#: crates/ui/src/views/artist.rs crates/ui/src/views/more.rs
 msgid "Top Songs"
 msgstr ""
 
@@ -502,10 +498,6 @@ msgstr[1] ""
 
 #: crates/ui/src/views/artist_info.rs
 msgid "Origin"
-msgstr ""
-
-#: crates/ui/src/views/artist_more.rs
-msgid "Nothing to show"
 msgstr ""
 
 #: crates/ui/src/views/detail_frame.rs
@@ -574,6 +566,10 @@ msgstr ""
 
 #: crates/ui/src/views/made_for_you.rs
 msgid "No Mixes Yet"
+msgstr ""
+
+#: crates/ui/src/views/more.rs
+msgid "Nothing to show"
 msgstr ""
 
 #: crates/ui/src/views/new_releases.rs
@@ -686,6 +682,10 @@ msgstr ""
 #: crates/ui/src/widgets/detail_header.rs crates/ui/src/widgets/player_bar.rs
 #: crates/ui/src/widgets/song_row.rs
 msgid "Play"
+msgstr ""
+
+#: crates/ui/src/widgets/detail_header.rs crates/ui/src/widgets/tile.rs
+msgid "Show More"
 msgstr ""
 
 #: crates/ui/src/widgets/detail_header.rs crates/ui/src/widgets/player_bar.rs
@@ -875,6 +875,13 @@ msgstr ""
 msgid ""
 "The Search page can search your library: use the Apple Music and Library "
 "switch next to the search field."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"On the Search page, each section with more results has a small Show More "
+"button at the right of its title. It opens a page with all the results of "
+"the section."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

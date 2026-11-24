@@ -71,7 +71,9 @@ impl LibrarySearchType {
 /// has its `relationships` with the album and the artist.
 ///
 /// `limit` is the maximum number of results for each type. Apple accepts
-/// values from 1 to 25 and rejects larger values.
+/// values from 1 to 25 and rejects larger values. `offset` is the position
+/// of the first result of each type. The `next` field of each list gives the
+/// offset of the next page.
 ///
 /// # Errors
 ///
@@ -83,15 +85,17 @@ pub async fn search(
     term: &str,
     types: &[CatalogSearchType],
     limit: u32,
+    offset: u32,
 ) -> Result<SearchResults> {
     let term = check_term(term)?;
     let types = join_types(types.iter().map(|kind| kind.as_str()))?;
     let path = format!("/v1/catalog/{}/search", segment("storefront", storefront)?);
-    let limit = limit.to_string();
+    let (limit, offset) = (limit.to_string(), offset.to_string());
     let query = [
         ("term", term),
         ("types", &types),
         ("limit", &limit),
+        ("offset", &offset),
         ("with", "topResults"),
         // Song results then link to their albums and artists.
         ("include[songs]", "albums,artists"),
@@ -103,7 +107,9 @@ pub async fn search(
 /// Searches the library of the user.
 ///
 /// `limit` is the maximum number of results for each type. Apple accepts
-/// values from 1 to 25 and rejects larger values.
+/// values from 1 to 25 and rejects larger values. `offset` is the position
+/// of the first result of each type. The `next` field of each list gives the
+/// offset of the next page.
 ///
 /// # Errors
 ///
@@ -114,14 +120,16 @@ pub async fn library_search(
     term: &str,
     types: &[LibrarySearchType],
     limit: u32,
+    offset: u32,
 ) -> Result<LibrarySearchResults> {
     let term = check_term(term)?;
     let types = join_types(types.iter().map(|kind| kind.as_str()))?;
-    let limit = limit.to_string();
+    let (limit, offset) = (limit.to_string(), offset.to_string());
     let query = [
         ("term", term),
         ("types", &types),
         ("limit", &limit),
+        ("offset", &offset),
         ("include[library-artists]", "catalog"),
         ("fields[artists]", CATALOG_ARTIST_FIELDS),
     ];

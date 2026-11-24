@@ -21,8 +21,9 @@ use crate::item_actions::{self, SongCatalog};
 use crate::services::AppServices;
 use crate::views::album::{AlbumInit, AlbumView};
 use crate::views::artist::{ArtistInit, ArtistView};
-use crate::views::artist_more::{ArtistMoreInit, ArtistMoreView, MoreKind};
+use crate::views::more::{MoreInit, MoreKind, MoreView};
 use crate::views::playlist::{PlaylistInit, PlaylistView};
+use crate::views::search::{Scope, SearchSection};
 
 /// What the pages need to open.
 pub struct PageSources {
@@ -49,7 +50,8 @@ struct Opener {
 }
 
 /// Adds the actions `win.open-album`, `win.open-artist`, and
-/// `win.open-playlist` to `window`. Each takes the ID of the item.
+/// `win.open-playlist` to `window`. Each takes the ID of the item. Also adds
+/// the actions that open all items of an artist list or of a search section.
 pub fn register(window: &adw::ApplicationWindow, sources: PageSources) {
     let opener = Opener {
         sources: Rc::new(sources),
@@ -80,15 +82,39 @@ pub fn register(window: &adw::ApplicationWindow, sources: PageSources) {
     let more_pages =
         iter::once(("open-artist-songs".to_owned(), MoreKind::TopSongs)).chain(tile_pages);
     for (name, kind) in more_pages {
-        let action = item_actions::artist_list_action(&name);
-        let opener = opener.clone();
-        action.connect_activate(move |_, parameter| {
-            if let Some((id, artist_name)) = parameter.and_then(Variant::get::<(String, String)>) {
-                opener.open_more(kind, id, artist_name);
-            }
+        add_list_action(window, &name, &opener, move |opener, id, artist_name| {
+            opener.open_more(kind, id, artist_name);
         });
-        window.add_action(&action);
     }
+    for section in SearchSection::ALL {
+        add_list_action(
+            window,
+            section.action_name(),
+            &opener,
+            move |opener, scope, term| {
+                let kind = MoreKind::Search(Scope::from_name(&scope), section);
+                opener.open_more(kind, term.clone(), term);
+            },
+        );
+    }
+}
+
+/// Adds the action `name` to `window`. Its parameter is two strings, which
+/// `open` gets.
+fn add_list_action(
+    window: &adw::ApplicationWindow,
+    name: &str,
+    opener: &Opener,
+    open: impl Fn(&Opener, String, String) + 'static,
+) {
+    let action = item_actions::list_action(name);
+    let opener = opener.clone();
+    action.connect_activate(move |_, parameter| {
+        if let Some((first, second)) = parameter.and_then(Variant::get::<(String, String)>) {
+            open(&opener, first, second);
+        }
+    });
+    window.add_action(&action);
 }
 
 impl Opener {
@@ -111,17 +137,17 @@ impl Opener {
         self.sources.split_view.set_show_content(true);
     }
 
-    /// Pushes the page with all top songs or all tiles of one list of an
-    /// artist.
-    fn open_more(&self, kind: MoreKind, id: String, artist_name: String) {
+    /// Pushes the page with all items of one list. `subject` is the artist
+    /// ID or the search term. `name` goes in the title.
+    fn open_more(&self, kind: MoreKind, subject: String, name: String) {
         let Some(navigation) = self.active_navigation() else {
             return;
         };
-        let view = ArtistMoreView::builder().launch(ArtistMoreInit {
+        let view = MoreView::builder().launch(MoreInit {
             services: self.sources.services.clone(),
             catalog: self.sources.catalog.clone(),
-            id,
-            artist_name,
+            subject,
+            name,
             kind,
         });
         let open_page = OpenPage {
