@@ -5,12 +5,6 @@
 //! songs. Home, New, and Made For You use it: each page gives a loader and its
 //! texts.
 
-// Some items are for the Made For You page.
-#![cfg_attr(
-    not(test),
-    expect(dead_code, reason = "the Made For You page uses them")
-)]
-
 use std::future::Future;
 use std::pin::Pin;
 use std::sync::Arc;
@@ -106,17 +100,18 @@ impl Section {
     }
 }
 
-/// The tile of a catalog album, artist, or playlist. Other types have none.
+/// The tile of an album, an artist, or a playlist, from the catalog or the
+/// library. Other types have none.
 pub fn tile_of(resource: &Resource) -> Option<TileItem> {
     match resource {
         Resource::Album(album) => Some(TileItem::from(album)),
         Resource::Artist(artist) => Some(TileItem::from(artist)),
         Resource::Playlist(playlist) => Some(TileItem::from(playlist)),
+        Resource::LibraryPlaylist(playlist) => Some(TileItem::from(playlist)),
         Resource::Song(_)
         | Resource::LibrarySong(_)
         | Resource::LibraryAlbum(_)
         | Resource::LibraryArtist(_)
-        | Resource::LibraryPlaylist(_)
         | Resource::Unknown => {
             debug!(?resource, "skipped a resource without a tile");
             None
@@ -172,22 +167,16 @@ pub enum SectionsInput {
 /// the page shows them.
 enum Shown {
     Tiles(
-        #[cfg_attr(
-            test,
-            expect(
-                dead_code,
-                reason = "the row owns the images that load in the background"
-            )
+        #[expect(
+            dead_code,
+            reason = "the row owns the images that load in the background"
         )]
         TileRow,
     ),
     Songs {
-        #[cfg_attr(
-            test,
-            expect(
-                dead_code,
-                reason = "the carousel owns the images that load in the background"
-            )
+        #[expect(
+            dead_code,
+            reason = "the carousel owns the images that load in the background"
         )]
         carousel: SongCarousel,
         items: Vec<SongItem>,

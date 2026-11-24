@@ -32,8 +32,8 @@ use crate::views::library::{LibraryInit, LibraryKind, LibraryView};
 use crate::views::queue::{QueueInit, QueueView};
 use crate::views::search::{SearchInit, SearchInput, SearchView};
 use crate::views::section_page;
-use crate::views::sections::{SectionsInput, SectionsView};
-use crate::views::{home, new_releases};
+use crate::views::sections::{SectionsInit, SectionsInput, SectionsView};
+use crate::views::{home, made_for_you, new_releases};
 use crate::widgets::player_bar::{PlayerBar, PlayerBarInit, PlayerBarInput, TOGGLE_QUEUE};
 use crate::{
     about, accent, artwork, menu, network_banner, notification, sidebar, subscription, theme,
@@ -81,6 +81,7 @@ pub struct App {
     search: relm4::Sender<SearchInput>,
     home: relm4::Sender<SectionsInput>,
     new_releases: relm4::Sender<SectionsInput>,
+    made_for_you: relm4::Sender<SectionsInput>,
     player_bar: relm4::Sender<PlayerBarInput>,
     queue_open: bool,
     services: AppServices,
@@ -249,26 +250,17 @@ impl SimpleComponent for App {
         }
         update_notice::start(&services, &sender);
         let split_view = adw::NavigationSplitView::new();
-        let mut search = SearchView::builder().launch(SearchInit {
-            services: services.clone(),
-            catalog: catalog.clone(),
-        });
-        let search_page = search.widget().clone();
-        let search_input = search.sender().clone();
-        // Like the gate, the search view lives as long as its widget.
-        search.detach_runtime();
-        let mut home =
-            SectionsView::builder().launch(home::init(services.clone(), catalog.clone()));
-        let home_page = home.widget().clone();
-        let home_input = home.sender().clone();
-        // The home view also lives as long as its widget.
-        home.detach_runtime();
-        let mut new_releases =
-            SectionsView::builder().launch(new_releases::init(services.clone(), catalog.clone()));
-        let new_page = new_releases.widget().clone();
-        let new_input = new_releases.sender().clone();
-        // The New view also lives as long as its widget.
-        new_releases.detach_runtime();
+        let (search_page, search_input) = launch_search(&services, &catalog);
+        let [
+            (home_page, home_input),
+            (new_page, new_input),
+            (made_for_you_page, made_for_you_input),
+        ] = [
+            home::init(services.clone(), catalog.clone()),
+            new_releases::init(services.clone(), catalog.clone()),
+            made_for_you::init(services.clone(), catalog.clone()),
+        ]
+        .map(launch_sections);
         register_refresh(&root, sender.input_sender());
         let library_pages = LibraryKind::ALL.map(|kind| launch_library(kind, &services, &catalog));
         let mut queue = QueueView::builder().launch(QueueInit {
@@ -279,8 +271,13 @@ impl SimpleComponent for App {
         close_queue_on_escape(&queue_page, &sender);
         // The queue view also lives as long as its widget.
         queue.detach_runtime();
-        let content_stack =
-            build_content_stack(&home_page, &search_page, &new_page, &library_pages);
+        let content_stack = build_content_stack(
+            &home_page,
+            &search_page,
+            &new_page,
+            &made_for_you_page,
+            &library_pages,
+        );
         detail_pages::register(
             &root,
             PageSources {
@@ -303,6 +300,7 @@ impl SimpleComponent for App {
             search: search_input,
             home: home_input,
             new_releases: new_input,
+            made_for_you: made_for_you_input,
             player_bar: bar_input,
             queue_open: false,
             services,
@@ -366,7 +364,10 @@ impl App {
         self.section = section;
         let refresh = self.window.lookup_action("refresh");
         if let Some(refresh) = refresh.and_then(|action| action.downcast::<SimpleAction>().ok()) {
-            refresh.set_enabled(matches!(section, Section::Home | Section::New));
+            refresh.set_enabled(matches!(
+                section,
+                Section::Home | Section::New | Section::MadeForYou
+            ));
         }
     }
 
@@ -375,6 +376,7 @@ impl App {
         match self.section {
             Section::Home => self.home.emit(SectionsInput::Refresh),
             Section::New => self.new_releases.emit(SectionsInput::Refresh),
+            Section::MadeForYou => self.made_for_you.emit(SectionsInput::Refresh),
             Section::Search
             | Section::Playlists
             | Section::Albums
@@ -527,12 +529,39 @@ fn launch_library(
     (kind, page)
 }
 
+/// Launches the search view. Returns its page and its input sender.
+/// The view lives as long as its widget.
+fn launch_search(
+    services: &AppServices,
+    catalog: &SongCatalog,
+) -> (adw::ToolbarView, relm4::Sender<SearchInput>) {
+    let mut view = SearchView::builder().launch(SearchInit {
+        services: services.clone(),
+        catalog: catalog.clone(),
+    });
+    let page = view.widget().clone();
+    let input = view.sender().clone();
+    view.detach_runtime();
+    (page, input)
+}
+
+/// Launches a shared sections view. Returns its page and its input sender.
+/// The view lives as long as its widget.
+fn launch_sections(init: SectionsInit) -> (adw::ToolbarView, relm4::Sender<SectionsInput>) {
+    let mut view = SectionsView::builder().launch(init);
+    let page = view.widget().clone();
+    let input = view.sender().clone();
+    view.detach_runtime();
+    (page, input)
+}
+
 /// Builds the stack with the navigation stack of each section. A section
 /// without a view shows an empty page.
 fn build_content_stack(
     home_page: &adw::ToolbarView,
     search_page: &adw::ToolbarView,
     new_page: &adw::ToolbarView,
+    made_for_you_page: &adw::ToolbarView,
     library_pages: &[(LibraryKind, adw::ToolbarView)],
 ) -> gtk::Stack {
     let stack = gtk::Stack::new();
@@ -545,6 +574,7 @@ fn build_content_stack(
             (Section::Home, None) => section_page::wrap(section, home_page),
             (Section::Search, None) => section_page::wrap(section, search_page),
             (Section::New, None) => section_page::wrap(section, new_page),
+            (Section::MadeForYou, None) => section_page::wrap(section, made_for_you_page),
             _ => section_page::build(section),
         };
         stack.add_named(&page, Some(section.id()));

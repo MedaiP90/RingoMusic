@@ -331,6 +331,10 @@ msgid "Home"
 msgstr ""
 
 #: crates/ui/src/section.rs
+msgid "Made For You"
+msgstr ""
+
+#: crates/ui/src/section.rs
 msgid "New"
 msgstr ""
 
@@ -475,6 +479,18 @@ msgstr ""
 
 #: crates/ui/src/views/library.rs
 msgid "Your library is empty"
+msgstr ""
+
+#: crates/ui/src/views/made_for_you.rs
+msgid "Cannot Load Your Mixes"
+msgstr ""
+
+#: crates/ui/src/views/made_for_you.rs
+msgid "Listen to more music, and Apple Music makes mixes for you."
+msgstr ""
+
+#: crates/ui/src/views/made_for_you.rs
+msgid "No Mixes Yet"
 msgstr ""
 
 #: crates/ui/src/views/new_releases.rs

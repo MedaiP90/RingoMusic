@@ -61,6 +61,7 @@ Copyright (C) 2026 RingoMusic contributors
         <p>Release 1.1.0.</p>
         <ul>
           <li>New page: see the latest releases from Apple Music.</li>
+          <li>Made For You page in the library: your personal mixes from Apple Music.</li>
           <li>Songs on the Search, New, and artist pages show in columns that scroll sideways, like in Apple Music.</li>
           <li>Fix: some albums and songs on the New page had no artwork.</li>
           <li>Fix: on a slow start, the Widevine module and the session could go to the wrong folder, and autoplay could be blocked.</li>
