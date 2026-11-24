@@ -171,8 +171,8 @@ msgid ""
 msgstr ""
 
 #: crates/ui/src/gate.rs crates/ui/src/views/detail_frame.rs
-#: crates/ui/src/views/home.rs crates/ui/src/views/library.rs
-#: crates/ui/src/views/search.rs
+#: crates/ui/src/views/library.rs crates/ui/src/views/search.rs
+#: crates/ui/src/views/sections.rs
 msgid "Try Again"
 msgstr ""
 
@@ -330,6 +330,10 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
+#: crates/ui/src/section.rs
+msgid "New"
+msgstr ""
+
 #: crates/ui/src/section.rs crates/ui/src/views/search.rs
 msgid "Playlists"
 msgstr ""
@@ -416,8 +420,8 @@ msgstr ""
 msgid "Cannot Load This Page"
 msgstr ""
 
-#: crates/ui/src/views/detail_frame.rs crates/ui/src/views/home.rs
-#: crates/ui/src/views/library.rs crates/ui/src/views/search.rs
+#: crates/ui/src/views/detail_frame.rs crates/ui/src/views/library.rs
+#: crates/ui/src/views/search.rs crates/ui/src/views/sections.rs
 msgid "Check your connection and try again."
 msgstr ""
 
@@ -435,10 +439,6 @@ msgstr ""
 
 #: crates/ui/src/views/home.rs
 msgid "Recommended for You"
-msgstr ""
-
-#: crates/ui/src/views/home.rs
-msgid "Refresh (F5)"
 msgstr ""
 
 #: crates/ui/src/views/library.rs
@@ -475,6 +475,18 @@ msgstr ""
 
 #: crates/ui/src/views/library.rs
 msgid "Your library is empty"
+msgstr ""
+
+#: crates/ui/src/views/new_releases.rs
+msgid "Cannot Load New Releases"
+msgstr ""
+
+#: crates/ui/src/views/new_releases.rs
+msgid "Check back later."
+msgstr ""
+
+#: crates/ui/src/views/new_releases.rs
+msgid "No New Releases"
 msgstr ""
 
 #: crates/ui/src/views/playlist.rs
@@ -558,6 +570,10 @@ msgstr ""
 
 #: crates/ui/src/views/search.rs
 msgid "Try a different term."
+msgstr ""
+
+#: crates/ui/src/views/sections.rs
+msgid "Refresh (F5)"
 msgstr ""
 
 #: crates/ui/src/widgets/detail_header.rs crates/ui/src/widgets/player_bar.rs
@@ -683,6 +699,20 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "Release 1.1.0."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "New page: see the latest releases from Apple Music."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Songs on the Search, New, and artist pages show in columns that scroll "
+"sideways, like in Apple Music."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Fix: some albums and songs on the New page had no artwork."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

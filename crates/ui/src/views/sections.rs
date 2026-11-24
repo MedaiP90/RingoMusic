@@ -5,10 +5,10 @@
 //! songs. Home, New, and Made For You use it: each page gives a loader and its
 //! texts.
 
-// The song sections and the storefront are for the New and Made For You pages.
+// Some items are for the Made For You page.
 #![cfg_attr(
     not(test),
-    expect(dead_code, reason = "the New and Made For You pages use them")
+    expect(dead_code, reason = "the Made For You page uses them")
 )]
 
 use std::future::Future;
@@ -30,8 +30,7 @@ use crate::item::{SongItem, TileItem};
 use crate::item_actions::{self, SongCatalog};
 use crate::services::{ApiClient, AppServices};
 use crate::views::phase::Phase;
-use crate::widgets::song_list::SongList;
-use crate::widgets::song_row::Lead;
+use crate::widgets::song_carousel::SongCarousel;
 use crate::widgets::tile::{self, TileRow};
 
 /// Maximum number of rows in a song section. It is the same limit as the
@@ -42,7 +41,6 @@ const SONG_LIMIT: usize = 25;
 pub struct LoadContext {
     pub api: Arc<ApiClient>,
     /// The storefront of the user. `None` if the user is not signed in.
-    #[expect(dead_code, reason = "the New page uses it")]
     pub storefront: Option<String>,
 }
 
@@ -188,10 +186,10 @@ enum Shown {
             test,
             expect(
                 dead_code,
-                reason = "the list owns the images that load in the background"
+                reason = "the carousel owns the images that load in the background"
             )
         )]
-        list: SongList,
+        carousel: SongCarousel,
         items: Vec<SongItem>,
     },
 }
@@ -394,13 +392,14 @@ impl SectionsView {
             SectionContent::Songs(items) => {
                 self.catalog.remember(items);
                 let input = sender.input_sender().clone();
-                let list = SongList::new(move |position| {
+                let carousel = SongCarousel::new(move |position| {
                     input.emit(SectionsInput::SongActivated(index, position));
                 });
-                list.set_songs(items.iter().map(|song| (song, Lead::Artwork)));
-                self.container.append(&songs_section(&section.title, &list));
+                carousel.set_songs(items);
+                self.container
+                    .append(&songs_section(&section.title, &carousel));
                 Shown::Songs {
-                    list,
+                    carousel,
                     items: items.clone(),
                 }
             }
@@ -408,14 +407,14 @@ impl SectionsView {
     }
 }
 
-/// Builds the heading with the song list under it.
-fn songs_section(title: &str, list: &SongList) -> gtk::Box {
+/// Builds the heading with the song carousel under it.
+fn songs_section(title: &str, carousel: &SongCarousel) -> gtk::Box {
     let section = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .spacing(6)
         .build();
     section.append(&tile::heading(title));
-    section.append(list.widget());
+    section.append(carousel.widget());
     section
 }
 

@@ -21,8 +21,7 @@ use crate::services::{ApiClient, AppServices};
 use crate::views::detail_frame::DetailFrame;
 use crate::views::phase::Phase;
 use crate::widgets::detail_header::{ArtworkShape, DetailHeader, PlayActions};
-use crate::widgets::song_list::SongList;
-use crate::widgets::song_row::Lead;
+use crate::widgets::song_carousel::SongCarousel;
 use crate::widgets::tile::{TileGrid, heading};
 
 /// What an artist page needs to start.
@@ -57,7 +56,7 @@ pub struct ArtistView {
     frame: DetailFrame,
     actions: PlayActions,
     songs_section: gtk::Box,
-    song_list: SongList,
+    song_list: SongCarousel,
     albums: TileGrid,
     /// Open the pages with all top songs and all albums.
     more_songs: gtk::Button,
@@ -99,7 +98,8 @@ impl SimpleComponent for ArtistView {
         let header = DetailHeader::new(ArtworkShape::Round);
         header.set_shuffle_visible(false);
         let input = sender.input_sender().clone();
-        let song_list = SongList::new(move |position| input.emit(ArtistInput::PlaySong(position)));
+        let song_list =
+            SongCarousel::new(move |position| input.emit(ArtistInput::PlaySong(position)));
         let more_songs = more_button(OPEN_ARTIST_SONGS);
         let songs_section = build_songs_section(&song_list, &more_songs);
         let albums = TileGrid::new(&gettext("Albums"));
@@ -189,8 +189,7 @@ impl ArtistView {
         self.catalog.remember(&self.top_songs);
         self.header.set_artwork(data.artwork_template.as_deref());
         self.header.set_title(&data.name);
-        self.song_list
-            .set_songs(self.top_songs.iter().map(|song| (song, Lead::Artwork)));
+        self.song_list.set_songs(&self.top_songs);
         self.songs_section.set_visible(!self.top_songs.is_empty());
         self.albums.set_items(&data.albums);
         let target = item_actions::artist_list_target(&self.id, &data.name);
@@ -224,11 +223,12 @@ fn more_button(action: &str) -> gtk::Button {
         .build()
 }
 
-/// Builds the heading, the list of the top songs, and the Show More button.
-fn build_songs_section(list: &SongList, more: &gtk::Button) -> gtk::Box {
+/// Builds the heading, the carousel of the top songs, and the Show More button.
+fn build_songs_section(list: &SongCarousel, more: &gtk::Button) -> gtk::Box {
     let section = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .spacing(6)
+        .margin_bottom(12)
         .visible(false)
         .build();
     section.append(&heading(&gettext("Top Songs")));

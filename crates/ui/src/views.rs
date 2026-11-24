@@ -9,6 +9,7 @@ pub mod artist_more;
 pub mod detail_frame;
 pub mod home;
 pub mod library;
+pub mod new_releases;
 pub mod phase;
 pub mod playlist;
 pub mod queue;

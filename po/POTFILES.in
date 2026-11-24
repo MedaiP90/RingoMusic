@@ -20,9 +20,11 @@ crates/ui/src/views/artist_more.rs
 crates/ui/src/views/detail_frame.rs
 crates/ui/src/views/home.rs
 crates/ui/src/views/library.rs
+crates/ui/src/views/new_releases.rs
 crates/ui/src/views/playlist.rs
 crates/ui/src/views/queue.rs
 crates/ui/src/views/search.rs
+crates/ui/src/views/sections.rs
 crates/ui/src/widgets/detail_header.rs
 crates/ui/src/widgets/player_bar.rs
 crates/ui/src/widgets/queue_row.rs

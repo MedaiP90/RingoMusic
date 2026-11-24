@@ -11,6 +11,7 @@ use gettextrs::gettext;
 pub enum Section {
     Home,
     Search,
+    New,
     Playlists,
     Albums,
     Artists,
@@ -19,9 +20,10 @@ pub enum Section {
 
 impl Section {
     /// All sections, in the order of the sidebar rows.
-    pub const ALL: [Self; 6] = [
+    pub const ALL: [Self; 7] = [
         Self::Home,
         Self::Search,
+        Self::New,
         Self::Playlists,
         Self::Albums,
         Self::Artists,
@@ -47,6 +49,7 @@ impl Section {
         match self {
             Self::Home => "home",
             Self::Search => "search",
+            Self::New => "new",
             Self::Playlists => "playlists",
             Self::Albums => "albums",
             Self::Artists => "artists",
@@ -59,6 +62,7 @@ impl Section {
         match self {
             Self::Home => gettext("Home"),
             Self::Search => gettext("Search"),
+            Self::New => gettext("New"),
             Self::Playlists => gettext("Playlists"),
             Self::Albums => gettext("Albums"),
             Self::Artists => gettext("Artists"),
@@ -71,6 +75,7 @@ impl Section {
         match self {
             Self::Home => "user-home-symbolic",
             Self::Search => "system-search-symbolic",
+            Self::New => "starred-symbolic",
             Self::Playlists => "view-list-bullet-symbolic",
             Self::Albums => "media-optical-symbolic",
             Self::Artists => "avatar-default-symbolic",
@@ -101,6 +106,6 @@ mod tests {
     #[test]
     fn from_row_index_rejects_values_out_of_range() {
         assert_eq!(Section::from_row_index(-1), None);
-        assert_eq!(Section::from_row_index(6), None);
+        assert_eq!(Section::from_row_index(7), None);
     }
 }

@@ -153,7 +153,7 @@ The build needs `glib-compile-schemas` (package `libglib2.0-bin` on Debian).
 | `Ctrl`+`R` | Cycle repeat mode |
 | `Ctrl`+`F` | Search |
 | `F9` | Show or hide the queue |
-| `F5` | Refresh the home page |
+| `F5` | Refresh the Home or New page |
 | `Ctrl`+`,` | Preferences |
 | `Ctrl`+`Q` | Quit |
 | `Esc` | Close a dialog or the queue panel, or go back |

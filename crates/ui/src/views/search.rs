@@ -11,7 +11,6 @@ use relm4::adw;
 use relm4::gtk;
 use relm4::gtk::prelude::*;
 use relm4::prelude::*;
-use relm4::typed_view::list::TypedListView;
 use ringo_am_api::endpoints::{self, CatalogSearchType};
 use ringo_am_api::models::{ApiPage, SearchResults};
 use ringo_core::runner::CoreHandle;
@@ -22,7 +21,7 @@ use crate::detail::storefront;
 use crate::item::{SongItem, TileItem};
 use crate::item_actions::{self, SongCatalog};
 use crate::services::{ApiClient, AppServices};
-use crate::widgets::song_row::{self, SongRow};
+use crate::widgets::song_carousel::SongCarousel;
 use crate::widgets::tile::{self, TileRow};
 
 /// Time that the entry waits after the last key before it searches.
@@ -111,7 +110,7 @@ pub enum SearchInput {
     /// A search ended. The number tells which search it was.
     Loaded(u64, Option<SearchSections>),
     /// The user activated the song at the position.
-    SongActivated(u32),
+    SongActivated(usize),
     /// Puts the cursor in the search entry.
     Focus,
 }
@@ -127,7 +126,7 @@ pub struct SearchView {
     /// Number of the last search. The result of an older search is dropped.
     generation: u64,
     pending: Option<JoinHandle<()>>,
-    songs: TypedListView<SongRow, gtk::SingleSelection>,
+    songs: SongCarousel,
     song_items: Vec<SongItem>,
     songs_section: gtk::Box,
     albums: TileRow,
@@ -204,16 +203,16 @@ impl SimpleComponent for SearchView {
     ) -> ComponentParts<Self> {
         let SearchInit { services, catalog } = init;
         let search_entry = build_entry(&sender);
-        let songs = TypedListView::<SongRow, gtk::SingleSelection>::new();
-        connect_song_view(&songs.view, &sender);
-        let songs_section = build_songs_section(&songs.view);
+        let input = sender.input_sender().clone();
+        let songs =
+            SongCarousel::new(move |position| input.emit(SearchInput::SongActivated(position)));
+        let songs_section = build_songs_section(&songs);
         let (albums, artists, playlists) = (
             TileRow::new(&gettext("Albums")),
             TileRow::new(&gettext("Artists")),
             TileRow::new(&gettext("Playlists")),
         );
         let results_page = build_results_page(&songs_section, [&albums, &artists, &playlists]);
-        songs.view.set_show_separators(true);
 
         let model = Self {
             api: Arc::clone(services.api()),
@@ -248,8 +247,7 @@ impl SimpleComponent for SearchView {
                 }
             }
             SearchInput::SongActivated(position) => {
-                let start = usize::try_from(position).unwrap_or(usize::MAX);
-                item_actions::play_songs(&self.core, &self.song_items, start);
+                item_actions::play_songs(&self.core, &self.song_items, position);
             }
             SearchInput::Focus => {
                 self.entry.grab_focus();
@@ -301,9 +299,7 @@ impl SearchView {
     /// Puts `sections` in the widgets. An empty section hides itself.
     fn show(&mut self, sections: SearchSections) {
         self.catalog.remember(&sections.songs);
-        self.songs.clear();
-        self.songs
-            .extend_from_iter(sections.songs.iter().cloned().map(SongRow::new));
+        self.songs.set_songs(&sections.songs);
         self.songs_section.set_visible(!sections.songs.is_empty());
         self.albums.set_items(&sections.albums);
         self.artists.set_items(&sections.artists);
@@ -342,23 +338,15 @@ fn build_entry(sender: &ComponentSender<SearchView>) -> gtk::SearchEntry {
     entry
 }
 
-/// Sends the activation of a row, and opens the row menu with the Menu key.
-fn connect_song_view(view: &gtk::ListView, sender: &ComponentSender<SearchView>) {
-    view.set_single_click_activate(true);
-    let input = sender.input_sender().clone();
-    view.connect_activate(move |_, position| input.emit(SearchInput::SongActivated(position)));
-    song_row::connect_menu_key(view);
-}
-
 /// Builds the songs heading with the list under it. It hides itself when empty.
-fn build_songs_section(view: &gtk::ListView) -> gtk::Box {
+fn build_songs_section(carousel: &SongCarousel) -> gtk::Box {
     let section = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .spacing(6)
         .visible(false)
         .build();
     section.append(&tile::heading(&gettext("Songs")));
-    section.append(view);
+    section.append(carousel.widget());
     section
 }
 

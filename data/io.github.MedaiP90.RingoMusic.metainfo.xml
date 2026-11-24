@@ -60,6 +60,9 @@ Copyright (C) 2026 RingoMusic contributors
       <description>
         <p>Release 1.1.0.</p>
         <ul>
+          <li>New page: see the latest releases from Apple Music.</li>
+          <li>Songs on the Search, New, and artist pages show in columns that scroll sideways, like in Apple Music.</li>
+          <li>Fix: some albums and songs on the New page had no artwork.</li>
           <li>Fix: on a slow start, the Widevine module and the session could go to the wrong folder, and autoplay could be blocked.</li>
           <li>When Apple Music changes its web page in a way that RingoMusic cannot use, RingoMusic stops and shows a message. It does not restart the player again and again.</li>
           <li>If the app and its player have different versions, RingoMusic tells you to install it again.</li>
