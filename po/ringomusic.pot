@@ -711,6 +711,10 @@ msgid ""
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "The window stays responsive while a queue change waits for the network."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
 "The Flatpak package starts again. Versions 1.0.0 and 1.0.1 stopped at start "
 "because the settings schema was missing."

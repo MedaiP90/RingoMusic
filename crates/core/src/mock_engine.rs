@@ -9,6 +9,7 @@ use std::time::Duration;
 use ringo_engine::protocol::{AuthStatus, FromEngine, RepeatMode};
 use ringo_engine::{EngineEvent, ItemId, PlaybackEngine, Result};
 use tokio::sync::{broadcast, watch};
+use tokio::time;
 
 /// Capacity of the event channel.
 const EVENT_CAPACITY: usize = 256;
@@ -79,6 +80,7 @@ enum SupervisorEvent {
 pub struct MockEngine {
     calls: Mutex<Vec<EngineCall>>,
     auth: Mutex<AuthStatus>,
+    delay: Mutex<Duration>,
     events: broadcast::Sender<EngineEvent>,
     lifecycle: watch::Sender<Option<EngineEvent>>,
 }
@@ -101,6 +103,7 @@ impl MockEngine {
                 authorized: true,
                 storefront: "us".to_owned(),
             }),
+            delay: Mutex::new(Duration::ZERO),
             events,
             lifecycle: watch::channel(None).0,
         }
@@ -109,6 +112,12 @@ impl MockEngine {
     /// Sets the answer of `auth_status`.
     pub fn set_auth_status(&self, status: AuthStatus) {
         *lock(&self.auth) = status;
+    }
+
+    /// Makes each next call take `delay` after it is recorded. Use it with a
+    /// paused clock to test a slow engine.
+    pub fn set_delay(&self, delay: Duration) {
+        *lock(&self.delay) = delay;
     }
 
     /// Returns all calls in the order that they happened.
@@ -160,95 +169,100 @@ impl MockEngine {
         }
     }
 
-    fn record(&self, call: EngineCall) {
+    /// Records the call, then waits for the delay of the test.
+    async fn record(&self, call: EngineCall) {
         lock(&self.calls).push(call);
+        let delay = *lock(&self.delay);
+        if !delay.is_zero() {
+            time::sleep(delay).await;
+        }
     }
 }
 
 #[async_trait::async_trait]
 impl PlaybackEngine for MockEngine {
     async fn auth_status(&self) -> Result<AuthStatus> {
-        self.record(EngineCall::AuthStatus);
+        self.record(EngineCall::AuthStatus).await;
         Ok(lock(&self.auth).clone())
     }
 
     async fn sign_in(&self) -> Result<()> {
-        self.record(EngineCall::SignIn);
+        self.record(EngineCall::SignIn).await;
         Ok(())
     }
 
     async fn sign_out(&self) -> Result<()> {
-        self.record(EngineCall::SignOut);
+        self.record(EngineCall::SignOut).await;
         Ok(())
     }
 
     async fn set_queue(&self, items: Vec<ItemId>, start: usize) -> Result<()> {
-        self.record(EngineCall::SetQueue { items, start });
+        self.record(EngineCall::SetQueue { items, start }).await;
         Ok(())
     }
 
     async fn play_next(&self, items: Vec<ItemId>) -> Result<()> {
-        self.record(EngineCall::PlayNext(items));
+        self.record(EngineCall::PlayNext(items)).await;
         Ok(())
     }
 
     async fn play_later(&self, items: Vec<ItemId>) -> Result<()> {
-        self.record(EngineCall::PlayLater(items));
+        self.record(EngineCall::PlayLater(items)).await;
         Ok(())
     }
 
     async fn remove(&self, index: usize) -> Result<()> {
-        self.record(EngineCall::Remove(index));
+        self.record(EngineCall::Remove(index)).await;
         Ok(())
     }
 
     async fn play(&self) -> Result<()> {
-        self.record(EngineCall::Play);
+        self.record(EngineCall::Play).await;
         Ok(())
     }
 
     async fn pause(&self) -> Result<()> {
-        self.record(EngineCall::Pause);
+        self.record(EngineCall::Pause).await;
         Ok(())
     }
 
     async fn stop(&self) -> Result<()> {
-        self.record(EngineCall::Stop);
+        self.record(EngineCall::Stop).await;
         Ok(())
     }
 
     async fn next(&self) -> Result<()> {
-        self.record(EngineCall::Next);
+        self.record(EngineCall::Next).await;
         Ok(())
     }
 
     async fn previous(&self) -> Result<()> {
-        self.record(EngineCall::Previous);
+        self.record(EngineCall::Previous).await;
         Ok(())
     }
 
     async fn seek(&self, position: Duration) -> Result<()> {
-        self.record(EngineCall::Seek(position));
+        self.record(EngineCall::Seek(position)).await;
         Ok(())
     }
 
     async fn set_volume(&self, volume: f32) -> Result<()> {
-        self.record(EngineCall::SetVolume(volume));
+        self.record(EngineCall::SetVolume(volume)).await;
         Ok(())
     }
 
     async fn set_repeat(&self, mode: RepeatMode) -> Result<()> {
-        self.record(EngineCall::SetRepeat(mode));
+        self.record(EngineCall::SetRepeat(mode)).await;
         Ok(())
     }
 
     async fn restart(&self) -> Result<()> {
-        self.record(EngineCall::Restart);
+        self.record(EngineCall::Restart).await;
         Ok(())
     }
 
     async fn shutdown(&self) -> Result<()> {
-        self.record(EngineCall::Shutdown);
+        self.record(EngineCall::Shutdown).await;
         Ok(())
     }
 

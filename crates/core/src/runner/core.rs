@@ -4,17 +4,18 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use ringo_engine::protocol::{ErrorCode, PlaybackState};
-use ringo_engine::{EngineEvent, Error, ItemId, PlaybackEngine, Result};
+use ringo_engine::protocol::PlaybackState;
+use ringo_engine::{EngineEvent, ItemId, PlaybackEngine};
 use tokio::sync::broadcast::error::RecvError;
 use tokio::sync::{broadcast, mpsc, watch};
 use tokio::time::{self, Instant, MissedTickBehavior};
-use tracing::{debug, warn};
+use tracing::warn;
 
 use super::CoreHandle;
-use super::engine_queue::{Edit, EngineQueue};
+use super::engine_queue::SharedEngineQueue;
+use super::engine_worker::EngineWorker;
 use crate::queue_store::QueueStore;
-use crate::state::{AppState, Command, Message, update};
+use crate::state::{AppState, Message, update};
 
 /// Capacity of the message inbox.
 const INBOX_CAPACITY: usize = 64;
@@ -27,7 +28,7 @@ const SAVE_DEBOUNCE: Duration = Duration::from_secs(1);
 const POSITION_SAVE_INTERVAL: Duration = Duration::from_secs(10);
 
 /// Owner of the application state. It runs [`update`] for each message, calls
-/// the engine for each command, and publishes a state snapshot.
+/// sends each command to the engine worker, and publishes a state snapshot.
 pub struct Core {
     state: AppState,
     engine: Arc<dyn PlaybackEngine>,
@@ -36,7 +37,9 @@ pub struct Core {
     feedback: mpsc::WeakSender<Message>,
     events: broadcast::Receiver<EngineEvent>,
     snapshots: watch::Sender<AppState>,
-    engine_queue: EngineQueue,
+    engine_queue: SharedEngineQueue,
+    /// Runs the engine calls. It exists while [`Core::run`] runs.
+    worker: Option<EngineWorker>,
     store: Option<QueueStore>,
     /// When the changed queue must be saved. `None` if nothing is waiting.
     save_due: Option<Instant>,
@@ -57,7 +60,8 @@ impl Core {
             inbox,
             feedback: sender.downgrade(),
             snapshots,
-            engine_queue: EngineQueue::default(),
+            engine_queue: SharedEngineQueue::default(),
+            worker: None,
             store: None,
             save_due: None,
         };
@@ -79,8 +83,13 @@ impl Core {
     /// all handles are dropped, or until the engine closes its event channel.
     /// Then it calls [`Core::shutdown`].
     pub async fn run(mut self) {
+        self.worker = Some(EngineWorker::spawn(
+            Arc::clone(&self.engine),
+            self.engine_queue.clone(),
+            self.feedback.clone(),
+        ));
         self.restore_queue().await;
-        self.apply_current_lifecycle().await;
+        self.apply_current_lifecycle();
         let mut position_timer = time::interval_at(
             Instant::now() + POSITION_SAVE_INTERVAL,
             POSITION_SAVE_INTERVAL,
@@ -111,7 +120,7 @@ impl Core {
                     Err(RecvError::Closed) => break,
                 },
             };
-            self.handle(message).await;
+            self.handle(message);
         }
         self.shutdown().await;
     }
@@ -119,23 +128,25 @@ impl Core {
     /// Applies the last lifecycle event of the engine, which can come before
     /// the runner started. The runner already listens to the events, so the same
     /// event can come twice. The state change is the same for both.
-    async fn apply_current_lifecycle(&mut self) {
+    fn apply_current_lifecycle(&mut self) {
         let current = self.engine.lifecycle().borrow().clone();
         if let Some(event) = current {
-            self.handle(Message::Engine(event)).await;
+            self.handle(Message::Engine(event));
         }
     }
 
-    /// Saves the queue, then stops the engine.
+    /// Saves the queue, then stops the engine after the queued engine calls.
     pub async fn shutdown(&mut self) {
         self.save_due = None;
         self.save_queue().await;
-        if let Err(error) = self.engine.shutdown().await {
+        if let Some(worker) = self.worker.take() {
+            worker.finish().await;
+        } else if let Err(error) = self.engine.shutdown().await {
             warn!(%error, "cannot stop the engine");
         }
     }
 
-    async fn handle(&mut self, message: Message) {
+    fn handle(&mut self, message: Message) {
         let mut message = message;
         if changes_queue(&message) {
             self.save_due = Some(Instant::now() + SAVE_DEBOUNCE);
@@ -143,10 +154,9 @@ impl Core {
         self.observe(&mut message);
         let commands = update(&mut self.state, message);
         self.snapshots.send_replace(self.state.clone());
-        for command in commands {
-            debug!(?command, "sending an engine command");
-            if let Err(error) = self.execute(&command).await {
-                warn!(%error, ?command, "engine command failed");
+        if let Some(worker) = &self.worker {
+            for command in commands {
+                worker.send(command);
             }
         }
     }
@@ -159,7 +169,7 @@ impl Core {
         };
         match store.load().await {
             Ok(Some((queue, position))) => {
-                self.handle(Message::RestoreQueue { queue, position }).await;
+                self.handle(Message::RestoreQueue { queue, position });
             }
             Ok(None) => {}
             Err(error) => warn!(%error, "cannot load the saved queue"),
@@ -207,10 +217,10 @@ impl Core {
             EngineEvent::NowPlaying {
                 id, queue_index, ..
             } => {
-                self.engine_queue.set_current(*queue_index);
+                self.engine_queue.lock().set_current(*queue_index);
                 *queue_index = self.rust_index(id, *queue_index);
             }
-            EngineEvent::Restarted => self.engine_queue.set(Vec::new(), 0),
+            EngineEvent::Restarted => self.engine_queue.lock().set(Vec::new(), 0),
             EngineEvent::Error {
                 code,
                 message,
@@ -224,122 +234,19 @@ impl Core {
     /// If the engine plays an item that the Rust queue does not have there
     /// (an old item before the current item), the current index stays.
     fn rust_index(&self, id: &ItemId, engine_index: usize) -> usize {
-        if self.engine_queue.is_aligned() {
-            return engine_index;
-        }
-        let mapped = self.engine_queue.to_rust_index(engine_index);
+        let mapped = {
+            let engine_queue = self.engine_queue.lock();
+            if engine_queue.is_aligned() {
+                return engine_index;
+            }
+            engine_queue.to_rust_index(engine_index)
+        };
         let queue = &self.state.queue;
         let known = queue.playback_order().get(mapped) == Some(id);
         if known {
             mapped
         } else {
             queue.current_playback_index().unwrap_or(mapped)
-        }
-    }
-
-    async fn execute(&mut self, command: &Command) -> Result<()> {
-        match command {
-            Command::SetQueue { items, start } => {
-                self.engine_queue.set(items.clone(), *start);
-                self.engine.set_queue(items.clone(), *start).await
-            }
-            Command::SyncUpcoming { items, current } => self.sync_upcoming(items, *current).await,
-            Command::Play => self.engine.play().await,
-            Command::Pause => self.engine.pause().await,
-            Command::Stop => self.engine.stop().await,
-            Command::Next => self.engine.next().await,
-            Command::PlayItem { id } => self.play_item(id).await,
-            Command::Seek(position) => self.engine.seek(*position).await,
-            Command::SetVolume(volume) => self.engine.set_volume(*volume).await,
-            Command::SetRepeat(mode) => self.engine.set_repeat(*mode).await,
-            Command::RestartEngine => self.engine.restart().await,
-            Command::RefreshAuth => {
-                self.spawn_auth_task(false);
-                Ok(())
-            }
-            Command::SignIn => {
-                self.spawn_auth_task(true);
-                Ok(())
-            }
-            Command::SignOut => {
-                self.engine.sign_out().await?;
-                self.spawn_auth_task(false);
-                Ok(())
-            }
-        }
-    }
-
-    /// Plays an item at once: inserts it after the current item and skips to
-    /// it. This works for any item, whatever the engine has before the
-    /// current item.
-    async fn play_item(&mut self, id: &ItemId) -> Result<()> {
-        let items = vec![id.clone()];
-        self.engine.play_next(items.clone()).await?;
-        self.engine_queue.apply(&Edit::PlayNext(items));
-        self.engine.next().await?;
-        self.engine_queue.step_forward();
-        Ok(())
-    }
-
-    /// Changes the upcoming items of the engine queue with small edits, so
-    /// the current item does not stop.
-    async fn sync_upcoming(&mut self, items: &[ItemId], current: usize) -> Result<()> {
-        let Some(edits) = self.engine_queue.plan(items, current) else {
-            // The current item of the engine is not the current item of the queue.
-            warn!("the engine plays another item than the queue, so the edit was skipped");
-            return Ok(());
-        };
-        for edit in edits {
-            match &edit {
-                Edit::Remove(index) => self.engine.remove(*index).await?,
-                Edit::PlayNext(items) => self.engine.play_next(items.clone()).await?,
-                Edit::PlayLater(items) => self.engine.play_later(items.clone()).await?,
-            }
-            self.engine_queue.apply(&edit);
-        }
-        self.engine_queue.align(current);
-        Ok(())
-    }
-
-    /// Reads the authorization in the background and sends it to the inbox.
-    /// The login has no time limit, so it must not block the runner.
-    fn spawn_auth_task(&self, sign_in: bool) {
-        let Some(inbox) = self.feedback.upgrade() else {
-            return;
-        };
-        let engine = Arc::clone(&self.engine);
-        tokio::spawn(async move {
-            let failed = sign_in && !run_sign_in(engine.as_ref()).await;
-            match engine.auth_status().await {
-                Ok(status) => {
-                    // A closed inbox means that the runner stopped.
-                    let _ = inbox.send(Message::AuthLoaded(status)).await;
-                }
-                Err(error) => warn!(%error, "cannot read the authorization"),
-            }
-            if sign_in {
-                // The authorization comes first, so the user sees no flash of the sign-in page.
-                let _ = inbox.send(Message::SignInEnded { failed }).await;
-            }
-        });
-    }
-}
-
-/// Shows the login window. Returns `false` if the login failed. A cancel by
-/// the user is not a failure.
-async fn run_sign_in(engine: &dyn PlaybackEngine) -> bool {
-    match engine.sign_in().await {
-        Ok(()) => true,
-        Err(Error::Remote {
-            code: ErrorCode::Cancelled,
-            ..
-        }) => {
-            debug!("the user cancelled the sign in");
-            true
-        }
-        Err(error) => {
-            warn!(%error, "sign in failed");
-            false
         }
     }
 }

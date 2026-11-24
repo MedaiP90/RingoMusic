@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
+use std::sync::{Arc, Mutex, MutexGuard};
+
 use ringo_engine::ItemId;
 
 /// One change of the upcoming items of the engine queue.
@@ -90,6 +92,20 @@ impl EngineQueue {
         let engine_tail = &self.items[self.current + 1..];
         let target_tail = &target[target_current + 1..];
         Some(plan_tail(engine_tail, target_tail, self.current + 1))
+    }
+}
+
+/// [`EngineQueue`] that the core and the engine worker share. The core reads
+/// it to map engine indexes. The worker changes it with each engine call.
+#[derive(Clone, Debug, Default)]
+pub(super) struct SharedEngineQueue(Arc<Mutex<EngineQueue>>);
+
+impl SharedEngineQueue {
+    /// Locks the queue. Do not keep the guard across an `.await`.
+    pub(super) fn lock(&self) -> MutexGuard<'_, EngineQueue> {
+        self.0
+            .lock()
+            .expect("internal error: engine queue mutex is poisoned")
     }
 }
 
