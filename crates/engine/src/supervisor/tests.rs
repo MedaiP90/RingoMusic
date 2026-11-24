@@ -57,6 +57,8 @@ enum Behavior {
     Exit,
     /// Exits at once and reports a sandbox failure.
     SandboxFailure,
+    /// Connects and sends `engine.incompatible` instead of `engine.ready`.
+    Incompatible,
 }
 
 /// Launcher that runs a fake engine as a task in the test process.
@@ -97,6 +99,7 @@ impl Launcher for FakeLauncher {
         let task = tokio::spawn(async move {
             match behavior {
                 Behavior::Serve => serve(&socket_path).await,
+                Behavior::Incompatible => report_incompatible(&socket_path).await,
                 Behavior::Silent => std::future::pending().await,
                 Behavior::Exit | Behavior::SandboxFailure => {}
             }
@@ -161,6 +164,25 @@ async fn serve(socket_path: &std::path::Path) {
             return;
         }
     }
+}
+
+/// Sends `engine.incompatible` and keeps the connection open.
+async fn report_incompatible(socket_path: &std::path::Path) {
+    let stream = UnixStream::connect(socket_path)
+        .await
+        .expect("fake engine connects");
+    let (_read_half, mut writer) = stream.into_split();
+    send(&mut writer, &hello()).await;
+    send(
+        &mut writer,
+        &json!({
+            "jsonrpc": "2.0",
+            "method": "engine.incompatible",
+            "params": { "check": "player", "detail": "missing" }
+        }),
+    )
+    .await;
+    std::future::pending::<()>().await;
 }
 
 fn hello() -> Value {
@@ -281,6 +303,25 @@ async fn sandbox_failure_is_reported_without_restart() {
     engine.restart().await.expect("restart request is accepted");
     let event = next_event(&mut events).await;
     assert!(matches!(event, EngineEvent::Error { .. }));
+    assert_eq!(launcher.launch_count(), 2);
+    engine.shutdown().await.expect("shutdown works");
+}
+
+#[tokio::test(start_paused = true)]
+async fn incompatible_engine_is_not_restarted_until_requested() {
+    let dir = TestDir::new("incompatible");
+    let launcher = FakeLauncher::new(Behavior::Incompatible);
+    let engine = SidecarEngine::start_with(launcher.clone(), dir.config()).expect("engine starts");
+    let mut events = engine.events();
+
+    let event = next_event(&mut events).await;
+    assert!(matches!(event, EngineEvent::Incompatible { .. }));
+    time::sleep(Duration::from_secs(120)).await;
+    assert_eq!(launcher.launch_count(), 1);
+
+    engine.restart().await.expect("restart request is accepted");
+    let event = next_event(&mut events).await;
+    assert!(matches!(event, EngineEvent::Incompatible { .. }));
     assert_eq!(launcher.launch_count(), 2);
     engine.shutdown().await.expect("shutdown works");
 }

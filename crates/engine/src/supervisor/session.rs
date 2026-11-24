@@ -29,8 +29,9 @@ pub(super) type StopSignal = oneshot::Receiver<()>;
 pub(super) enum SessionEnd {
     /// The caller asked to stop. Do not restart.
     Stopped,
-    /// The Chromium sandbox of the engine cannot start. Restarting does not help.
-    SandboxFailed,
+    /// A restart cannot help, for example when the sandbox cannot start or the
+    /// page failed the self-checks. Wait for the user. The reason is already emitted.
+    NeedsUser,
     /// The engine failed. Restart it if the policy allows.
     Failed {
         /// The engine was ready before it failed.
@@ -81,9 +82,7 @@ async fn drive<P: ChildProcess>(
         Ok(Startup::Incompatible { check, detail }) => {
             warn!(%check, %detail, "engine reports that it is incompatible");
             outputs.emit(EngineEvent::Incompatible { check, detail });
-            return SessionEnd::Failed {
-                reached_ready: false,
-            };
+            return SessionEnd::NeedsUser;
         }
         Err(error) => {
             warn!(%error, "engine did not become ready");
@@ -110,7 +109,7 @@ fn report_sandbox_failure(outputs: &Outputs) -> SessionEnd {
         message: "the Chromium sandbox cannot start".to_owned(),
         fatal: true,
     });
-    SessionEnd::SandboxFailed
+    SessionEnd::NeedsUser
 }
 
 /// Forwards events until the engine fails or the caller stops it.

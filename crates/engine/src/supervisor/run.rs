@@ -40,8 +40,8 @@ impl<L: Launcher> Supervisor<L> {
             let end = self.run_session(was_ready).await;
             match end {
                 SessionEnd::Stopped => return,
-                SessionEnd::SandboxFailed => {
-                    // A restart cannot fix the sandbox. Wait for the user.
+                SessionEnd::NeedsUser => {
+                    // A restart cannot fix this. Wait for the user.
                     if !self.wait_for_restart_request().await {
                         return;
                     }
