@@ -35,6 +35,14 @@ button.byline-link {
   min-width: 0;
 }
 
+/* The round Info button of the artist page has the height of the pill
+   buttons next to it: 24px of content and 10px of padding above and below. */
+button.circular.artist-info-button { min-width: 44px; min-height: 44px; }
+
+/* The Show More button at the right of a section heading is small, so it
+   does not draw attention from the content. */
+button.section-more { min-height: 0; padding: 2px 8px; font-size: smaller; }
+
 /* The cover of the player opens the album. It has no button look. */
 button.artwork-button { padding: 0; min-height: 0; min-width: 0; background: none; box-shadow: none; }
 
@@ -44,8 +52,8 @@ button.artwork-button { padding: 0; min-height: 0; min-width: 0; background: non
 .queue-drop-below { box-shadow: inset 0 -2px 0 0 var(--accent-bg-color); }
 
 /* The player bar and the queue panel take a tint from the playing cover
-   (`--cover-tint`). An album page takes a tint from its own cover
-   (`--album-tint`). Both come from tint.rs. Without one, the color is plain. */
+   (`--cover-tint`). An album or artist page, and the artist dialog, take a
+   tint from the cover or photo of the page (`--album-tint`). Both come from tint.rs. Without one, the color is plain. */
 .player-bar { padding: 12px; }
 .cover-tint {
   background-color: color-mix(in srgb, var(--cover-tint, var(--window-bg-color)) 15%, var(--window-bg-color));

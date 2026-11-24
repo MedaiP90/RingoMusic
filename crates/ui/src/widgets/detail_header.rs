@@ -59,6 +59,8 @@ pub struct DetailHeader {
     byline: gtk::Box,
     details: gtk::Label,
     description: Description,
+    /// The row with the Play and Shuffle buttons.
+    buttons: gtk::Box,
     shuffle_button: gtk::Button,
 }
 
@@ -118,6 +120,7 @@ impl DetailHeader {
             byline,
             details,
             description,
+            buttons,
             shuffle_button,
         }
     }
@@ -171,6 +174,11 @@ impl DetailHeader {
     /// Shows a description of plain text. `None` hides it.
     pub fn set_description(&self, text: Option<&str>) {
         self.description.set_text(text);
+    }
+
+    /// Adds `button` after the Play and Shuffle buttons.
+    pub fn append_button(&self, button: &impl IsA<gtk::Widget>) {
+        self.buttons.append(button);
     }
 
     /// Shows or hides the Shuffle button. An artist page has none.

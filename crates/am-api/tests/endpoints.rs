@@ -212,7 +212,10 @@ async fn artist_full_albums_returns_a_page_with_the_next_offset() {
 async fn artist_returns_the_artist_with_views() {
     let transport = FixtureTransport::new().with(
         &catalog("artists/657515"),
-        &[("views", "top-songs,full-albums")],
+        &[
+            ("views", "top-songs,full-albums,similar-artists"),
+            ("extend", "artistBio,bornOrFormed,origin,isGroup"),
+        ],
         "catalog_artist.json",
     );
 
@@ -220,9 +223,11 @@ async fn artist_returns_the_artist_with_views() {
         .await
         .unwrap();
 
+    assert!(artist.attributes.artist_bio.is_some());
     let views = artist.views.unwrap();
     assert!(!views.top_songs.unwrap().data.is_empty());
     assert!(!views.full_albums.unwrap().data.is_empty());
+    assert!(!views.similar_artists.unwrap().data.is_empty());
 }
 
 #[tokio::test]

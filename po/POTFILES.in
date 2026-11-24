@@ -16,6 +16,7 @@ crates/ui/src/theme.rs
 crates/ui/src/update_notice.rs
 crates/ui/src/views/album.rs
 crates/ui/src/views/artist.rs
+crates/ui/src/views/artist_info.rs
 crates/ui/src/views/artist_more.rs
 crates/ui/src/views/detail_frame.rs
 crates/ui/src/views/home.rs

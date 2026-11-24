@@ -2,6 +2,7 @@
   "data": [
     {
       "attributes": {
+        "artistBio": "Artefici di un radicale rinnovamento del rock, i Radiohead scandagliano le possibilità di fusione tra pop e avanguardia, traducendo in musica il disagio esistenziale di fine millennio e volgendo a ogni passo lo sguardo verso una ricerca sonora inesauribile.\n\n- L’album di debutto <i>Pablo Honey</i> (1993) li porta alla ribalta grazie a ‘Creep’, manifesto di una generazione di perdenti, raccontata su riff abrasivi di chitarra dall’inconfondibile falsetto di Thom Yorke.\n\n- La svolta avviene però nel 1997, col visionario e umorale <i>Ok Computer</i>, tra i capolavori degli anni ’90. ‘Karma Police’ è il brano che traina il quintetto inglese nell’empireo alternativo mondiale.\n\n- Tra 2000 e 2001, <i>Kid A</i> e <i>Amnesiac</i> sono opere di culto figlie delle stesse sessioni di registrazione: sperimentazione totale e soluzioni distopiche con cui ricominciare da zero.\n\n- Nel 2003, <i>Hail to the Thief</i> riprende e attualizza la lezione di <i>Ok Computer</i>, mentre <i>In Rainbows</i> (2007) segna una tappa di definitiva maturità, con una produzione sopraffina che esalta toni di magnifica sofferenza.\n\n- Con <i>The King of Limbs</i> (2011) e <i>A Moon Shaped Pool</i> (2016), il gruppo di Oxford batte strade inesplorate e svela un lato più intimista.\n\n- Arricchito da un’appendice di inediti e rarità, <i>KID A MNESIA</i> unisce nel 2021 <i>Kid A</i> e <i>Amnesiac</i> nell’esegetica retrospettiva sul percorso di una band costantemente ispirata.",
         "artwork": {
           "bgColor": "131313",
           "defaultCropCode": "bb",
@@ -14,10 +15,13 @@
           "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}bb.jpg",
           "width": 1050
         },
+        "bornOrFormed": "1985",
         "genreNames": [
           "Alternativa"
         ],
+        "isGroup": true,
         "name": "Radiohead",
+        "origin": "Abingdon, Oxfordshire, England",
         "url": "https://music.apple.com/it/artist/radiohead/657515"
       },
       "href": "/v1/catalog/it/artists/657515",
@@ -26,7 +30,8 @@
         "views": {
           "order": [
             "top-songs",
-            "full-albums"
+            "full-albums",
+            "similar-artists"
           ]
         }
       },
@@ -64,13 +69,18 @@
               "type": "albums"
             },
             {
+              "href": "/v1/catalog/it/albums/1097863576",
+              "id": "1097863576",
+              "type": "albums"
+            },
+            {
               "href": "/v1/catalog/it/albums/1239489060",
               "id": "1239489060",
               "type": "albums"
             },
             {
-              "href": "/v1/catalog/it/albums/1097863576",
-              "id": "1097863576",
+              "href": "/v1/catalog/it/albums/1097862062",
+              "id": "1097862062",
               "type": "albums"
             },
             {
@@ -79,8 +89,8 @@
               "type": "albums"
             },
             {
-              "href": "/v1/catalog/it/albums/1097862062",
-              "id": "1097862062",
+              "href": "/v1/catalog/it/albums/1581785974",
+              "id": "1581785974",
               "type": "albums"
             },
             {
@@ -91,11 +101,6 @@
             {
               "href": "/v1/catalog/it/albums/1160370310",
               "id": "1160370310",
-              "type": "albums"
-            },
-            {
-              "href": "/v1/catalog/it/albums/1581785974",
-              "id": "1581785974",
               "type": "albums"
             },
             {
@@ -129,13 +134,13 @@
               "type": "albums"
             },
             {
-              "href": "/v1/catalog/it/albums/1112408383",
-              "id": "1112408383",
+              "href": "/v1/catalog/it/albums/1112408006",
+              "id": "1112408006",
               "type": "albums"
             },
             {
-              "href": "/v1/catalog/it/albums/1112425223",
-              "id": "1112425223",
+              "href": "/v1/catalog/it/albums/1112408383",
+              "id": "1112408383",
               "type": "albums"
             },
             {
@@ -149,13 +154,13 @@
               "type": "albums"
             },
             {
-              "href": "/v1/catalog/it/albums/1143391524",
-              "id": "1143391524",
+              "href": "/v1/catalog/it/albums/1573936428",
+              "id": "1573936428",
               "type": "albums"
             },
             {
-              "href": "/v1/catalog/it/albums/1573936428",
-              "id": "1573936428",
+              "href": "/v1/catalog/it/albums/1109714866",
+              "id": "1109714866",
               "type": "albums"
             }
           ],
@@ -659,6 +664,1293 @@
           "href": "/v1/catalog/it/artists/657515/view/full-albums",
           "next": "/v1/catalog/it/artists/657515/view/full-albums?offset=10"
         },
+        "similar-artists": {
+          "attributes": {
+            "title": "Artisti simili"
+          },
+          "data": [
+            {
+              "attributes": {
+                "artistBio": "Meglio noto come il leader dei Radiohead, Thom Yorke è uno dei cantanti di rock più originali ed influenti di fine millennio. Nato a Wellingborough (Inghilterra) nel 1968, Yorke ha incontrato i suoi futuri compagni di band Ed O'Brien e Colin Greenwood quando andava a scuola a Oxford. I Radiohead hanno fatto il loro debutto nel 1992 e in pochi anni sono riusciti a diventare la band più importante della sua generazione grazie a album classici come The Bends, Ok Computer e Kid A. Contemporaneamente al suo lavoro con i Radiohead, Yorke ha partecipato in numerosi dischi di artisti idonei come Sparklehorse, Björk e PJ Harvey. Nel 2006 ha pubblicato il suo primo album solista The Eraser, realizzato con l'assistenza di Nigel Godrich, l'abituale produttore dei Radiohead. ~ Mariano Prunes",
+                "artwork": {
+                  "bgColor": "fbfbf8",
+                  "defaultCropCode": "bb",
+                  "hasP3": true,
+                  "height": 2400,
+                  "textColor1": "060606",
+                  "textColor2": "221f1f",
+                  "textColor3": "373736",
+                  "textColor4": "4d4b4a",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages221/v4/b0/09/53/b00953ca-d77a-7d08-d4d4-298c84aa17f4/ami-identity-40cfd6ea230d3f9c15908a64b4bd5cd0-2026-03-24T10-32-45.159Z_cropped.png/{w}x{h}bb.jpg",
+                  "width": 2400
+                },
+                "bornOrFormed": "1968",
+                "classicalUrl": "https://classical.music.apple.com/it/artist/39753073",
+                "genreNames": [
+                  "Alternativa"
+                ],
+                "isGroup": false,
+                "name": "Thom Yorke",
+                "origin": "Wellingborough, England",
+                "url": "https://music.apple.com/it/artist/thom-yorke/39753073"
+              },
+              "href": "/v1/catalog/it/artists/39753073",
+              "id": "39753073",
+              "relationships": {
+                "albums": {
+                  "data": [
+                    {
+                      "href": "/v1/catalog/it/albums/1467347588",
+                      "id": "1467347588",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/161162568",
+                      "id": "161162568",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1262568019",
+                      "id": "1262568019",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1491639343",
+                      "id": "1491639343",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1781311112",
+                      "id": "1781311112",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1432203897",
+                      "id": "1432203897",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1543063860",
+                      "id": "1543063860",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1573936428",
+                      "id": "1573936428",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1808724470",
+                      "id": "1808724470",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1359323269",
+                      "id": "1359323269",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1611250715",
+                      "id": "1611250715",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1315250174",
+                      "id": "1315250174",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1739085957",
+                      "id": "1739085957",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1779070642",
+                      "id": "1779070642",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1450893351",
+                      "id": "1450893351",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/6776564981",
+                      "id": "6776564981",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1359514429",
+                      "id": "1359514429",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1473038290",
+                      "id": "1473038290",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1165273470",
+                      "id": "1165273470",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1500803901",
+                      "id": "1500803901",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1141338877",
+                      "id": "1141338877",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1726653479",
+                      "id": "1726653479",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1611262677",
+                      "id": "1611262677",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1675649672",
+                      "id": "1675649672",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1778501206",
+                      "id": "1778501206",
+                      "type": "albums"
+                    }
+                  ],
+                  "href": "/v1/catalog/it/artists/39753073/albums",
+                  "next": "/v1/catalog/it/artists/39753073/albums?offset=25"
+                }
+              },
+              "type": "artists"
+            },
+            {
+              "attributes": {
+                "artistBio": "I The Smile nascono nel 2020 dall’incontro di Thom Yorke e Jonny Greenwood dei Radiohead con il batterista dei Sons of Kemet Tom Skinner. Il debutto ufficiale è a sorpresa, nel 2021, durante la trasmissione streaming del Glastonbury Festival. Un anno più tardi esce A Light for Attracting Attention, loro primo album in studio prodotto da Nigel Godrich per etichetta indipendente XL Recordings. Fanno parte della tracklist i singoli: “You Will Work in Television Again”, “The Smoke”, “Skrting in the Surface” e “Pana-vision”.",
+                "artwork": {
+                  "bgColor": "7199b4",
+                  "defaultCropCode": "bb",
+                  "hasP3": false,
+                  "height": 2400,
+                  "textColor1": "131312",
+                  "textColor2": "141415",
+                  "textColor3": "262d33",
+                  "textColor4": "262f35",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages221/v4/55/81/d4/5581d463-ef05-5e7e-863f-9373afe121b0/d436937b-c972-4c0d-a5d1-72c8acb155b9_ami-identity-3764b1a88dd356a6fadea05cbbcd5781-2024-08-28T11-06-45.307Z_cropped.png/{w}x{h}bb.jpg",
+                  "width": 2400
+                },
+                "bornOrFormed": "22 maggio 2021",
+                "genreNames": [
+                  "Alternativa"
+                ],
+                "isGroup": true,
+                "name": "The Smile",
+                "origin": "England",
+                "url": "https://music.apple.com/it/artist/the-smile/1603491177"
+              },
+              "href": "/v1/catalog/it/artists/1603491177",
+              "id": "1603491177",
+              "relationships": {
+                "albums": {
+                  "data": [
+                    {
+                      "href": "/v1/catalog/it/albums/1711359135",
+                      "id": "1711359135",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1616902433",
+                      "id": "1616902433",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1758065392",
+                      "id": "1758065392",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1690036090",
+                      "id": "1690036090",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1609536507",
+                      "id": "1609536507",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1656070366",
+                      "id": "1656070366",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1755740381",
+                      "id": "1755740381",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1763623456",
+                      "id": "1763623456",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1792011627",
+                      "id": "1792011627",
+                      "type": "albums"
+                    }
+                  ],
+                  "href": "/v1/catalog/it/artists/1603491177/albums"
+                }
+              },
+              "type": "artists"
+            },
+            {
+              "attributes": {
+                "artistBio": "Gli Atoms for Peace sono un supergruppo anglo-americano nato nel 2009 a Los Angeles e composto da Thom Yorke (voce e chitarra, gia’ nei Radiohead), Flea (basso, dei Red Hot Chili  Peppers), il batterista Joey Waronker (collaboratore di Beck e Rem), il percussionista Mauro Refosco, ex di David Byrne e Brian Eno, e lo storico produttore dei Radiohead Nigel Godrich, qui in veste di tastierista. Dopo alcune apparizioni live di grande successo, tra cui un mini-tour nelle principali citta’ americane, nel settembre 2012 pubblicano il loro primo singolo, “Default”, seguito dopo pochi mesi dal secondo, intitolato “Judge, jury and executioner”. I due singoli fanno da anticipazione per il loro album, caratterizzato da un sound rock sperimentale/elettronico, intitolato “Amok”.",
+                "artwork": {
+                  "bgColor": "341713",
+                  "defaultCropCode": "bb",
+                  "hasP3": false,
+                  "height": 2400,
+                  "textColor1": "d7d0a5",
+                  "textColor2": "cfcdb9",
+                  "textColor3": "b7ab88",
+                  "textColor4": "b0a997",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Features124/v4/e5/b2/66/e5b26668-4433-6855-1897-a07442d10180/mzl.rkkbkged.jpg/{w}x{h}bb.jpg",
+                  "width": 2400
+                },
+                "bornOrFormed": "2009",
+                "genreNames": [
+                  "Elettronica"
+                ],
+                "isGroup": true,
+                "name": "Atoms for Peace",
+                "origin": "Los Angeles, CA, United States",
+                "url": "https://music.apple.com/it/artist/atoms-for-peace/547192558"
+              },
+              "href": "/v1/catalog/it/artists/547192558",
+              "id": "547192558",
+              "relationships": {
+                "albums": {
+                  "data": [
+                    {
+                      "href": "/v1/catalog/it/albums/6786283131",
+                      "id": "6786283131",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1675649772",
+                      "id": "1675649772",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/6786279675",
+                      "id": "6786279675",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/6786281375",
+                      "id": "6786281375",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/6786281904",
+                      "id": "6786281904",
+                      "type": "albums"
+                    }
+                  ],
+                  "href": "/v1/catalog/it/artists/547192558/albums"
+                }
+              },
+              "type": "artists"
+            },
+            {
+              "attributes": {
+                "artistBio": "In quanto figlio dell'artista di culto Tim Buckley, Jeff Buckley ha dovuto affrontare più pregiudizi e aspettative che la maggior parte dei cantautori. La musica di Jeff Buckley, però, ha un esiguo rapporto con quella di suo padre. La voce di Buckley, imponente e coinvolgente, era idonea per la sua musica melodrammatica che incrociava Van Morrison con Led Zeppelin. Buckley ha pubblicato due album studio molto apprezzati dalla critica, un paio di EP e numerose registrazioni dal vivo prima di annegare nel Mississippi a maggio 1997. Buckley aveva soltanto 30 anni. La raccolta di brani inediti Sketches for My Sweetheart the Drunk è stata rilasciata nel 1998. ~ Stephen Thomas Erlewine",
+                "artwork": {
+                  "bgColor": "ececec",
+                  "defaultCropCode": "bb",
+                  "hasP3": true,
+                  "height": 3840,
+                  "textColor1": "1a1a1a",
+                  "textColor2": "292929",
+                  "textColor3": "444444",
+                  "textColor4": "505050",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Features115/v4/a1/7b/ee/a17bee71-1eeb-a3c0-f216-ad7889a2b89e/mza_214942018704718360.png/{w}x{h}bb.jpg",
+                  "width": 3840
+                },
+                "bornOrFormed": "17 novembre 1966",
+                "genreNames": [
+                  "Alternativa"
+                ],
+                "isGroup": false,
+                "name": "Jeff Buckley",
+                "origin": "Anaheim, CA, United States",
+                "url": "https://music.apple.com/it/artist/jeff-buckley/872190"
+              },
+              "href": "/v1/catalog/it/artists/872190",
+              "id": "872190",
+              "relationships": {
+                "albums": {
+                  "data": [
+                    {
+                      "href": "/v1/catalog/it/albums/1046187510",
+                      "id": "1046187510",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476889347",
+                      "id": "1476889347",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476888879",
+                      "id": "1476888879",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1856317722",
+                      "id": "1856317722",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/309064121",
+                      "id": "309064121",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476889988",
+                      "id": "1476889988",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476444709",
+                      "id": "1476444709",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1229487899",
+                      "id": "1229487899",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/257555052",
+                      "id": "257555052",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/157797693",
+                      "id": "157797693",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476889216",
+                      "id": "1476889216",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/316963186",
+                      "id": "316963186",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1172734617",
+                      "id": "1172734617",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476893546",
+                      "id": "1476893546",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476889375",
+                      "id": "1476889375",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476890131",
+                      "id": "1476890131",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476889609",
+                      "id": "1476889609",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476888717",
+                      "id": "1476888717",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476890286",
+                      "id": "1476890286",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1456425621",
+                      "id": "1456425621",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476889107",
+                      "id": "1476889107",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476889562",
+                      "id": "1476889562",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1775274249",
+                      "id": "1775274249",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1229486933",
+                      "id": "1229486933",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476888602",
+                      "id": "1476888602",
+                      "type": "albums"
+                    }
+                  ],
+                  "href": "/v1/catalog/it/artists/872190/albums"
+                }
+              },
+              "type": "artists"
+            },
+            {
+              "attributes": {
+                "artistBio": "Capace di definire il carattere di un intero genere con una personalità e una presenza fuori dal comune, Frank Ocean è riuscito in breve a imporsi come una delle figure più influenti dell’intero planisfero musicale, fondendo rock, rap, R&B ed elettronica in un unico sensazionale ibrido. Nato a New Orleans nel 1987 e cresciuto all’ombra del nonno mentore nelle associazioni per il recupero dalle dipendenze, si trasferisce non ancora ventenne a Los Angeles, dove comincia a comporre per star del calibro di Justin Bieber e Brandy, e nel 2009 firma per Def Jam. Più che il contratto con l’etichetta, inizialmente indifferente al suo talento, è l’ingresso nel collettivo Odd Future di Tyler, The Creator a ispirare il gusto DIY del mixtape di debutto <I>Nostalgia, Ultra</I> pubblicato da indipendente nel 2011. È il seme di quella poetica sinestesia sonora venata di ironia e richiami old school che un anno dopo confluisce perfezionata in <I>channel ORANGE</I>: personale concentrato avanguardista che fonde funk cosmico, psichedelia e gospel con una scrittura a metà strada tra cronaca sociale e surrealismo, il disco inaugura un periodo caleidoscopico, interrotto nel 2016 con la doppia uscita del progetto visivo <I>Endless</I> e dell’album <I>Blonde</I>. Spostandosi sul piano interiore, l’analisi si immerge in un sound dilatato che tocca la sfera di un contemporaneo impressionismo avant-soul, esplorato anche nei singoli successivamente diffusi via <i>blonded RADIO</i> su Apple Music.",
+                "artwork": {
+                  "bgColor": "79c0e6",
+                  "defaultCropCode": "bb",
+                  "hasP3": false,
+                  "height": 2400,
+                  "textColor1": "121010",
+                  "textColor2": "131213",
+                  "textColor3": "27333b",
+                  "textColor4": "28353d",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Features126/v4/d8/90/47/d8904782-ec1f-d3fc-a4cb-3efb713c9ac8/mzl.vhdbrgee.jpg/{w}x{h}bb.jpg",
+                  "width": 2400
+                },
+                "bornOrFormed": "28 ottobre 1987",
+                "genreNames": [
+                  "Pop"
+                ],
+                "isGroup": false,
+                "name": "Frank Ocean",
+                "origin": "Long Beach, CA, United States",
+                "url": "https://music.apple.com/it/artist/frank-ocean/442122051"
+              },
+              "href": "/v1/catalog/it/artists/442122051",
+              "id": "442122051",
+              "relationships": {
+                "albums": {
+                  "data": [
+                    {
+                      "href": "/v1/catalog/it/albums/1146195596",
+                      "id": "1146195596",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440765580",
+                      "id": "1440765580",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1214557444",
+                      "id": "1214557444",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1239590107",
+                      "id": "1239590107",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1485957053",
+                      "id": "1485957053",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1349524897",
+                      "id": "1349524897",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1225119790",
+                      "id": "1225119790",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1484224393",
+                      "id": "1484224393",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1506122739",
+                      "id": "1506122739",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1276055312",
+                      "id": "1276055312",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1229433401",
+                      "id": "1229433401",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1506122308",
+                      "id": "1506122308",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1236971340",
+                      "id": "1236971340",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1445147125",
+                      "id": "1445147125",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1486713879",
+                      "id": "1486713879",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1484535192",
+                      "id": "1484535192",
+                      "type": "albums"
+                    }
+                  ],
+                  "href": "/v1/catalog/it/artists/442122051/albums"
+                }
+              },
+              "type": "artists"
+            },
+            {
+              "attributes": {
+                "artistBio": "Grazie ai Nirvana, i suoni abrasivi dell’underground americano erompono in superficie, producendo un cambiamento radicale che travalica i confini del mondo della musica. La band debutta nel 1989 con <i>Bleach</i>, pietra miliare del grunge in cui le melodie di ‘About a Girl’ fanno da contraltare all’inquietudine paranoica di ‘Negative Creep’. Rabbia e dolcezza guidano la penna del chitarrista e cantante Kurt Cobain, sostenuto dal basso di Krist Novoselic e dalla batteria di Chad Channing. A quest’ultimo subentra nel 1990 Dave Grohl: il suo stile muscolare è un ingrediente essenziale di <i>Nevermind</i> (1991), che introduce accenni di orecchiabilità pop in una formula dominata da elementi hard rock e post-hardcore. L’esplosiva apertura ‘Smells Like Teen Spirit’ è un manifesto generazionale che spinge l’album fino al primo posto in classifica, spodestando simbolicamente dal trono Michael Jackson e segnando un momento d’oro per la scena alternativa.<br>\nDiventato un’icona, il leader della formazione subisce crescenti e soffocanti attenzioni da parte dei media, attratti anche dal matrimonio con Courtney Love. Questa pressione trova sfogo nella furia grezza di <i>In Utero</i> (1993), feroce contenitore di distorsioni e dissonanze che si chiude con le aggraziate linee di violoncello di ‘All Apologies’. La stessa traccia spicca in <i>MTV Unplugged In New York</i>, leggendario live pubblicato postumo nel novembre del 1994, a pochi mesi dalla scomparsa del musicista di Aberdeen. ",
+                "artwork": {
+                  "bgColor": "d8dfe3",
+                  "defaultCropCode": "bb",
+                  "hasP3": true,
+                  "height": 3840,
+                  "textColor1": "070608",
+                  "textColor2": "1f201f",
+                  "textColor3": "303233",
+                  "textColor4": "444646",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Features115/v4/55/2b/13/552b1389-341f-f54a-478f-3908629d2740/mza_3521856525663275523.png/{w}x{h}bb.jpg",
+                  "width": 3840
+                },
+                "bornOrFormed": "gennaio 1987",
+                "genreNames": [
+                  "Alternativa"
+                ],
+                "isGroup": true,
+                "name": "Nirvana",
+                "origin": "Aberdeen, WA, United States",
+                "url": "https://music.apple.com/it/artist/nirvana/112018"
+              },
+              "href": "/v1/catalog/it/artists/112018",
+              "id": "112018",
+              "relationships": {
+                "albums": {
+                  "data": [
+                    {
+                      "href": "/v1/catalog/it/albums/1440783617",
+                      "id": "1440783617",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440892370",
+                      "id": "1440892370",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440858699",
+                      "id": "1440858699",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/669728060",
+                      "id": "669728060",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1586895441",
+                      "id": "1586895441",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1434917065",
+                      "id": "1434917065",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1413920644",
+                      "id": "1413920644",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1545866762",
+                      "id": "1545866762",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440797324",
+                      "id": "1440797324",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1586410660",
+                      "id": "1586410660",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1702925205",
+                      "id": "1702925205",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1476776257",
+                      "id": "1476776257",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440875565",
+                      "id": "1440875565",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1458927119",
+                      "id": "1458927119",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440823614",
+                      "id": "1440823614",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1509584363",
+                      "id": "1509584363",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440917165",
+                      "id": "1440917165",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440830905",
+                      "id": "1440830905",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440833316",
+                      "id": "1440833316",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/336377945",
+                      "id": "336377945",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440778637",
+                      "id": "1440778637",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/6830857209",
+                      "id": "6830857209",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1776200513",
+                      "id": "1776200513",
+                      "type": "albums"
+                    }
+                  ],
+                  "href": "/v1/catalog/it/artists/112018/albums"
+                }
+              },
+              "type": "artists"
+            },
+            {
+              "attributes": {
+                "artistBio": "Gli Arcade Fire sono riusciti a fare breccia nel cuore del grande pubblico e a scalare le classifiche internazionali con un sound alternative rock profondamente personale e contaminato, costruito su rigogliose stratificazioni armoniche e arrangiamenti complessi.",
+                "artwork": {
+                  "bgColor": "931a7e",
+                  "defaultCropCode": "bb",
+                  "hasP3": false,
+                  "height": 2539,
+                  "textColor1": "f9f3f8",
+                  "textColor2": "f4e8f2",
+                  "textColor3": "e5c8e0",
+                  "textColor4": "e0bfda",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages221/v4/a3/03/6c/a3036ca4-b571-7975-0173-6437a8949e09/ami-identity-aff243d20d9b4a7a6355ec74d75edb1a-2025-04-08T16-08-31.818Z_cropped.png/{w}x{h}bb.jpg",
+                  "width": 2539
+                },
+                "bornOrFormed": "2001",
+                "genreNames": [
+                  "Alternativa"
+                ],
+                "isGroup": true,
+                "name": "Arcade Fire",
+                "origin": "Montreal, Quebec, Canada",
+                "url": "https://music.apple.com/it/artist/arcade-fire/23203991"
+              },
+              "href": "/v1/catalog/it/artists/23203991",
+              "id": "23203991",
+              "relationships": {
+                "albums": {
+                  "data": [
+                    {
+                      "href": "/v1/catalog/it/albums/1240796998",
+                      "id": "1240796998",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1249417623",
+                      "id": "1249417623",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1613566080",
+                      "id": "1613566080",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1801683602",
+                      "id": "1801683602",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1439818072",
+                      "id": "1439818072",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1252757950",
+                      "id": "1252757950",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1252615522",
+                      "id": "1252615522",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1400275055",
+                      "id": "1400275055",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1553022037",
+                      "id": "1553022037",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1446334028",
+                      "id": "1446334028",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1456058060",
+                      "id": "1456058060",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1893956136",
+                      "id": "1893956136",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1539335170",
+                      "id": "1539335170",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1304572425",
+                      "id": "1304572425",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1311639670",
+                      "id": "1311639670",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1405610305",
+                      "id": "1405610305",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1321522377",
+                      "id": "1321522377",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1436693872",
+                      "id": "1436693872",
+                      "type": "albums"
+                    }
+                  ],
+                  "href": "/v1/catalog/it/artists/23203991/albums"
+                }
+              },
+              "type": "artists"
+            },
+            {
+              "attributes": {
+                "artistBio": "Formatisi a New York nel 1998, la band alternative-punk-rock Strokes si fa conoscere nella grande mela grazie a una serie di concerti e pubblica l’Ep “The Modern Age” in Inghilterra, a inizio 2001, per l’etichetta Rough Trade. Sempre nel 2001 a settembre è la volta del loro primo album, “Is this it”, che si contraddistingue per sonorità punk rock anni ’70 che ricordano Velvet Underground e Ramones. Del 2003 è il secondo album “Room on Fire”, che non riesce a bissare il successo dell’esordio, mentre tre anni dopo è la volta di “First Impressions on Earth”. Dopo alcuni lavori solisti dei membri della band, nel 2011 arriva l’album “Angles”. A inizio 2013 ecco il singolo “One way trigger”, che anticipa l’uscita del loro nuovo disco,”Comedown machine”.",
+                "artwork": {
+                  "bgColor": "d3c8ad",
+                  "defaultCropCode": "bb",
+                  "hasP3": true,
+                  "height": 1516,
+                  "textColor1": "281e11",
+                  "textColor2": "2a2218",
+                  "textColor3": "4a4030",
+                  "textColor4": "4c4336",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages221/v4/aa/36/0f/aa360f05-68bb-67ec-35ee-919715b7e541/ami-identity-d31a7440413bd74cc4f8deaa85535d15-2026-06-29T15-28-53.388Z_cropped.png/{w}x{h}bb.jpg",
+                  "width": 1516
+                },
+                "bornOrFormed": "1998",
+                "genreNames": [
+                  "Alternativa"
+                ],
+                "isGroup": true,
+                "name": "The Strokes",
+                "origin": "New York, NY, United States",
+                "url": "https://music.apple.com/it/artist/the-strokes/560289"
+              },
+              "href": "/v1/catalog/it/artists/560289",
+              "id": "560289",
+              "relationships": {
+                "albums": {
+                  "data": [
+                    {
+                      "href": "/v1/catalog/it/albums/1498121188",
+                      "id": "1498121188",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/269080434",
+                      "id": "269080434",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/302987557",
+                      "id": "302987557",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1891161441",
+                      "id": "1891161441",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/601140186",
+                      "id": "601140186",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/581797918",
+                      "id": "581797918",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/299740383",
+                      "id": "299740383",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/436351350",
+                      "id": "436351350",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1478663898",
+                      "id": "1478663898",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1663032714",
+                      "id": "1663032714",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1731393477",
+                      "id": "1731393477",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/456860969",
+                      "id": "456860969",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/533714249",
+                      "id": "533714249",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/623103932",
+                      "id": "623103932",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/271370918",
+                      "id": "271370918",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/445129179",
+                      "id": "445129179",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/471645798",
+                      "id": "471645798",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/604783730",
+                      "id": "604783730",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/312206873",
+                      "id": "312206873",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1828962003",
+                      "id": "1828962003",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/311619238",
+                      "id": "311619238",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/271361240",
+                      "id": "271361240",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/471646162",
+                      "id": "471646162",
+                      "type": "albums"
+                    }
+                  ],
+                  "href": "/v1/catalog/it/artists/560289/albums"
+                }
+              },
+              "type": "artists"
+            },
+            {
+              "attributes": {
+                "artistBio": "Tra le figure più ingegnose ed eclettiche emerse nella rivoluzione alternativa degli anni Novanta, Beck è stato il perfetto simbolo chic postmoderno in un’ epoca ossessionata dalla cultura del superfluo. Attingendo da un caleidoscopio di influenze –pop, folk, psichedelia, hip-hop, country, blues, R&B, funk, noise, rock sperimentale, jazz, lounge—Beck ha creato un’opera del tutto imprevedibile, disordinata e vibrante, che esplodeva di idee. Senza dubbio è stato un prodotto dell’era dei media, un catalizzatore le cui mescolanze erano tenute insieme da pezzi di passato e presente, in un modo che poteva succedere solo a un fanatico sovraesposto alla cultura pop. ~ Francesca Alioto",
+                "artwork": {
+                  "bgColor": "151c1b",
+                  "defaultCropCode": "bb",
+                  "hasP3": true,
+                  "height": 2620,
+                  "textColor1": "cfc8a2",
+                  "textColor2": "cdb178",
+                  "textColor3": "aaa687",
+                  "textColor4": "a89365",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/31/4d/b0/314db098-d6c8-82f4-5928-3d9c4b74ce7a/ami-identity-1a9be670af3e86ded8b58b403665dbe1-2026-04-20T16-47-23.924Z_cropped.png/{w}x{h}bb.jpg",
+                  "width": 2620
+                },
+                "bornOrFormed": "8 luglio 1970",
+                "genreNames": [
+                  "Alternativa"
+                ],
+                "isGroup": false,
+                "name": "Beck",
+                "origin": "Los Angeles, CA, United States",
+                "url": "https://music.apple.com/it/artist/beck/312095"
+              },
+              "href": "/v1/catalog/it/artists/312095",
+              "id": "312095",
+              "relationships": {
+                "albums": {
+                  "data": [
+                    {
+                      "href": "/v1/catalog/it/albums/1440881121",
+                      "id": "1440881121",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440857105",
+                      "id": "1440857105",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440733298",
+                      "id": "1440733298",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/6788956584",
+                      "id": "6788956584",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1482861953",
+                      "id": "1482861953",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1650465961",
+                      "id": "1650465961",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440871815",
+                      "id": "1440871815",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1443417064",
+                      "id": "1443417064",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440636547",
+                      "id": "1440636547",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1442399952",
+                      "id": "1442399952",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1527187716",
+                      "id": "1527187716",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1669089026",
+                      "id": "1669089026",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1380537194",
+                      "id": "1380537194",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1444860983",
+                      "id": "1444860983",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1871606164",
+                      "id": "1871606164",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1440664011",
+                      "id": "1440664011",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1453197774",
+                      "id": "1453197774",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1459687201",
+                      "id": "1459687201",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1646518742",
+                      "id": "1646518742",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1893159445",
+                      "id": "1893159445",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1446014809",
+                      "id": "1446014809",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1700592898",
+                      "id": "1700592898",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1510827144",
+                      "id": "1510827144",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1783905690",
+                      "id": "1783905690",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/806832972",
+                      "id": "806832972",
+                      "type": "albums"
+                    }
+                  ],
+                  "href": "/v1/catalog/it/artists/312095/albums",
+                  "next": "/v1/catalog/it/artists/312095/albums?offset=25"
+                }
+              },
+              "type": "artists"
+            },
+            {
+              "attributes": {
+                "artistBio": "Grazie all’irresistibile combinazione tra il canto melodico e appassionato di Morrissey e la sfavillante chitarra jangle di Johnny Marr, gli Smiths si sono imposti come una delle formazioni più rappresentative degli anni ’80, entrando a pieno diritto nella mitologia dell’indie rock.\n\n• Nata a Manchester nel 1982, la band si presenta ufficialmente sulla scena l’anno successivo con i singoli ‘Hand In Glove’ e ‘This Charming Man’, biglietto da visita di un gruppo capace di unire in modo del tutto personale sensibilità pop e spirito alternativo.\n\n• Nel 1984, l’album d’esordio conferma l’efficacia di una formula costruita su testi dalla marcata connotazione poetica, tra profonde analisi introspettive, momenti di romanticismo e pungenti dimostrazioni di ironia.\n\n• Se <i>Meat Is Murder</i> (1985) mette in luce una dissacrante consapevolezza politica e sociale, <i>The Queen Is Dead</i> (1986) raggiunge nuove vette creative e consegna alla storia classici intramontabili del calibro di ‘There Is a Light That Never Goes Out’ e ‘Bigmouth Strikes Again’.\n\n• Spunti sintetici e arrangiamenti stratificati impreziosiscono le atmosfere di <i>Strangeways, Here We Come</i> (1987), ultimo capitolo in studio di una discografia di assoluto rilievo, che continua a espandersi a suon di raccolte e pubblicazioni dal vivo.\n",
+                "artwork": {
+                  "bgColor": "2a2a2a",
+                  "defaultCropCode": "bb",
+                  "hasP3": true,
+                  "height": 2400,
+                  "textColor1": "f5f5f5",
+                  "textColor2": "d7d7d7",
+                  "textColor3": "cccccc",
+                  "textColor4": "b5b5b5",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Features221/v4/54/9a/2e/549a2e36-bc4d-0247-d03c-dda516b25eeb/mza_3821065946139989548.png/{w}x{h}bb.jpg",
+                  "width": 2400
+                },
+                "bornOrFormed": "1982",
+                "genreNames": [
+                  "Alternativa"
+                ],
+                "isGroup": true,
+                "name": "The Smiths",
+                "origin": "Manchester, England",
+                "url": "https://music.apple.com/it/artist/the-smiths/829538"
+              },
+              "href": "/v1/catalog/it/artists/829538",
+              "id": "829538",
+              "relationships": {
+                "albums": {
+                  "data": [
+                    {
+                      "href": "/v1/catalog/it/albums/802231063",
+                      "id": "802231063",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/800092985",
+                      "id": "800092985",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/799969670",
+                      "id": "799969670",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/799995884",
+                      "id": "799995884",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/799986977",
+                      "id": "799986977",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/799980711",
+                      "id": "799980711",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/800217913",
+                      "id": "800217913",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/1257810218",
+                      "id": "1257810218",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/799980206",
+                      "id": "799980206",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/803459952",
+                      "id": "803459952",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/802214888",
+                      "id": "802214888",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/799978884",
+                      "id": "799978884",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/6787101668",
+                      "id": "6787101668",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/6787101704",
+                      "id": "6787101704",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/483111988",
+                      "id": "483111988",
+                      "type": "albums"
+                    },
+                    {
+                      "href": "/v1/catalog/it/albums/803564496",
+                      "id": "803564496",
+                      "type": "albums"
+                    }
+                  ],
+                  "href": "/v1/catalog/it/artists/829538/albums"
+                }
+              },
+              "type": "artists"
+            }
+          ],
+          "href": "/v1/catalog/it/artists/657515/view/similar-artists",
+          "next": "/v1/catalog/it/artists/657515/view/similar-artists?offset=10"
+        },
         "top-songs": {
           "attributes": {
             "title": "Top brani"
@@ -715,58 +2007,6 @@
               },
               "href": "/v1/catalog/it/songs/1097862231",
               "id": "1097862231",
-              "type": "songs"
-            },
-            {
-              "attributes": {
-                "albumArtistName": "Radiohead",
-                "albumName": "OK Computer",
-                "artistName": "Radiohead",
-                "artwork": {
-                  "bgColor": "fefeff",
-                  "hasP3": false,
-                  "height": 4000,
-                  "textColor1": "031623",
-                  "textColor2": "332b2c",
-                  "textColor3": "35454f",
-                  "textColor4": "5b5556",
-                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
-                  "width": 4000
-                },
-                "audioLocale": "en-US",
-                "audioTraits": [
-                  "lossless",
-                  "lossy-stereo"
-                ],
-                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
-                "discNumber": 1,
-                "durationInMillis": 299560,
-                "genreNames": [
-                  "Alternativa",
-                  "Musica"
-                ],
-                "hasLyrics": true,
-                "hasTimeSyncedLyrics": true,
-                "isAppleDigitalMaster": false,
-                "isMasteredForItunes": false,
-                "isVocalAttenuationAllowed": true,
-                "isrc": "GBAYE9701374",
-                "name": "Let Down",
-                "playParams": {
-                  "id": "1097861834",
-                  "kind": "song"
-                },
-                "previews": [
-                  {
-                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/cd/65/58/cd6558df-2ba2-6f8e-25a0-d2db94494f74/mzaf_13027322608015064266.plus.aac.ep.m4a"
-                  }
-                ],
-                "releaseDate": "1997-05-21",
-                "trackNumber": 5,
-                "url": "https://music.apple.com/it/album/let-down/1097861387?i=1097861834"
-              },
-              "href": "/v1/catalog/it/songs/1097861834",
-              "id": "1097861834",
               "type": "songs"
             },
             {
@@ -928,17 +2168,17 @@
             {
               "attributes": {
                 "albumArtistName": "Radiohead",
-                "albumName": "The Bends",
+                "albumName": "Kid A",
                 "artistName": "Radiohead",
                 "artwork": {
-                  "bgColor": "030101",
+                  "bgColor": "0a0a08",
                   "hasP3": false,
                   "height": 4000,
-                  "textColor1": "fccbbf",
-                  "textColor2": "fec29a",
-                  "textColor3": "caa399",
-                  "textColor4": "cc9b7b",
-                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/1b/a9/5c/1ba95cac-b245-d386-63fb-6b857aa9dce8/634904078065.png/{w}x{h}bb.jpg",
+                  "textColor1": "e2eaee",
+                  "textColor2": "d3d2d1",
+                  "textColor3": "b7bdc0",
+                  "textColor4": "abaaa8",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music122/v4/bd/8e/13/bd8e1358-b367-a689-cb84-cebd0b067dc4/634904078263.png/{w}x{h}bb.jpg",
                   "width": 4000
                 },
                 "audioLocale": "en-US",
@@ -948,7 +2188,7 @@
                 ],
                 "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
                 "discNumber": 1,
-                "durationInMillis": 257480,
+                "durationInMillis": 251427,
                 "genreNames": [
                   "Alternativa",
                   "Musica"
@@ -958,23 +2198,23 @@
                 "isAppleDigitalMaster": false,
                 "isMasteredForItunes": false,
                 "isVocalAttenuationAllowed": true,
-                "isrc": "GBAYE9400055",
-                "name": "High and Dry",
+                "isrc": "GBAYE0000810",
+                "name": "Everything In Its Right Place",
                 "playParams": {
-                  "id": "1097862833",
+                  "id": "1097863108",
                   "kind": "song"
                 },
                 "previews": [
                   {
-                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview211/v4/97/28/68/972868b4-3ee8-24ec-2e38-466feb0218f2/mzaf_1223237960264698698.plus.aac.ep.m4a"
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/c5/eb/e3/c5ebe37f-2f48-0daf-dfe3-2a138386925d/mzaf_3725045179650866992.plus.aac.ep.m4a"
                   }
                 ],
-                "releaseDate": "1995-02-27",
-                "trackNumber": 3,
-                "url": "https://music.apple.com/it/album/high-and-dry/1097862703?i=1097862833"
+                "releaseDate": "2000-10-02",
+                "trackNumber": 1,
+                "url": "https://music.apple.com/it/album/everything-in-its-right-place/1097862870?i=1097863108"
               },
-              "href": "/v1/catalog/it/songs/1097862833",
-              "id": "1097862833",
+              "href": "/v1/catalog/it/songs/1097863108",
+              "id": "1097863108",
               "type": "songs"
             },
             {
@@ -1032,17 +2272,17 @@
             {
               "attributes": {
                 "albumArtistName": "Radiohead",
-                "albumName": "In Rainbows",
+                "albumName": "OK Computer",
                 "artistName": "Radiohead",
                 "artwork": {
-                  "bgColor": "1e1807",
+                  "bgColor": "fefeff",
                   "hasP3": false,
                   "height": 4000,
-                  "textColor1": "d0c741",
-                  "textColor2": "e9872e",
-                  "textColor3": "aca436",
-                  "textColor4": "c07126",
-                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/dd/50/c7/dd50c790-99ac-d3d0-5ab8-e3891fb8fd52/634904032463.png/{w}x{h}bb.jpg",
+                  "textColor1": "031623",
+                  "textColor2": "332b2c",
+                  "textColor3": "35454f",
+                  "textColor4": "5b5556",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/07/60/ba/0760ba0f-148c-b18f-d0ff-169ee96f3af5/634904078164.png/{w}x{h}bb.jpg",
                   "width": 4000
                 },
                 "audioLocale": "en-US",
@@ -1052,7 +2292,7 @@
                 ],
                 "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
                 "discNumber": 1,
-                "durationInMillis": 318187,
+                "durationInMillis": 299560,
                 "genreNames": [
                   "Alternativa",
                   "Musica"
@@ -1062,75 +2302,23 @@
                 "isAppleDigitalMaster": false,
                 "isMasteredForItunes": false,
                 "isVocalAttenuationAllowed": true,
-                "isrc": "GBSTK0700004",
-                "name": "Weird Fishes / Arpeggi",
+                "isrc": "GBAYE9701374",
+                "name": "Let Down",
                 "playParams": {
-                  "id": "1109715168",
+                  "id": "1097861834",
                   "kind": "song"
                 },
                 "previews": [
                   {
-                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/3a/12/eb/3a12ebaf-89c1-1ac9-6821-3a1de510ef51/mzaf_10989557132964733235.plus.aac.ep.m4a"
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/cd/65/58/cd6558df-2ba2-6f8e-25a0-d2db94494f74/mzaf_13027322608015064266.plus.aac.ep.m4a"
                   }
                 ],
-                "releaseDate": "2007-10-10",
-                "trackNumber": 4,
-                "url": "https://music.apple.com/it/album/weird-fishes-arpeggi/1109714933?i=1109715168"
+                "releaseDate": "1997-05-21",
+                "trackNumber": 5,
+                "url": "https://music.apple.com/it/album/let-down/1097861387?i=1097861834"
               },
-              "href": "/v1/catalog/it/songs/1109715168",
-              "id": "1109715168",
-              "type": "songs"
-            },
-            {
-              "attributes": {
-                "albumArtistName": "Radiohead",
-                "albumName": "The Bends",
-                "artistName": "Radiohead",
-                "artwork": {
-                  "bgColor": "030101",
-                  "hasP3": false,
-                  "height": 4000,
-                  "textColor1": "fccbbf",
-                  "textColor2": "fec29a",
-                  "textColor3": "caa399",
-                  "textColor4": "cc9b7b",
-                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/1b/a9/5c/1ba95cac-b245-d386-63fb-6b857aa9dce8/634904078065.png/{w}x{h}bb.jpg",
-                  "width": 4000
-                },
-                "audioLocale": "en-US",
-                "audioTraits": [
-                  "lossless",
-                  "lossy-stereo"
-                ],
-                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
-                "discNumber": 1,
-                "durationInMillis": 253853,
-                "genreNames": [
-                  "Alternativa",
-                  "Musica"
-                ],
-                "hasLyrics": true,
-                "hasTimeSyncedLyrics": true,
-                "isAppleDigitalMaster": false,
-                "isMasteredForItunes": false,
-                "isVocalAttenuationAllowed": true,
-                "isrc": "GBAYE9400061",
-                "name": "Street Spirit (Fade Out)",
-                "playParams": {
-                  "id": "1097863295",
-                  "kind": "song"
-                },
-                "previews": [
-                  {
-                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/48/aa/31/48aa31f7-77d8-e958-a5ae-e53f18632b81/mzaf_13209801293252912685.plus.aac.ep.m4a"
-                  }
-                ],
-                "releaseDate": "1995-03-08",
-                "trackNumber": 12,
-                "url": "https://music.apple.com/it/album/street-spirit-fade-out/1097862703?i=1097863295"
-              },
-              "href": "/v1/catalog/it/songs/1097863295",
-              "id": "1097863295",
+              "href": "/v1/catalog/it/songs/1097861834",
+              "id": "1097861834",
               "type": "songs"
             },
             {
@@ -1183,6 +2371,110 @@
               },
               "href": "/v1/catalog/it/songs/1097861833",
               "id": "1097861833",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "In Rainbows",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "1e1807",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "d0c741",
+                  "textColor2": "e9872e",
+                  "textColor3": "aca436",
+                  "textColor4": "c07126",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/dd/50/c7/dd50c790-99ac-d3d0-5ab8-e3891fb8fd52/634904032463.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 228747,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": false,
+                "isMasteredForItunes": false,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBSTK0700005",
+                "name": "All I Need",
+                "playParams": {
+                  "id": "1109715293",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/8e/c3/d5/8ec3d546-17d7-3322-662d-e09a89fbefd8/mzaf_16052388602002126493.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "2007-10-10",
+                "trackNumber": 5,
+                "url": "https://music.apple.com/it/album/all-i-need/1109714933?i=1109715293"
+              },
+              "href": "/v1/catalog/it/songs/1109715293",
+              "id": "1109715293",
+              "type": "songs"
+            },
+            {
+              "attributes": {
+                "albumArtistName": "Radiohead",
+                "albumName": "A Moon Shaped Pool",
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "cecdd2",
+                  "hasP3": false,
+                  "height": 1400,
+                  "textColor1": "0c0a09",
+                  "textColor2": "171616",
+                  "textColor3": "333131",
+                  "textColor4": "3c3b3b",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/b7/f2/5d/b7f25d91-4320-47c8-146a-6f84d5bc7e78/cover.jpg/{w}x{h}bb.jpg",
+                  "width": 1400
+                },
+                "audioLocale": "en-US",
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "composerName": "Colin Greenwood, Ed O'Brien, Jonny Greenwood, Phil Selway & Thom Yorke",
+                "discNumber": 1,
+                "durationInMillis": 220607,
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "hasLyrics": true,
+                "hasTimeSyncedLyrics": true,
+                "isAppleDigitalMaster": true,
+                "isMasteredForItunes": true,
+                "isVocalAttenuationAllowed": true,
+                "isrc": "GBBKS1600071",
+                "name": "Burn the Witch",
+                "playParams": {
+                  "id": "1111577770",
+                  "kind": "song"
+                },
+                "previews": [
+                  {
+                    "url": "https://audio-ssl.itunes.apple.com/itunes-assets/AudioPreview221/v4/89/ad/1f/89ad1f5b-29ba-313c-9f73-80a69dc17b0a/mzaf_3876515425375655071.plus.aac.ep.m4a"
+                  }
+                ],
+                "releaseDate": "2016-05-03",
+                "trackNumber": 1,
+                "url": "https://music.apple.com/it/album/burn-the-witch/1111577743?i=1111577770"
+              },
+              "href": "/v1/catalog/it/songs/1111577770",
+              "id": "1111577770",
               "type": "songs"
             }
           ],

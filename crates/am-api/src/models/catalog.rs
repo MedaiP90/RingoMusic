@@ -107,13 +107,27 @@ pub struct Artist {
     pub views: Option<ArtistViews>,
 }
 
-/// Attributes of a catalog artist.
+/// Attributes of a catalog artist. The fields after `genre_names` are
+/// present only if the request used `extend=...`.
 #[derive(Clone, Debug, PartialEq, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArtistAttributes {
     /// Name of the artist.
     pub name: String,
     /// Photo of the artist.
     pub artwork: Option<Artwork>,
+    /// Genres of the artist, in the language of the storefront.
+    #[serde(default)]
+    pub genre_names: Vec<String>,
+    /// Biography of the artist. It can contain HTML tags such as `<i>`.
+    pub artist_bio: Option<String>,
+    /// Birth date of a person or start year of a group, as a full date or a
+    /// year.
+    pub born_or_formed: Option<String>,
+    /// Place where the artist comes from.
+    pub origin: Option<String>,
+    /// True for a group, false for a person.
+    pub is_group: Option<bool>,
 }
 
 /// Resources that a catalog artist links to.
@@ -132,6 +146,9 @@ pub struct ArtistViews {
     /// Full albums of the artist.
     #[serde(rename = "full-albums")]
     pub full_albums: Option<ApiPage<Album>>,
+    /// Artists that Apple Music finds similar to the artist.
+    #[serde(rename = "similar-artists")]
+    pub similar_artists: Option<ApiPage<Artist>>,
 }
 
 /// A playlist of the Apple Music catalog.

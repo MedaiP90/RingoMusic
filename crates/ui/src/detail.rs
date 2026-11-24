@@ -125,11 +125,25 @@ impl AlbumData {
     }
 }
 
-/// The data of an artist page.
+/// When a catalog artist started: the birth year of a person or the start
+/// year of a group.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ArtistStart {
+    Born(String),
+    Formed(String),
+}
+
+/// The data of an artist page. The genres, the origin, the start, and the
+/// biography are empty for a library artist: the API has no data for it.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ArtistData {
     pub name: String,
     pub artwork_template: Option<String>,
+    pub genres: Vec<String>,
+    pub origin: Option<String>,
+    pub start: Option<ArtistStart>,
+    /// Plain text.
+    pub biography: Option<String>,
     /// Empty for a library artist: the API has no top songs for it.
     pub top_songs: Vec<SongItem>,
     /// Offset of the next page of top songs, if the artist has more.
@@ -137,10 +151,13 @@ pub struct ArtistData {
     pub albums: Vec<TileItem>,
     /// Offset of the next page of albums, if the artist has more.
     pub albums_next: Option<u32>,
+    /// Empty for a library artist: the API has no similar artists for it.
+    pub similar_artists: Vec<TileItem>,
 }
 
 impl ArtistData {
     fn from_catalog(artist: &Artist) -> Self {
+        let attributes = &artist.attributes;
         let views = artist.views.as_ref();
         let songs = views
             .and_then(|views| views.top_songs.clone())
@@ -148,17 +165,27 @@ impl ArtistData {
         let albums = views
             .and_then(|views| views.full_albums.clone())
             .map_or_else(empty_page, Page::from);
+        let similar_artists = views
+            .and_then(|views| views.similar_artists.as_ref())
+            .map(|page| page.data.iter().map(TileItem::from).collect())
+            .unwrap_or_default();
         Self {
-            name: artist.attributes.name.clone(),
-            artwork_template: artist
-                .attributes
-                .artwork
-                .as_ref()
-                .map(|art| art.url.clone()),
+            name: attributes.name.clone(),
+            artwork_template: attributes.artwork.as_ref().map(|art| art.url.clone()),
+            genres: attributes.genre_names.clone(),
+            origin: attributes
+                .origin
+                .as_deref()
+                .map(str::trim)
+                .filter(|origin| !origin.is_empty())
+                .map(str::to_owned),
+            start: start_of(attributes.born_or_formed.as_deref(), attributes.is_group),
+            biography: attributes.artist_bio.as_deref().and_then(plain_text),
             top_songs: songs.items.iter().map(SongItem::from).collect(),
             top_songs_next: songs.next_offset,
             albums: albums.items.iter().map(TileItem::from).collect(),
             albums_next: albums.next_offset,
+            similar_artists,
         }
     }
 }
@@ -266,10 +293,15 @@ async fn load_library_artist(api: &ApiClient, id: &str) -> ApiResult<ArtistData>
     Ok(ArtistData {
         name,
         artwork_template: None,
+        genres: Vec::new(),
+        origin: None,
+        start: None,
+        biography: None,
         top_songs: Vec::new(),
         top_songs_next: None,
         albums,
         albums_next: None,
+        similar_artists: Vec::new(),
     })
 }
 
@@ -457,6 +489,35 @@ fn year_of(release_date: Option<&str>) -> Option<String> {
         .then(|| year.to_owned())
 }
 
+/// Reads the start year of an artist. The API marks a person with
+/// `is_group: false`. Without the mark, the artist counts as a group.
+fn start_of(born_or_formed: Option<&str>, is_group: Option<bool>) -> Option<ArtistStart> {
+    let year = year_of(born_or_formed)?;
+    Some(if is_group == Some(false) {
+        ArtistStart::Born(year)
+    } else {
+        ArtistStart::Formed(year)
+    })
+}
+
+/// Removes the HTML tags from `html` and trims it. `None` for a blank text.
+// ponytail: drops tags only, the API sends only `<i>` and Unicode characters.
+// Decode entities if a biography shows `&amp;` or similar.
+fn plain_text(html: &str) -> Option<String> {
+    let mut text = String::with_capacity(html.len());
+    let mut in_tag = false;
+    for character in html.chars() {
+        match character {
+            '<' => in_tag = true,
+            '>' if in_tag => in_tag = false,
+            _ if !in_tag => text.push(character),
+            _ => {}
+        }
+    }
+    let text = text.trim();
+    (!text.is_empty()).then(|| text.to_owned())
+}
+
 fn description_of(description: Option<&ringo_am_api::models::Description>) -> Option<String> {
     description?
         .standard
@@ -538,6 +599,52 @@ mod tests {
         assert_eq!(data.tracks[0].song.artist_id.as_deref(), Some("5"));
         assert_eq!(data.artist_id.as_deref(), Some("5"));
         assert_eq!(data.year.as_deref(), Some("1997"));
+    }
+
+    #[test]
+    fn artist_from_catalog_reads_the_similar_artists() {
+        let artist: Artist = serde_json::from_value(json!({
+            "id": "1",
+            "type": "artists",
+            "attributes": { "name": "Band" },
+            "views": {
+                "similar-artists": {
+                    "data": [{ "id": "2", "type": "artists", "attributes": { "name": "Other" } }]
+                }
+            }
+        }))
+        .expect("the test artist is valid");
+
+        let data = ArtistData::from_catalog(&artist);
+
+        let names: Vec<&str> = data
+            .similar_artists
+            .iter()
+            .map(|item| item.title.as_str())
+            .collect();
+        assert_eq!(names, ["Other"]);
+    }
+
+    #[test]
+    fn start_of_tells_a_person_from_a_group() {
+        assert_eq!(
+            start_of(Some("1965-05-17"), Some(false)),
+            Some(ArtistStart::Born("1965".to_owned()))
+        );
+        assert_eq!(
+            start_of(Some("1985"), Some(true)),
+            Some(ArtistStart::Formed("1985".to_owned()))
+        );
+        assert_eq!(start_of(None, Some(true)), None);
+    }
+
+    #[test]
+    fn plain_text_removes_the_tags() {
+        assert_eq!(
+            plain_text(" The album <i>OK Computer</i> (1997) ").as_deref(),
+            Some("The album OK Computer (1997)")
+        );
+        assert_eq!(plain_text("<br/> "), None);
     }
 
     #[test]

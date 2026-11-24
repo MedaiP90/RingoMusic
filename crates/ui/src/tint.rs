@@ -2,8 +2,9 @@
 // Copyright (C) 2026 RingoMusic contributors
 
 //! Tints from the dominant color of a cover. The player bar and the queue panel
-//! use the playing song (`--cover-tint`). An album page that is on screen uses
-//! its own album (`--album-tint`). `style.css` uses both variables.
+//! use the playing song (`--cover-tint`). An album or artist page that is on
+//! screen uses its own cover or photo (`--album-tint`). `style.css` uses both
+//! variables.
 
 use std::cell::RefCell;
 

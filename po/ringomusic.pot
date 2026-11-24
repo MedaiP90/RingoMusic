@@ -405,6 +405,20 @@ msgid "Artist"
 msgstr ""
 
 #: crates/ui/src/views/artist.rs
+msgid "Artist Information"
+msgstr ""
+
+#: crates/ui/src/views/artist.rs
+#, rust-format
+msgid "Born in {year}"
+msgstr ""
+
+#: crates/ui/src/views/artist.rs
+#, rust-format
+msgid "Formed in {year}"
+msgstr ""
+
+#: crates/ui/src/views/artist.rs
 msgid "Nothing to show for this artist"
 msgstr ""
 
@@ -412,8 +426,34 @@ msgstr ""
 msgid "Show More"
 msgstr ""
 
+#: crates/ui/src/views/artist.rs
+msgid "Similar Artists"
+msgstr ""
+
 #: crates/ui/src/views/artist.rs crates/ui/src/views/artist_more.rs
 msgid "Top Songs"
+msgstr ""
+
+#: crates/ui/src/views/artist_info.rs
+msgid "Biography"
+msgstr ""
+
+#: crates/ui/src/views/artist_info.rs
+msgid "Born"
+msgstr ""
+
+#: crates/ui/src/views/artist_info.rs
+msgid "Formed"
+msgstr ""
+
+#: crates/ui/src/views/artist_info.rs
+msgid "Genre"
+msgid_plural "Genres"
+msgstr[0] ""
+msgstr[1] ""
+
+#: crates/ui/src/views/artist_info.rs
+msgid "Origin"
 msgstr ""
 
 #: crates/ui/src/views/artist_more.rs
@@ -719,6 +759,33 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "New page: see the latest releases from Apple Music."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Made For You page in the library: your personal mixes from Apple Music."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The artist page shows its albums in a row that scrolls sideways, and similar "
+"artists at the bottom, like in Apple Music."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The artist page shows the genre, the origin, and the start year under the "
+"name. The Info button opens all the information about the artist, with the "
+"biography."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "The artist page and its information take a tint from the artist photo."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"On the artist page, the Show More buttons are small and sit at the right of "
+"the section titles."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

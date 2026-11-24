@@ -34,7 +34,7 @@ F=tests/fixtures/api
 ringo-cli api-get '/v1/catalog/{storefront}/search' term=radiohead types=songs,albums,artists,playlists limit=5 > $F/catalog_search.json
 ringo-cli api-get '/v1/catalog/{storefront}/songs/1097861769' > $F/catalog_song.json
 ringo-cli api-get '/v1/catalog/{storefront}/albums/1097861387' include=tracks > $F/catalog_album.json
-ringo-cli api-get '/v1/catalog/{storefront}/artists/657515' views=top-songs,full-albums > $F/catalog_artist.json
+ringo-cli api-get '/v1/catalog/{storefront}/artists/657515' views=top-songs,full-albums,similar-artists extend=artistBio,bornOrFormed,origin,isGroup > $F/catalog_artist.json
 ringo-cli api-get '/v1/catalog/{storefront}/playlists/pl.f4d106fed2bd41149aaacabb233eb5eb' include=tracks > $F/catalog_playlist.json
 ```
 

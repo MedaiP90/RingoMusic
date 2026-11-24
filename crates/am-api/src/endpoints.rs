@@ -148,7 +148,8 @@ pub async fn album(transport: &impl ApiTransport, storefront: &str, id: &AlbumId
     first(fetch(transport, &path, &[("include", "tracks")]).await?)
 }
 
-/// Gets one catalog artist with the views `top-songs` and `full-albums`.
+/// Gets one catalog artist with the views `top-songs`, `full-albums`, and
+/// `similar-artists`, and with the biography, the origin, and the start date.
 ///
 /// # Errors
 ///
@@ -161,7 +162,11 @@ pub async fn artist(
     id: &ArtistId,
 ) -> Result<Artist> {
     let path = catalog_path(storefront, "artists", id.as_str())?;
-    first(fetch(transport, &path, &[("views", "top-songs,full-albums")]).await?)
+    let query = [
+        ("views", "top-songs,full-albums,similar-artists"),
+        ("extend", "artistBio,bornOrFormed,origin,isGroup"),
+    ];
+    first(fetch(transport, &path, &query).await?)
 }
 
 /// Gets one page of the top songs of a catalog artist.
