@@ -3,6 +3,7 @@
 
 // Electron main process: window, session, and socket client.
 
+import crypto from 'node:crypto';
 import path from 'node:path';
 
 import { app, BrowserWindow, components } from 'electron';
@@ -10,11 +11,14 @@ import type { Session } from 'electron';
 
 import pkg from '../package.json' with { type: 'json' };
 import { flushLogs, forwardLogs, log } from './log.ts';
+import { BRIDGE_KEY_ARG } from './bridge.ts';
 import { PageBridge } from './page-bridge.ts';
 import { PAGE_METHODS } from './page-methods.ts';
 import { RpcClient } from './rpc.ts';
 import { decidePopup, SignIn, START_URL } from './sign-in.ts';
 
+// Random for each launch, so the page has no stable name to detect.
+const BRIDGE_KEY = `_${crypto.randomBytes(8).toString('hex')}`;
 const SESSION_PARTITION = 'persist:ringomusic';
 const EXIT_CODE_BAD_CONFIGURATION = 2;
 const QUIT_GRACE_MS = 3000;
@@ -104,7 +108,7 @@ function connectPageBridge(client: RpcClient, window: BrowserWindow): void {
   const bridge = new PageBridge(window.webContents, (notification) => {
     client.notify(notification);
     signIn.handleNotification(notification);
-  });
+  }, BRIDGE_KEY);
   const signIn = new SignIn(window, bridge);
   for (const method of PAGE_METHODS) {
     client.register(method, (params) => bridge.call(method, params));
@@ -156,6 +160,7 @@ function createWindow(userAgent: string): BrowserWindow {
       sandbox: true,
       nodeIntegration: false,
       preload: path.join(__dirname, 'preload.js'),
+      additionalArguments: [`${BRIDGE_KEY_ARG}${BRIDGE_KEY}`],
     },
   });
   window.webContents.setUserAgent(userAgent);

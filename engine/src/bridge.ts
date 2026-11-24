@@ -8,6 +8,9 @@ export const CHANNEL_MESSAGE = 'ringo:message';
 // IPC channel: main to page (requests).
 export const CHANNEL_REQUEST = 'ringo:request';
 
+// Command line argument that gives the random page bridge name to the preload.
+export const BRIDGE_KEY_ARG = '--bridge-key=';
+
 export type BridgeMessage = Record<string, unknown>;
 
 // A bridge message is an object with a string `method` or a numeric `id`.

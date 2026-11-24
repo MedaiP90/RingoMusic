@@ -39,9 +39,9 @@ const SELF_CHECKS: SelfCheck[] = [
 ];
 
 function getBridge(): RingoBridge {
-  const bridge = window.ringoBridge;
+  const bridge = (window as unknown as Record<string, RingoBridge | undefined>)[bridgeKey];
   if (!bridge) {
-    throw new Error('ringoBridge is not available');
+    throw new Error('page bridge is not available');
   }
   return bridge;
 }
@@ -147,8 +147,10 @@ async function main(): Promise<void> {
   notify({ jsonrpc: '2.0', method: 'engine.ready' });
 }
 
-// A page can run the injection twice. The flag stops a second run.
-if (!window.__ringoHookInjected) {
-  window.__ringoHookInjected = true;
+// A page can run the injection twice. A symbol property on `window` stops a second run.
+// The key is random, so the page cannot guess the symbol.
+const injectedFlag = Symbol.for(bridgeKey);
+if (!(injectedFlag in window)) {
+  Object.defineProperty(window, injectedFlag, { value: true });
   void main();
 }

@@ -75,7 +75,7 @@ interface RingoBridge {
 
 interface Window {
   MusicKit?: { getInstance(): MusicKitInstance | undefined };
-  ringoBridge?: RingoBridge;
-  // Set after the hook runs once in this page.
-  __ringoHookInjected?: boolean;
 }
+
+// Random bridge name. The wrapper in `page-bridge.ts` gives it to the hook script.
+declare const bridgeKey: string;
