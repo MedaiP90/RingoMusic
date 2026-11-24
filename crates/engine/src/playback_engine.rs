@@ -3,7 +3,7 @@
 
 use std::time::Duration;
 
-use tokio::sync::broadcast;
+use tokio::sync::{broadcast, watch};
 
 use crate::protocol::{AuthStatus, RepeatMode};
 use crate::{EngineEvent, ItemId, Result};
@@ -140,4 +140,9 @@ pub trait PlaybackEngine: Send + Sync {
 
     /// Subscribes to engine events.
     fn events(&self) -> broadcast::Receiver<EngineEvent>;
+
+    /// Returns the last lifecycle event (see [`EngineEvent::is_lifecycle`]), or
+    /// `None` before the first one. A late subscriber reads it to learn the
+    /// current engine status.
+    fn lifecycle(&self) -> watch::Receiver<Option<EngineEvent>>;
 }

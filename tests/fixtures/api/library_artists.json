@@ -6,7 +6,34 @@
       },
       "href": "/v1/me/library/artists/r.example1",
       "id": "r.example1",
-      "type": "library-artists"
+      "type": "library-artists",
+      "relationships": {
+        "catalog": {
+          "href": "/v1/me/library/artists/r.example1/catalog",
+          "data": [
+            {
+              "id": "657515",
+              "type": "artists",
+              "href": "/v1/catalog/it/artists/657515",
+              "attributes": {
+                "name": "Radiohead",
+                "artwork": {
+                  "bgColor": "131313",
+                  "defaultCropCode": "bb",
+                  "hasP3": true,
+                  "height": 1050,
+                  "textColor1": "eba140",
+                  "textColor2": "e29438",
+                  "textColor3": "c08437",
+                  "textColor4": "b87a31",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}bb.jpg",
+                  "width": 1050
+                }
+              }
+            }
+          ]
+        }
+      }
     },
     {
       "attributes": {

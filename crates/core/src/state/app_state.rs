@@ -22,6 +22,14 @@ pub enum EngineStatus {
         /// Details of the failure.
         detail: String,
     },
+    /// The engine speaks another protocol version. The supervisor does not start
+    /// it again.
+    ProtocolMismatch {
+        /// Version that the app supports.
+        expected: u32,
+        /// Version that the engine reported.
+        actual: u32,
+    },
     /// The engine crashed and the supervisor starts it again.
     Restarting,
     /// The engine failed too often. The supervisor does not start it again.
@@ -106,6 +114,9 @@ pub struct AppState {
     pub now_playing: Option<NowPlaying>,
     /// Set until the engine is ready and has the queue again.
     pub(crate) resume: Option<Resume>,
+    /// Position to seek to when the engine reports `Playing`. A seek before
+    /// that is lost, because the engine has not loaded the item yet.
+    pub(crate) pending_seek: Option<Duration>,
 }
 
 impl Default for AppState {
@@ -133,6 +144,7 @@ impl AppState {
             },
             now_playing: None,
             resume: None,
+            pending_seek: None,
         }
     }
 }

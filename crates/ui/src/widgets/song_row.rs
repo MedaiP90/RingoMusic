@@ -81,13 +81,7 @@ impl SongRowWidgets {
     /// Builds an empty row. Call [`Self::show`] to fill it. Pass the list
     /// item if the row is in a list view: the play button needs it.
     pub fn build(list_item: Option<&gtk::ListItem>) -> (gtk::Box, Self) {
-        let root = gtk::Box::builder()
-            .spacing(12)
-            .margin_top(6)
-            .margin_bottom(6)
-            .margin_start(12)
-            .margin_end(12)
-            .build();
+        let root = row_root();
         let number = gtk::Label::builder()
             .halign(gtk::Align::Center)
             .valign(gtk::Align::Center)
@@ -111,15 +105,7 @@ impl SongRowWidgets {
         lead.append(artwork.widget());
         root.append(&build_play_overlay(&root, &lead, list_item));
 
-        let texts = gtk::Box::builder()
-            .orientation(gtk::Orientation::Vertical)
-            .valign(gtk::Align::Center)
-            .hexpand(true)
-            .build();
-        let title = text_label(&[]);
-        let artist = text_label(&["dim-label", "caption"]);
-        texts.append(&title);
-        texts.append(&artist);
+        let (texts, title, artist) = title_artist_texts();
         root.append(&texts);
 
         let explicit = gtk::Label::builder()
@@ -262,6 +248,32 @@ fn popup_focused_row(view: &gtk::Widget) -> bool {
         row.activate_action(&format!("{ROW_GROUP}.{POPUP_ACTION}"), None)
             .is_ok()
     })
+}
+
+/// Makes the root box of a song or queue row.
+pub fn row_root() -> gtk::Box {
+    gtk::Box::builder()
+        .spacing(12)
+        .margin_top(6)
+        .margin_bottom(6)
+        .margin_start(12)
+        .margin_end(12)
+        .build()
+}
+
+/// Makes the column with the title label over the artist label. Returns the
+/// column, the title label, and the artist label.
+pub fn title_artist_texts() -> (gtk::Box, gtk::Label, gtk::Label) {
+    let texts = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .valign(gtk::Align::Center)
+        .hexpand(true)
+        .build();
+    let title = text_label(&[]);
+    let artist = text_label(&["dim-label", "caption"]);
+    texts.append(&title);
+    texts.append(&artist);
+    (texts, title, artist)
 }
 
 fn text_label(css_classes: &[&str]) -> gtk::Label {

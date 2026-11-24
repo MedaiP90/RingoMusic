@@ -1,0 +1,70 @@
+{
+  "data": [
+    {
+      "href": "/v1/me/library/playlists/p.MadeForYou0000001?l=it",
+      "id": "p.MadeForYou0000001",
+      "type": "library-playlists"
+    }
+  ],
+  "meta": {
+    "filters": {
+      "featured": {
+        "made-for-you": [
+          {
+            "href": "/v1/me/library/playlists/p.MadeForYou0000001?l=it",
+            "id": "p.MadeForYou0000001",
+            "type": "library-playlists"
+          }
+        ]
+      }
+    }
+  },
+  "resources": {
+    "library-playlists": {
+      "p.MadeForYou0000001": {
+        "attributes": {
+          "artwork": {
+            "hasP3": false,
+            "height": 1200,
+            "url": "https://is1-ssl.mzstatic.com/image/thumb/Features/v4/47/ca/e4/47cae48b-08ae-7d38-20f5-c5231e35e1a9/e14ff9b1-65a2-4976-97aa-e6671aec6c29.png/{w}x{h}cc.{f}",
+            "width": 1200
+          },
+          "dateAdded": "2024-01-01T00:00:00Z",
+          "name": "Replay 2023",
+          "playParams": {
+            "globalId": "pl.rp-wPPRsglNoYvo",
+            "id": "p.MadeForYou0000001",
+            "isLibrary": true,
+            "kind": "playlist",
+            "versionHash": "0000000000000000000000000000000000000000000000000000000000000000"
+          }
+        },
+        "href": "/v1/me/library/playlists/p.MadeForYou0000001?l=it",
+        "id": "p.MadeForYou0000001",
+        "relationships": {
+          "catalog": {
+            "data": [
+              {
+                "href": "/v1/catalog/it/playlists/pl.rp-wPPRsglNoYvo?l=it",
+                "id": "pl.rp-wPPRsglNoYvo",
+                "type": "playlists"
+              }
+            ],
+            "href": "/v1/me/library/playlists/p.MadeForYou0000001/catalog?l=it"
+          }
+        },
+        "type": "library-playlists"
+      }
+    },
+    "playlists": {
+      "pl.rp-wPPRsglNoYvo": {
+        "attributes": {
+          "lastModifiedDate": "2024-01-14T00:00:00Z"
+        },
+        "href": "/v1/catalog/it/playlists/pl.rp-wPPRsglNoYvo?l=it",
+        "id": "pl.rp-wPPRsglNoYvo",
+        "type": "playlists"
+      }
+    }
+  }
+}

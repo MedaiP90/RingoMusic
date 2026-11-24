@@ -129,6 +129,20 @@ fn is_current(state: &AppState, id: &str) -> bool {
 }
 
 #[tokio::test]
+async fn core_created_after_ready_shows_the_engine_ready() {
+    let engine = Arc::new(MockEngine::new());
+    engine.emit(EngineEvent::Ready);
+    let (core, handle) = Core::new(Arc::clone(&engine) as _);
+    tokio::spawn(core.run());
+    let mut snapshots = handle.subscribe();
+    let wait = snapshots.wait_for(|state| state.engine == EngineStatus::Ready);
+    tokio::time::timeout(WAIT_LIMIT, wait)
+        .await
+        .expect("the engine did not become ready in time")
+        .expect("the runner is running");
+}
+
+#[tokio::test]
 async fn song_plays_to_the_end_with_repeat_off() {
     let mut fixture = Fixture::start().await;
     fixture.replace_queue(&["s1"], 0).await;

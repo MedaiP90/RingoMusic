@@ -82,6 +82,40 @@ msgid ""
 "window closes."
 msgstr ""
 
+#: crates/ui/src/detail.rs crates/ui/src/section.rs
+#: crates/ui/src/views/artist_albums.rs crates/ui/src/views/search.rs
+msgid "Albums"
+msgstr ""
+
+#: crates/ui/src/detail.rs
+msgid "Appears On"
+msgstr ""
+
+#: crates/ui/src/detail.rs
+msgid "Compilations"
+msgstr ""
+
+#: crates/ui/src/detail.rs
+msgid "Latest Release"
+msgstr ""
+
+#: crates/ui/src/detail.rs
+msgid "Live Albums"
+msgstr ""
+
+#: crates/ui/src/detail.rs crates/ui/src/section.rs
+#: crates/ui/src/views/search.rs
+msgid "Playlists"
+msgstr ""
+
+#: crates/ui/src/detail.rs
+msgid "Similar Artists"
+msgstr ""
+
+#: crates/ui/src/detail.rs
+msgid "Singles & EPs"
+msgstr ""
+
 #: crates/ui/src/gate.rs
 msgid "Check Again"
 msgstr ""
@@ -103,6 +137,10 @@ msgid "Report Problem"
 msgstr ""
 
 #: crates/ui/src/gate.rs
+msgid "RingoMusic Is Not Installed Correctly"
+msgstr ""
+
+#: crates/ui/src/gate.rs
 msgid ""
 "RingoMusic plays your Apple Music library. You need an Apple Music "
 "subscription. You sign in on a page of Apple, and RingoMusic does not store "
@@ -115,6 +153,13 @@ msgstr ""
 
 #: crates/ui/src/gate.rs
 msgid "Starting the player…"
+msgstr ""
+
+#: crates/ui/src/gate.rs
+#, rust-format
+msgid ""
+"The app and its player have different versions (protocol {expected} and "
+"{actual}). Install RingoMusic again."
 msgstr ""
 
 #: crates/ui/src/gate.rs
@@ -160,8 +205,6 @@ msgid ""
 msgstr ""
 
 #: crates/ui/src/gate.rs crates/ui/src/views/detail_frame.rs
-#: crates/ui/src/views/home.rs crates/ui/src/views/library.rs
-#: crates/ui/src/views/search.rs
 msgid "Try Again"
 msgstr ""
 
@@ -306,12 +349,8 @@ msgstr ""
 msgid "{used} of {limit}"
 msgstr ""
 
-#: crates/ui/src/section.rs crates/ui/src/views/artist.rs
-#: crates/ui/src/views/artist_more.rs crates/ui/src/views/search.rs
-msgid "Albums"
-msgstr ""
-
-#: crates/ui/src/section.rs crates/ui/src/views/search.rs
+#: crates/ui/src/section.rs crates/ui/src/views/library.rs
+#: crates/ui/src/views/search.rs
 msgid "Artists"
 msgstr ""
 
@@ -319,8 +358,12 @@ msgstr ""
 msgid "Home"
 msgstr ""
 
-#: crates/ui/src/section.rs crates/ui/src/views/search.rs
-msgid "Playlists"
+#: crates/ui/src/section.rs
+msgid "Made For You"
+msgstr ""
+
+#: crates/ui/src/section.rs
+msgid "New"
 msgstr ""
 
 #: crates/ui/src/section.rs
@@ -331,7 +374,7 @@ msgstr ""
 msgid "Songs"
 msgstr ""
 
-#: crates/ui/src/sidebar.rs
+#: crates/ui/src/sidebar.rs crates/ui/src/views/search.rs
 msgid "Library"
 msgstr ""
 
@@ -386,27 +429,82 @@ msgid "Artist"
 msgstr ""
 
 #: crates/ui/src/views/artist.rs
+msgid "Artist Information"
+msgstr ""
+
+#: crates/ui/src/views/artist.rs
+#, rust-format
+msgid "Born in {year}"
+msgstr ""
+
+#: crates/ui/src/views/artist.rs
+#, rust-format
+msgid "Formed in {year}"
+msgstr ""
+
+#: crates/ui/src/views/artist.rs
 msgid "Nothing to show for this artist"
 msgstr ""
 
-#: crates/ui/src/views/artist.rs crates/ui/src/widgets/detail_header.rs
-msgid "Show More"
-msgstr ""
-
-#: crates/ui/src/views/artist.rs crates/ui/src/views/artist_more.rs
+#: crates/ui/src/views/artist.rs crates/ui/src/views/more.rs
 msgid "Top Songs"
 msgstr ""
 
-#: crates/ui/src/views/artist_more.rs
-msgid "Nothing to show"
+#: crates/ui/src/views/artist_albums.rs
+msgid "Back"
+msgstr ""
+
+#: crates/ui/src/views/artist_albums.rs crates/ui/src/views/library.rs
+msgid "Cannot Load Albums"
+msgstr ""
+
+#: crates/ui/src/views/artist_albums.rs
+msgid "No Albums"
+msgstr ""
+
+#: crates/ui/src/views/artist_albums.rs
+msgid "No Artist Selected"
+msgstr ""
+
+#: crates/ui/src/views/artist_albums.rs
+msgid "Open Artist Page"
+msgstr ""
+
+#: crates/ui/src/views/artist_albums.rs
+msgid "Select an artist to see the albums in your library."
+msgstr ""
+
+#: crates/ui/src/views/artist_albums.rs
+msgid "Your library has no albums of this artist."
+msgstr ""
+
+#: crates/ui/src/views/artist_info.rs
+msgid "Biography"
+msgstr ""
+
+#: crates/ui/src/views/artist_info.rs
+msgid "Born"
+msgstr ""
+
+#: crates/ui/src/views/artist_info.rs
+msgid "Formed"
+msgstr ""
+
+#: crates/ui/src/views/artist_info.rs
+msgid "Genre"
+msgid_plural "Genres"
+msgstr[0] ""
+msgstr[1] ""
+
+#: crates/ui/src/views/artist_info.rs
+msgid "Origin"
 msgstr ""
 
 #: crates/ui/src/views/detail_frame.rs
 msgid "Cannot Load This Page"
 msgstr ""
 
-#: crates/ui/src/views/detail_frame.rs crates/ui/src/views/home.rs
-#: crates/ui/src/views/library.rs crates/ui/src/views/search.rs
+#: crates/ui/src/views/detail_frame.rs
 msgid "Check your connection and try again."
 msgstr ""
 
@@ -426,16 +524,8 @@ msgstr ""
 msgid "Recommended for You"
 msgstr ""
 
-#: crates/ui/src/views/home.rs
-msgid "Refresh (F5)"
-msgstr ""
-
 #: crates/ui/src/views/library.rs
 msgid "Add music to your library to see it here."
-msgstr ""
-
-#: crates/ui/src/views/library.rs
-msgid "Cannot Load Albums"
 msgstr ""
 
 #: crates/ui/src/views/library.rs
@@ -464,6 +554,34 @@ msgstr ""
 
 #: crates/ui/src/views/library.rs
 msgid "Your library is empty"
+msgstr ""
+
+#: crates/ui/src/views/made_for_you.rs
+msgid "Cannot Load Your Mixes"
+msgstr ""
+
+#: crates/ui/src/views/made_for_you.rs
+msgid "Listen to more music, and Apple Music makes mixes for you."
+msgstr ""
+
+#: crates/ui/src/views/made_for_you.rs
+msgid "No Mixes Yet"
+msgstr ""
+
+#: crates/ui/src/views/more.rs
+msgid "Nothing to show"
+msgstr ""
+
+#: crates/ui/src/views/new_releases.rs
+msgid "Cannot Load New Releases"
+msgstr ""
+
+#: crates/ui/src/views/new_releases.rs
+msgid "Check back later."
+msgstr ""
+
+#: crates/ui/src/views/new_releases.rs
+msgid "No New Releases"
 msgstr ""
 
 #: crates/ui/src/views/playlist.rs
@@ -530,6 +648,10 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: crates/ui/src/views/search.rs
+msgid "Apple Music"
+msgstr ""
+
+#: crates/ui/src/views/search.rs
 msgid "Look for songs, albums, artists, and playlists."
 msgstr ""
 
@@ -546,7 +668,15 @@ msgid "Search Failed"
 msgstr ""
 
 #: crates/ui/src/views/search.rs
+msgid "Search Your Library"
+msgstr ""
+
+#: crates/ui/src/views/search.rs
 msgid "Try a different term."
+msgstr ""
+
+#: crates/ui/src/views/sections.rs
+msgid "Refresh (F5)"
 msgstr ""
 
 #: crates/ui/src/widgets/detail_header.rs crates/ui/src/widgets/player_bar.rs
@@ -554,8 +684,8 @@ msgstr ""
 msgid "Play"
 msgstr ""
 
-#: crates/ui/src/widgets/detail_header.rs
-msgid "Show Less"
+#: crates/ui/src/widgets/detail_header.rs crates/ui/src/widgets/tile.rs
+msgid "Show More"
 msgstr ""
 
 #: crates/ui/src/widgets/detail_header.rs crates/ui/src/widgets/player_bar.rs
@@ -668,6 +798,157 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "The narrow layout"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"This release adds the New page, the Made For You page, and a richer artist "
+"page. It also makes the player more stable."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "New page: see the latest releases from Apple Music."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Made For You page in the library: your personal mixes from Apple Music."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The Artists page in the library shows the artist list and, next to it, the "
+"albums in your library of the selected artist. The Open Artist Page button "
+"over the albums opens the full artist page. In a narrow window, the list and "
+"the albums show one at a time."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The buttons of the app have rounded corners and no longer have the pill "
+"shape."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The artist page shows the latest release, the albums, the singles and EPs, "
+"the live albums, the compilations, the playlists, the albums the artist "
+"appears on, and similar artists, like in Apple Music. Each list scrolls "
+"sideways, and lists without items are hidden."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The artist page shows the genre, the origin, and the start year under the "
+"name. The Info button opens all the information about the artist, with the "
+"biography."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "The artist page and its information take a tint from the artist photo."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"On the artist page, each list with more items has a small Show More button "
+"at the right of its title."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"A playlist description shows in one line. When it is longer, a small Show "
+"More button opens all of it."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"A long album or playlist title wraps next to the artwork. The text moves "
+"under the artwork only in a narrow window."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Songs on the Search, New, and artist pages show in columns that scroll "
+"sideways, like in Apple Music."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The Search page can search your library: use the Apple Music and Library "
+"switch next to the search field."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"On the Search page, each section with more results has a small Show More "
+"button at the right of its title. It opens a page with all the results of "
+"the section."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Fix: some albums and songs on the New page had no artwork."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Fix: artists in the library and in the library search had no photo."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Fix: on a slow start, the Widevine module and the session could go to the "
+"wrong folder, and autoplay could be blocked."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"When Apple Music changes its web page in a way that RingoMusic cannot use, "
+"RingoMusic stops and shows a message. It does not restart the player again "
+"and again."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"If the app and its player have different versions, RingoMusic tells you to "
+"install it again."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Fix: after a crash of the player, RingoMusic plays the song again from the "
+"position where it stopped. If the music was paused, it stays paused."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "The window stays responsive while a queue change waits for the network."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The cache of Apple Music data saves new responses faster when it is large."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Artwork that shows in many places at the same time loads and decodes only "
+"once."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "The filter of the library lists reacts faster in large libraries."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Fix: the animation was not smooth when an album opened from an artist page. "
+"The page color now changes after the animation."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The colors of the pages and of the player bar fade smoothly when they change."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Fix: closed album and artist pages stayed in memory."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

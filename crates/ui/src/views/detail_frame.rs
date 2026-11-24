@@ -2,7 +2,8 @@
 // Copyright (C) 2026 RingoMusic contributors
 
 //! The states of a detail page: loading, empty, failed, and content. The
-//! three detail views share it.
+//! detail views share the frame. The list views share its loading and failed
+//! pages.
 
 use gettextrs::gettext;
 use relm4::adw;
@@ -28,13 +29,7 @@ impl DetailFrame {
         on_retry: impl Fn() + 'static,
     ) -> Self {
         let stack = gtk::Stack::new();
-        let spinner = adw::Spinner::builder()
-            .halign(gtk::Align::Center)
-            .valign(gtk::Align::Center)
-            .width_request(SPINNER_SIZE)
-            .height_request(SPINNER_SIZE)
-            .build();
-        stack.add_named(&spinner, Some(Phase::Loading.page()));
+        stack.add_named(&loading_spinner(), Some(Phase::Loading.page()));
         stack.add_named(
             &adw::StatusPage::builder()
                 .icon_name("audio-x-generic-symbolic")
@@ -42,7 +37,10 @@ impl DetailFrame {
                 .build(),
             Some(Phase::Empty.page()),
         );
-        stack.add_named(&failed_page(on_retry), Some(Phase::Failed.page()));
+        stack.add_named(
+            &failed_page(&gettext("Cannot Load This Page"), on_retry),
+            Some(Phase::Failed.page()),
+        );
         stack.add_named(content, Some(Phase::Content.page()));
         stack.set_visible_child_name(Phase::Loading.page());
         Self { stack }
@@ -59,16 +57,28 @@ impl DetailFrame {
     }
 }
 
-fn failed_page(on_retry: impl Fn() + 'static) -> adw::StatusPage {
+/// Makes the spinner of the loading state.
+pub fn loading_spinner() -> adw::Spinner {
+    adw::Spinner::builder()
+        .halign(gtk::Align::Center)
+        .valign(gtk::Align::Center)
+        .width_request(SPINNER_SIZE)
+        .height_request(SPINNER_SIZE)
+        .build()
+}
+
+/// Makes the page of the failed state. `on_retry` runs when the user presses
+/// "Try Again".
+pub fn failed_page(title: &str, on_retry: impl Fn() + 'static) -> adw::StatusPage {
     let retry = gtk::Button::builder()
         .label(gettext("Try Again"))
         .halign(gtk::Align::Center)
-        .css_classes(["pill", "suggested-action"])
+        .css_classes(["boxy", "suggested-action"])
         .build();
     retry.connect_clicked(move |_| on_retry());
     adw::StatusPage::builder()
         .icon_name("dialog-error-symbolic")
-        .title(gettext("Cannot Load This Page"))
+        .title(title)
         .description(gettext("Check your connection and try again."))
         .child(&retry)
         .build()

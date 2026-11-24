@@ -7,6 +7,7 @@
 
 use std::cell::RefCell;
 
+use gettextrs::gettext;
 use relm4::gtk;
 use relm4::gtk::pango::EllipsizeMode;
 use relm4::gtk::prelude::*;
@@ -14,27 +15,39 @@ use relm4::gtk::prelude::*;
 use crate::item::{TileItem, TileKind};
 use crate::widgets::artwork_image::ArtworkImage;
 
-/// Size of the artwork in pixels.
+/// Default size of the artwork in pixels.
 const ARTWORK_SIZE: i32 = 140;
 
 /// A titled row of tiles that scrolls sideways. It hides itself when it has
 /// no tiles.
 pub struct TileRow {
     root: gtk::Box,
+    /// The heading and the buttons at its right.
+    title_row: gtk::Box,
     tiles: gtk::Box,
+    /// Size of the artwork of each tile, in pixels.
+    artwork_size: i32,
     /// The images must live as long as the tiles: they load in the background.
     images: RefCell<Vec<ArtworkImage>>,
 }
 
 impl TileRow {
-    /// Makes an empty row with the heading `title`.
+    /// Makes an empty row with the heading `title` and tiles of the default
+    /// size.
     pub fn new(title: &str) -> Self {
+        Self::new_with_artwork_size(title, ARTWORK_SIZE)
+    }
+
+    /// Makes an empty row with the heading `title`. The artwork of each tile
+    /// is `artwork_size` pixels.
+    pub fn new_with_artwork_size(title: &str, artwork_size: i32) -> Self {
         let root = gtk::Box::builder()
             .orientation(gtk::Orientation::Vertical)
             .spacing(6)
             .visible(false)
             .build();
-        root.append(&heading(title));
+        let title_row = heading_row(title);
+        root.append(&title_row);
         let tiles = gtk::Box::builder()
             .spacing(12)
             .margin_start(12)
@@ -49,7 +62,9 @@ impl TileRow {
         root.append(&scroller);
         Self {
             root,
+            title_row,
             tiles,
+            artwork_size,
             images: RefCell::new(Vec::new()),
         }
     }
@@ -67,11 +82,16 @@ impl TileRow {
         let mut images = self.images.borrow_mut();
         images.clear();
         for item in items {
-            let (tile, image) = build_tile(item);
+            let (tile, image) = build_tile(item, self.artwork_size);
             self.tiles.append(&tile);
             images.push(image);
         }
         self.root.set_visible(!items.is_empty());
+    }
+
+    /// Adds `button` at the right end of the heading.
+    pub fn append_header_button(&self, button: &impl IsA<gtk::Widget>) {
+        self.title_row.append(button);
     }
 }
 
@@ -126,17 +146,36 @@ impl TileGrid {
     pub fn append_items(&self, items: &[TileItem]) {
         let mut images = self.images.borrow_mut();
         for item in items {
-            let (tile, image) = build_tile(item);
+            let (tile, image) = build_tile(item, ARTWORK_SIZE);
             self.tiles.append(&tile);
             images.push(image);
         }
         self.root.set_visible(self.tiles.first_child().is_some());
     }
+}
 
-    /// Adds `button` below the tiles.
-    pub fn append_footer(&self, button: &impl IsA<gtk::Widget>) {
-        self.root.append(button);
-    }
+/// Builds a row with the heading `title`. The heading fills the row, so a
+/// button that the caller appends goes to the right end.
+pub fn heading_row(title: &str) -> gtk::Box {
+    let row = gtk::Box::new(gtk::Orientation::Horizontal, 0);
+    let label = heading(title);
+    label.set_hexpand(true);
+    row.append(&label);
+    row
+}
+
+/// Builds a small hidden Show More button for the right end of a heading. It
+/// activates `action`, which opens a page with all items. The caller sets the
+/// target and shows the button when more items exist.
+pub fn more_button(action: &str) -> gtk::Button {
+    gtk::Button::builder()
+        .label(gettext("Show More"))
+        .valign(gtk::Align::Center)
+        .margin_end(12)
+        .css_classes(["flat", "section-more"])
+        .action_name(action)
+        .visible(false)
+        .build()
 }
 
 /// Builds the heading of a section.
@@ -150,18 +189,19 @@ pub fn heading(title: &str) -> gtk::Label {
         .build()
 }
 
-/// Builds a flat button with the artwork, the title, and the subtitle. A
-/// click runs the open action of the kind with the ID of the item.
-pub fn build_tile(item: &TileItem) -> (gtk::Button, ArtworkImage) {
+/// Builds a flat button with the artwork of `artwork_size` pixels, the title,
+/// and the subtitle. A click runs the open action of the kind with the ID of
+/// the item.
+fn build_tile(item: &TileItem, artwork_size: i32) -> (gtk::Button, ArtworkImage) {
     let image = ArtworkImage::shared();
-    image.set_artwork(item.artwork_template.as_deref(), ARTWORK_SIZE);
+    image.set_artwork(item.artwork_template.as_deref(), artwork_size);
     if item.kind == TileKind::Artist {
         image.widget().add_css_class("circular");
     }
     let content = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .spacing(4)
-        .width_request(ARTWORK_SIZE)
+        .width_request(artwork_size)
         .build();
     content.append(image.widget());
     content.append(&text_label(&item.title, &["heading"]));

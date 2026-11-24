@@ -56,6 +56,39 @@ Copyright (C) 2026 RingoMusic contributors
     <control>pointing</control>
   </recommends>
   <releases>
+    <release version="1.1.0" date="2026-11-24">
+      <description>
+        <p>This release adds the New page, the Made For You page, and a richer artist page. It also makes the player more stable.</p>
+        <ul>
+          <li>New page: see the latest releases from Apple Music.</li>
+          <li>Made For You page in the library: your personal mixes from Apple Music.</li>
+          <li>The Artists page in the library shows the artist list and, next to it, the albums in your library of the selected artist. The Open Artist Page button over the albums opens the full artist page. In a narrow window, the list and the albums show one at a time.</li>
+          <li>The buttons of the app have rounded corners and no longer have the pill shape.</li>
+          <li>The artist page shows the latest release, the albums, the singles and EPs, the live albums, the compilations, the playlists, the albums the artist appears on, and similar artists, like in Apple Music. Each list scrolls sideways, and lists without items are hidden.</li>
+          <li>The artist page shows the genre, the origin, and the start year under the name. The Info button opens all the information about the artist, with the biography.</li>
+          <li>The artist page and its information take a tint from the artist photo.</li>
+          <li>On the artist page, each list with more items has a small Show More button at the right of its title.</li>
+          <li>A playlist description shows in one line. When it is longer, a small Show More button opens all of it.</li>
+          <li>A long album or playlist title wraps next to the artwork. The text moves under the artwork only in a narrow window.</li>
+          <li>Songs on the Search, New, and artist pages show in columns that scroll sideways, like in Apple Music.</li>
+          <li>The Search page can search your library: use the Apple Music and Library switch next to the search field.</li>
+          <li>On the Search page, each section with more results has a small Show More button at the right of its title. It opens a page with all the results of the section.</li>
+          <li>Fix: some albums and songs on the New page had no artwork.</li>
+          <li>Fix: artists in the library and in the library search had no photo.</li>
+          <li>Fix: on a slow start, the Widevine module and the session could go to the wrong folder, and autoplay could be blocked.</li>
+          <li>When Apple Music changes its web page in a way that RingoMusic cannot use, RingoMusic stops and shows a message. It does not restart the player again and again.</li>
+          <li>If the app and its player have different versions, RingoMusic tells you to install it again.</li>
+          <li>Fix: after a crash of the player, RingoMusic plays the song again from the position where it stopped. If the music was paused, it stays paused.</li>
+          <li>The window stays responsive while a queue change waits for the network.</li>
+          <li>The cache of Apple Music data saves new responses faster when it is large.</li>
+          <li>Artwork that shows in many places at the same time loads and decodes only once.</li>
+          <li>The filter of the library lists reacts faster in large libraries.</li>
+          <li>Fix: the animation was not smooth when an album opened from an artist page. The page color now changes after the animation.</li>
+          <li>The colors of the pages and of the player bar fade smoothly when they change.</li>
+          <li>Fix: closed album and artist pages stayed in memory.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.0.2" date="2026-11-23">
       <description>
         <ul>

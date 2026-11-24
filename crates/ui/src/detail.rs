@@ -6,11 +6,12 @@
 
 use std::time::Duration;
 
+use gettextrs::gettext;
 use ringo_am_api::endpoints;
 use ringo_am_api::models::{
-    Album, AlbumId, Artist, ArtistId, LibraryAlbum, LibraryAlbumId, LibraryArtistId,
-    LibraryPlaylist, LibraryPlaylistId, LibrarySongId, Playlist, PlaylistId, Relationship,
-    Resource, SongId,
+    Album, AlbumId, ApiPage, Artist, ArtistId, ArtistViews, LibraryAlbum, LibraryAlbumId,
+    LibraryArtistId, LibraryPlaylist, LibraryPlaylistId, LibrarySongId, Playlist, PlaylistId,
+    Relationship, Resource, SongId,
 };
 use ringo_am_api::{Page, Result as ApiResult};
 use ringo_core::state::{AppState, AuthState};
@@ -125,41 +126,179 @@ impl AlbumData {
     }
 }
 
-/// The data of an artist page.
+/// When a catalog artist started: the birth year of a person or the start
+/// year of a group.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum ArtistStart {
+    Born(String),
+    Formed(String),
+}
+
+/// A list of tiles on an artist page. Each list is one view of the API.
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub enum ArtistList {
+    LatestRelease,
+    Albums,
+    Singles,
+    LiveAlbums,
+    Compilations,
+    FeaturedPlaylists,
+    AppearsOn,
+    SimilarArtists,
+}
+
+impl ArtistList {
+    /// All lists, in the order of the artist page.
+    pub const ALL: [Self; 8] = [
+        Self::LatestRelease,
+        Self::Albums,
+        Self::Singles,
+        Self::LiveAlbums,
+        Self::Compilations,
+        Self::FeaturedPlaylists,
+        Self::AppearsOn,
+        Self::SimilarArtists,
+    ];
+
+    /// Name of the API view of the list.
+    pub fn view(self) -> &'static str {
+        match self {
+            Self::LatestRelease => "latest-release",
+            Self::Albums => "full-albums",
+            Self::Singles => "singles",
+            Self::LiveAlbums => "live-albums",
+            Self::Compilations => "compilation-albums",
+            Self::FeaturedPlaylists => "featured-playlists",
+            Self::AppearsOn => "appears-on-albums",
+            Self::SimilarArtists => "similar-artists",
+        }
+    }
+
+    /// Heading of the list.
+    pub fn title(self) -> String {
+        match self {
+            Self::LatestRelease => gettext("Latest Release"),
+            Self::Albums => gettext("Albums"),
+            Self::Singles => gettext("Singles & EPs"),
+            Self::LiveAlbums => gettext("Live Albums"),
+            Self::Compilations => gettext("Compilations"),
+            Self::FeaturedPlaylists => gettext("Playlists"),
+            Self::AppearsOn => gettext("Appears On"),
+            Self::SimilarArtists => gettext("Similar Artists"),
+        }
+    }
+
+    /// The first page of the list in `views`.
+    fn first_page(self, views: &ArtistViews) -> Page<TileItem> {
+        match self {
+            Self::LatestRelease => tile_page(views.latest_release.as_ref()),
+            Self::Albums => tile_page(views.full_albums.as_ref()),
+            Self::Singles => tile_page(views.singles.as_ref()),
+            Self::LiveAlbums => tile_page(views.live_albums.as_ref()),
+            Self::Compilations => tile_page(views.compilation_albums.as_ref()),
+            Self::FeaturedPlaylists => tile_page(views.featured_playlists.as_ref()),
+            Self::AppearsOn => tile_page(views.appears_on_albums.as_ref()),
+            Self::SimilarArtists => tile_page(views.similar_artists.as_ref()),
+        }
+    }
+}
+
+/// The tiles of one list of an artist page.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct ArtistTiles {
+    pub list: ArtistList,
+    pub items: Vec<TileItem>,
+    /// Offset of the next page, if the list has more.
+    pub next_offset: Option<u32>,
+}
+
+impl ArtistTiles {
+    fn new(list: ArtistList, page: Page<TileItem>) -> Self {
+        Self {
+            list,
+            items: page.items,
+            next_offset: page.next_offset,
+        }
+    }
+}
+
+/// The data of an artist page. The genres, the origin, the start, and the
+/// biography are empty for a library artist: the API has no data for it.
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct ArtistData {
     pub name: String,
     pub artwork_template: Option<String>,
+    pub genres: Vec<String>,
+    pub origin: Option<String>,
+    pub start: Option<ArtistStart>,
+    /// Plain text.
+    pub biography: Option<String>,
     /// Empty for a library artist: the API has no top songs for it.
     pub top_songs: Vec<SongItem>,
     /// Offset of the next page of top songs, if the artist has more.
     pub top_songs_next: Option<u32>,
-    pub albums: Vec<TileItem>,
-    /// Offset of the next page of albums, if the artist has more.
-    pub albums_next: Option<u32>,
+    /// The lists of tiles in the order of the page. A library artist has
+    /// only the albums: the API has no other lists for it.
+    pub lists: Vec<ArtistTiles>,
+}
+
+impl ArtistData {
+    /// The tiles of `list`. `None` if the artist has no such list.
+    pub fn tiles(&self, list: ArtistList) -> Option<&ArtistTiles> {
+        self.lists.iter().find(|tiles| tiles.list == list)
+    }
 }
 
 impl ArtistData {
     fn from_catalog(artist: &Artist) -> Self {
-        let views = artist.views.as_ref();
+        let attributes = &artist.attributes;
+        let views = artist.views.as_deref();
         let songs = views
             .and_then(|views| views.top_songs.clone())
             .map_or_else(empty_page, Page::from);
-        let albums = views
-            .and_then(|views| views.full_albums.clone())
-            .map_or_else(empty_page, Page::from);
+        let lists = views
+            .map(|views| {
+                ArtistList::ALL
+                    .into_iter()
+                    .map(|list| ArtistTiles::new(list, list.first_page(views)))
+                    .collect()
+            })
+            .unwrap_or_default();
         Self {
-            name: artist.attributes.name.clone(),
-            artwork_template: artist
-                .attributes
-                .artwork
-                .as_ref()
-                .map(|art| art.url.clone()),
+            name: attributes.name.clone(),
+            artwork_template: attributes.artwork.as_ref().map(|art| art.url.clone()),
+            genres: attributes.genre_names.clone(),
+            origin: attributes
+                .origin
+                .as_deref()
+                .map(str::trim)
+                .filter(|origin| !origin.is_empty())
+                .map(str::to_owned),
+            start: start_of(attributes.born_or_formed.as_deref(), attributes.is_group),
+            biography: attributes.artist_bio.as_deref().and_then(plain_text),
             top_songs: songs.items.iter().map(SongItem::from).collect(),
             top_songs_next: songs.next_offset,
-            albums: albums.items.iter().map(TileItem::from).collect(),
-            albums_next: albums.next_offset,
+            lists,
         }
+    }
+}
+
+/// The tiles of the API page `page`. An empty page if `page` is `None`.
+fn tile_page<T: Clone>(page: Option<&ApiPage<T>>) -> Page<TileItem>
+where
+    for<'item> TileItem: From<&'item T>,
+{
+    page.cloned()
+        .map_or_else(empty_page, |page| tiles_of(&Page::from(page)))
+}
+
+fn tiles_of<T>(page: &Page<T>) -> Page<TileItem>
+where
+    for<'item> TileItem: From<&'item T>,
+{
+    Page {
+        items: page.items.iter().map(TileItem::from).collect(),
+        next_offset: page.next_offset,
     }
 }
 
@@ -245,9 +384,13 @@ pub async fn load_artist(api: &ApiClient, storefront: &str, id: &str) -> ApiResu
     Ok(ArtistData::from_catalog(&artist))
 }
 
-/// A library artist has a name and albums. The name comes from the first
-/// album, because the API has no request for one library artist.
-async fn load_library_artist(api: &ApiClient, id: &str) -> ApiResult<ArtistData> {
+/// Loads the albums of the library artist `id`, up to
+/// [`ARTIST_ALBUM_PAGES_LIMIT`] pages.
+///
+/// # Errors
+///
+/// Returns an error if a request fails.
+pub async fn load_library_artist_albums(api: &ApiClient, id: &str) -> ApiResult<Vec<TileItem>> {
     let id = LibraryArtistId::from(id.to_owned());
     let mut albums = Vec::new();
     let mut offset = Some(0);
@@ -259,6 +402,13 @@ async fn load_library_artist(api: &ApiClient, id: &str) -> ApiResult<ArtistData>
         albums.extend(page.items.iter().map(TileItem::from));
         offset = page.next_offset;
     }
+    Ok(albums)
+}
+
+/// A library artist has a name and albums. The name comes from the first
+/// album, because the API has no request for one library artist.
+async fn load_library_artist(api: &ApiClient, id: &str) -> ApiResult<ArtistData> {
+    let albums = load_library_artist_albums(api, id).await?;
     let name = albums
         .first()
         .map(|album| album.subtitle.clone())
@@ -266,10 +416,17 @@ async fn load_library_artist(api: &ApiClient, id: &str) -> ApiResult<ArtistData>
     Ok(ArtistData {
         name,
         artwork_template: None,
+        genres: Vec::new(),
+        origin: None,
+        start: None,
+        biography: None,
         top_songs: Vec::new(),
         top_songs_next: None,
-        albums,
-        albums_next: None,
+        lists: vec![ArtistTiles {
+            list: ArtistList::Albums,
+            items: albums,
+            next_offset: None,
+        }],
     })
 }
 
@@ -315,23 +472,37 @@ pub async fn load_artist_top_songs(
     })
 }
 
-/// Loads the page of albums of a catalog artist at `offset`.
+/// Loads the page of `list` of a catalog artist at `offset`.
 ///
 /// # Errors
 ///
 /// Returns an error if the request fails.
-pub async fn load_artist_albums(
+pub async fn load_artist_tiles(
     api: &ApiClient,
     storefront: &str,
     id: &str,
+    list: ArtistList,
     offset: u32,
 ) -> ApiResult<Page<TileItem>> {
     let id = ArtistId::from(id.to_owned());
-    let page = endpoints::artist_full_albums(api, storefront, &id, offset).await?;
-    Ok(Page {
-        items: page.items.iter().map(TileItem::from).collect(),
-        next_offset: page.next_offset,
-    })
+    let view = list.view();
+    let page = match list {
+        ArtistList::SimilarArtists => {
+            tiles_of(&endpoints::artist_view::<Artist>(api, storefront, &id, view, offset).await?)
+        }
+        ArtistList::FeaturedPlaylists => {
+            tiles_of(&endpoints::artist_view::<Playlist>(api, storefront, &id, view, offset).await?)
+        }
+        ArtistList::LatestRelease
+        | ArtistList::Albums
+        | ArtistList::Singles
+        | ArtistList::LiveAlbums
+        | ArtistList::Compilations
+        | ArtistList::AppearsOn => {
+            tiles_of(&endpoints::artist_view::<Album>(api, storefront, &id, view, offset).await?)
+        }
+    };
+    Ok(page)
 }
 
 /// Loads a playlist with its first songs.
@@ -457,6 +628,35 @@ fn year_of(release_date: Option<&str>) -> Option<String> {
         .then(|| year.to_owned())
 }
 
+/// Reads the start year of an artist. The API marks a person with
+/// `is_group: false`. Without the mark, the artist counts as a group.
+fn start_of(born_or_formed: Option<&str>, is_group: Option<bool>) -> Option<ArtistStart> {
+    let year = year_of(born_or_formed)?;
+    Some(if is_group == Some(false) {
+        ArtistStart::Born(year)
+    } else {
+        ArtistStart::Formed(year)
+    })
+}
+
+/// Removes the HTML tags from `html` and trims it. `None` for a blank text.
+// ponytail: drops tags only, the API sends only `<i>` and Unicode characters.
+// Decode entities if a biography shows `&amp;` or similar.
+fn plain_text(html: &str) -> Option<String> {
+    let mut text = String::with_capacity(html.len());
+    let mut in_tag = false;
+    for character in html.chars() {
+        match character {
+            '<' => in_tag = true,
+            '>' if in_tag => in_tag = false,
+            _ if !in_tag => text.push(character),
+            _ => {}
+        }
+    }
+    let text = text.trim();
+    (!text.is_empty()).then(|| text.to_owned())
+}
+
 fn description_of(description: Option<&ringo_am_api::models::Description>) -> Option<String> {
     description?
         .standard
@@ -538,6 +738,69 @@ mod tests {
         assert_eq!(data.tracks[0].song.artist_id.as_deref(), Some("5"));
         assert_eq!(data.artist_id.as_deref(), Some("5"));
         assert_eq!(data.year.as_deref(), Some("1997"));
+    }
+
+    #[test]
+    fn artist_from_catalog_reads_the_lists_in_page_order() {
+        let artist: Artist = serde_json::from_value(json!({
+            "id": "1",
+            "type": "artists",
+            "attributes": { "name": "Band" },
+            "views": {
+                "similar-artists": {
+                    "data": [{ "id": "2", "type": "artists", "attributes": { "name": "Other" } }]
+                },
+                "singles": {
+                    "data": [{ "id": "3", "type": "albums", "attributes": { "name": "Single" } }],
+                    "next": "/v1/catalog/it/artists/1/view/singles?offset=1"
+                }
+            }
+        }))
+        .expect("the test artist is valid");
+
+        let data = ArtistData::from_catalog(&artist);
+
+        let lists: Vec<ArtistList> = data.lists.iter().map(|tiles| tiles.list).collect();
+        assert_eq!(lists, ArtistList::ALL);
+        let similar = data
+            .tiles(ArtistList::SimilarArtists)
+            .expect("the similar artists are listed");
+        assert_eq!(similar.items[0].title, "Other");
+        let singles = data
+            .tiles(ArtistList::Singles)
+            .expect("the singles are listed");
+        assert_eq!(
+            (singles.items[0].title.as_str(), singles.next_offset),
+            ("Single", Some(1))
+        );
+        assert_eq!(
+            data.tiles(ArtistList::Albums)
+                .expect("the albums are listed")
+                .items,
+            Vec::new()
+        );
+    }
+
+    #[test]
+    fn start_of_tells_a_person_from_a_group() {
+        assert_eq!(
+            start_of(Some("1965-05-17"), Some(false)),
+            Some(ArtistStart::Born("1965".to_owned()))
+        );
+        assert_eq!(
+            start_of(Some("1985"), Some(true)),
+            Some(ArtistStart::Formed("1985".to_owned()))
+        );
+        assert_eq!(start_of(None, Some(true)), None);
+    }
+
+    #[test]
+    fn plain_text_removes_the_tags() {
+        assert_eq!(
+            plain_text(" The album <i>OK Computer</i> (1997) ").as_deref(),
+            Some("The album OK Computer (1997)")
+        );
+        assert_eq!(plain_text("<br/> "), None);
     }
 
     #[test]

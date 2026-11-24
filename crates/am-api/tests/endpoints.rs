@@ -7,10 +7,10 @@
 
 use ringo_am_api::endpoints::{self, CatalogSearchType, LibrarySearchType};
 use ringo_am_api::models::{
-    AlbumId, ArtistId, LibraryAlbumId, LibraryArtistId, LibraryPlaylistId, LibrarySongId,
-    PlaylistId, Resource, SongId,
+    Album, AlbumId, ArtistId, Group, GroupKind, LibraryAlbumId, LibraryArtistId, LibraryPlaylistId,
+    LibrarySongId, PlaylistId, Resource, SongId,
 };
-use ringo_am_api::{Error, FixtureTransport};
+use ringo_am_api::{Error, FixtureTransport, Page};
 
 const STOREFRONT: &str = "it";
 const PLAYLIST_ID: &str = "pl.f4d106fed2bd41149aaacabb233eb5eb";
@@ -28,6 +28,7 @@ async fn search_returns_results_with_top_results() {
             ("term", "radiohead"),
             ("types", "songs,albums,artists,playlists"),
             ("limit", "5"),
+            ("offset", "0"),
             ("with", "topResults"),
             ("include[songs]", "albums,artists"),
         ],
@@ -40,7 +41,7 @@ async fn search_returns_results_with_top_results() {
         CatalogSearchType::Playlists,
     ];
 
-    let results = endpoints::search(&transport, STOREFRONT, " radiohead ", &types, 5)
+    let results = endpoints::search(&transport, STOREFRONT, " radiohead ", &types, 5, 0)
         .await
         .unwrap();
 
@@ -52,9 +53,16 @@ async fn search_returns_results_with_top_results() {
 async fn search_rejects_an_empty_term_without_a_request() {
     let transport = FixtureTransport::new();
 
-    let error = endpoints::search(&transport, STOREFRONT, "  ", &[CatalogSearchType::Songs], 5)
-        .await
-        .unwrap_err();
+    let error = endpoints::search(
+        &transport,
+        STOREFRONT,
+        "  ",
+        &[CatalogSearchType::Songs],
+        5,
+        0,
+    )
+    .await
+    .unwrap_err();
 
     assert!(matches!(error, Error::InvalidInput { .. }), "got {error:?}");
 }
@@ -63,7 +71,7 @@ async fn search_rejects_an_empty_term_without_a_request() {
 async fn search_rejects_empty_types_without_a_request() {
     let transport = FixtureTransport::new();
 
-    let error = endpoints::search(&transport, STOREFRONT, "radiohead", &[], 5)
+    let error = endpoints::search(&transport, STOREFRONT, "radiohead", &[], 5, 0)
         .await
         .unwrap_err();
 
@@ -78,12 +86,15 @@ async fn library_search_returns_results() {
             ("term", "example"),
             ("types", "library-songs,library-artists"),
             ("limit", "5"),
+            ("offset", "25"),
+            ("include[library-artists]", "catalog"),
+            ("fields[artists]", "artwork,name"),
         ],
         "library_search.json",
     );
     let types = [LibrarySearchType::Songs, LibrarySearchType::Artists];
 
-    let results = endpoints::library_search(&transport, "example", &types, 5)
+    let results = endpoints::library_search(&transport, "example", &types, 5, 25)
         .await
         .unwrap();
 
@@ -95,7 +106,7 @@ async fn library_search_returns_results() {
 async fn library_search_rejects_an_empty_term_without_a_request() {
     let transport = FixtureTransport::new();
 
-    let error = endpoints::library_search(&transport, "", &[LibrarySearchType::Songs], 5)
+    let error = endpoints::library_search(&transport, "", &[LibrarySearchType::Songs], 5, 0)
         .await
         .unwrap_err();
 
@@ -189,17 +200,18 @@ async fn artist_top_songs_returns_a_page_with_the_next_offset() {
 }
 
 #[tokio::test]
-async fn artist_full_albums_returns_a_page_with_the_next_offset() {
+async fn artist_view_returns_a_page_with_the_next_offset() {
     let transport = FixtureTransport::new().with(
         &catalog("artists/657515/view/full-albums"),
         &PAGE_QUERY,
         "catalog_artist_full_albums.json",
     );
 
-    let page = endpoints::artist_full_albums(
+    let page: Page<Album> = endpoints::artist_view(
         &transport,
         STOREFRONT,
         &ArtistId::from("657515".to_owned()),
+        "full-albums",
         0,
     )
     .await
@@ -212,7 +224,10 @@ async fn artist_full_albums_returns_a_page_with_the_next_offset() {
 async fn artist_returns_the_artist_with_views() {
     let transport = FixtureTransport::new().with(
         &catalog("artists/657515"),
-        &[("views", "top-songs,full-albums")],
+        &[
+            ("views", endpoints::ARTIST_VIEWS),
+            ("extend", "artistBio,bornOrFormed,origin,isGroup"),
+        ],
         "catalog_artist.json",
     );
 
@@ -220,9 +235,17 @@ async fn artist_returns_the_artist_with_views() {
         .await
         .unwrap();
 
+    assert!(artist.attributes.artist_bio.is_some());
     let views = artist.views.unwrap();
     assert!(!views.top_songs.unwrap().data.is_empty());
     assert!(!views.full_albums.unwrap().data.is_empty());
+    assert!(!views.latest_release.unwrap().data.is_empty());
+    assert!(!views.singles.unwrap().data.is_empty());
+    assert!(!views.live_albums.unwrap().data.is_empty());
+    assert!(!views.compilation_albums.unwrap().data.is_empty());
+    assert!(!views.featured_playlists.unwrap().data.is_empty());
+    assert!(!views.appears_on_albums.unwrap().data.is_empty());
+    assert!(!views.similar_artists.unwrap().data.is_empty());
 }
 
 #[tokio::test]
@@ -295,7 +318,12 @@ async fn library_albums_returns_a_page_with_the_next_offset() {
 async fn library_artists_returns_a_page_with_the_next_offset() {
     let transport = FixtureTransport::new().with(
         "/v1/me/library/artists",
-        &PAGE_QUERY,
+        &[
+            ("limit", "25"),
+            ("offset", "0"),
+            ("include", "catalog"),
+            ("fields[artists]", "artwork,name"),
+        ],
         "library_artists.json",
     );
 
@@ -421,4 +449,116 @@ async fn recommendations_returns_the_groups() {
     let groups = endpoints::recommendations(&transport).await.unwrap();
 
     assert_ne!(groups.len(), 0);
+}
+
+fn new_query() -> [(&'static str, &'static str); 11] {
+    [
+        ("name", "music"),
+        ("tabs", "subscriber"),
+        ("platform", "web"),
+        ("format[resources]", "map"),
+        ("art[url]", "c,f"),
+        ("extend", "artistUrl,editorialArtwork,plainEditorialNotes"),
+        (
+            "fields[albums]",
+            "artistName,artistUrl,artwork,contentRating,editorialArtwork,plainEditorialNotes,name,playParams,releaseDate,url,trackCount",
+        ),
+        ("include[albums]", "artists"),
+        ("include[songs]", "artists"),
+        ("omit[resource:artists]", "autos"),
+        ("relate[songs]", "albums"),
+    ]
+}
+
+fn new_transport(fixture: &str) -> FixtureTransport {
+    FixtureTransport::new().with("/v1/editorial/it/groupings", &new_query(), fixture)
+}
+
+#[tokio::test]
+async fn new_releases_returns_titled_groups_without_unsupported_ones() {
+    let groups = endpoints::new_releases(&new_transport("editorial_new.json"), STOREFRONT)
+        .await
+        .unwrap();
+
+    let titles: Vec<_> = groups.iter().map(|group| group.title.as_deref()).collect();
+    // The first group is the untitled container of kind 316. Stations are dropped.
+    assert_eq!(groups.len(), 14, "{titles:?}");
+    assert_eq!(titles[0], None);
+    assert_eq!(titles[1], Some("I brani del momento"));
+    assert!(!titles.contains(&Some("Successi natalizi non-stop")));
+    assert!(!titles.contains(&Some("Nuovi episodi radio")));
+    assert!(!titles.contains(&Some("Nuovi video musicali")));
+}
+
+#[tokio::test]
+async fn new_releases_marks_song_lists_and_tile_rows() {
+    let groups = endpoints::new_releases(&new_transport("editorial_new.json"), STOREFRONT)
+        .await
+        .unwrap();
+
+    let song_lists: Vec<_> = groups
+        .iter()
+        .filter(|group| group.kind == GroupKind::SongList)
+        .map(|group| group.title.as_deref())
+        .collect();
+    assert_eq!(
+        song_lists,
+        vec![Some("I brani del momento"), Some("Musica di tendenza")]
+    );
+    assert!(matches!(groups[1].items[0], Resource::Song(_)));
+    assert!(groups.iter().any(|group| {
+        group.kind == GroupKind::TileRow && matches!(group.items[0], Resource::Album(_))
+    }));
+}
+
+#[tokio::test]
+async fn new_releases_skips_a_broken_item() {
+    let good = endpoints::new_releases(&new_transport("editorial_new.json"), STOREFRONT)
+        .await
+        .unwrap();
+    let broken =
+        endpoints::new_releases(&new_transport("editorial_new_broken_item.json"), STOREFRONT)
+            .await
+            .unwrap();
+
+    let count = |groups: &[Group], title: &str| {
+        groups
+            .iter()
+            .find(|group| group.title.as_deref() == Some(title))
+            .unwrap()
+            .items
+            .len()
+    };
+    assert_eq!(good.len(), broken.len());
+    assert_eq!(
+        count(&broken, "Novità di questa settimana") + 1,
+        count(&good, "Novità di questa settimana")
+    );
+}
+
+#[tokio::test]
+async fn made_for_you_returns_one_group_of_library_playlists() {
+    let transport = FixtureTransport::new().with(
+        "/v1/me/library/playlists",
+        &[
+            ("filter[featured]", "made-for-you"),
+            ("format[resources]", "map"),
+            ("include[library-playlists]", "catalog"),
+            ("art[url]", "f"),
+            (
+                "fields[library-playlists]",
+                "artwork,dateAdded,name,playParams",
+            ),
+            ("fields[playlists]", "lastModifiedDate"),
+            ("sort", "type"),
+            ("platform", "web"),
+        ],
+        "made_for_you.json",
+    );
+
+    let groups = endpoints::made_for_you(&transport).await.unwrap();
+
+    assert_eq!(groups.len(), 1);
+    assert_eq!(groups[0].kind, GroupKind::TileRow);
+    assert!(matches!(groups[0].items[0], Resource::LibraryPlaylist(_)));
 }

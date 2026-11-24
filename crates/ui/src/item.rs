@@ -7,8 +7,9 @@
 use std::time::Duration;
 
 use ringo_am_api::models::{
-    Album, Artist, Artwork, ContentRating, LibraryAlbum, LibraryArtist, LibraryPlaylist,
-    LibrarySong, PlayParams, Playlist, Relationship, ResourceRef, Song,
+    Album, AlbumAttributes, Artist, Artwork, ContentRating, LibraryAlbum, LibraryArtist,
+    LibraryPlaylist, LibrarySong, PlayParams, Playlist, Relationship, ResourceRef, Song,
+    SongAttributes,
 };
 use ringo_core::queue::QueueItem;
 use ringo_engine::ItemId;
@@ -40,14 +41,17 @@ impl SongItem {
     }
 }
 
-impl From<&Song> for SongItem {
-    fn from(song: &Song) -> Self {
-        let attributes = &song.attributes;
-        let id = playable_id(attributes.play_params.as_ref(), song.id.as_str());
-        let relationships = song.relationships.as_ref();
+impl SongItem {
+    /// Builds the item from the attributes that catalog and library songs share.
+    fn from_attributes(
+        id: &str,
+        attributes: &SongAttributes,
+        album_id: Option<String>,
+        artist_id: Option<String>,
+    ) -> Self {
         Self {
             queue: QueueItem {
-                id: ItemId::new(id),
+                id: ItemId::new(playable_id(attributes.play_params.as_ref(), id)),
                 title: attributes.name.clone(),
                 artist: attributes.artist_name.clone().unwrap_or_default(),
                 album: attributes.album_name.clone().unwrap_or_default(),
@@ -57,9 +61,21 @@ impl From<&Song> for SongItem {
                 artwork_template: template_of(attributes.artwork.as_ref()),
             },
             explicit: attributes.content_rating == Some(ContentRating::Explicit),
-            album_id: relationships.and_then(|links| first_id(links.albums.as_ref())),
-            artist_id: relationships.and_then(|links| first_id(links.artists.as_ref())),
+            album_id,
+            artist_id,
         }
+    }
+}
+
+impl From<&Song> for SongItem {
+    fn from(song: &Song) -> Self {
+        let relationships = song.relationships.as_ref();
+        Self::from_attributes(
+            song.id.as_str(),
+            &song.attributes,
+            relationships.and_then(|links| first_id(links.albums.as_ref())),
+            relationships.and_then(|links| first_id(links.artists.as_ref())),
+        )
     }
 }
 
@@ -67,23 +83,7 @@ impl From<&LibrarySong> for SongItem {
     /// A library song plays with its library ID. The API sends no links to
     /// the album or the artist, so the go-to entries stay off.
     fn from(song: &LibrarySong) -> Self {
-        let attributes = &song.attributes;
-        let id = playable_id(attributes.play_params.as_ref(), song.id.as_str());
-        Self {
-            queue: QueueItem {
-                id: ItemId::new(id),
-                title: attributes.name.clone(),
-                artist: attributes.artist_name.clone().unwrap_or_default(),
-                album: attributes.album_name.clone().unwrap_or_default(),
-                duration: Duration::from_millis(u64::from(
-                    attributes.duration_millis.unwrap_or_default(),
-                )),
-                artwork_template: template_of(attributes.artwork.as_ref()),
-            },
-            explicit: attributes.content_rating == Some(ContentRating::Explicit),
-            album_id: None,
-            artist_id: None,
-        }
+        Self::from_attributes(song.id.as_str(), &song.attributes, None, None)
     }
 }
 
@@ -125,16 +125,23 @@ impl TileItem {
     }
 }
 
-impl From<&Album> for TileItem {
-    fn from(album: &Album) -> Self {
-        let attributes = &album.attributes;
+impl TileItem {
+    /// Builds an album tile from the attributes that catalog and library
+    /// albums share.
+    fn album(id: String, attributes: &AlbumAttributes) -> Self {
         Self {
             kind: TileKind::Album,
-            id: album.id.to_string(),
+            id,
             title: attributes.name.clone(),
             subtitle: attributes.artist_name.clone().unwrap_or_default(),
             artwork_template: template_of(attributes.artwork.as_ref()),
         }
+    }
+}
+
+impl From<&Album> for TileItem {
+    fn from(album: &Album) -> Self {
+        Self::album(album.id.to_string(), &album.attributes)
     }
 }
 
@@ -165,26 +172,57 @@ impl From<&Playlist> for TileItem {
 
 impl From<&LibraryAlbum> for TileItem {
     fn from(album: &LibraryAlbum) -> Self {
-        let attributes = &album.attributes;
-        Self {
-            kind: TileKind::Album,
-            id: album.id.to_string(),
-            title: attributes.name.clone(),
-            subtitle: attributes.artist_name.clone().unwrap_or_default(),
-            artwork_template: template_of(attributes.artwork.as_ref()),
-        }
+        Self::album(album.id.to_string(), &album.attributes)
     }
 }
 
 impl From<&LibraryArtist> for TileItem {
-    /// The API sends no artwork for a library artist.
+    /// A library artist has no photo. The tile uses the photo of the linked
+    /// catalog artist, if the request included it.
     fn from(artist: &LibraryArtist) -> Self {
+        let artwork_template = catalog_artist(artist)
+            .and_then(|catalog_artist| catalog_artist.attributes.artwork.as_ref())
+            .map(|artwork| artwork.url.clone());
         Self {
             kind: TileKind::Artist,
             id: artist.id.to_string(),
             title: artist.attributes.name.clone(),
             subtitle: String::new(),
-            artwork_template: None,
+            artwork_template,
+        }
+    }
+}
+
+/// The catalog artist that `artist` links to, if the request included it.
+fn catalog_artist(artist: &LibraryArtist) -> Option<&Artist> {
+    artist
+        .relationships
+        .as_ref()
+        .and_then(|links| links.catalog.as_ref())
+        .and_then(|catalog| catalog.data.iter().next())
+}
+
+/// An artist of the library list. It keeps the ID of the linked catalog
+/// artist, because only the catalog artist has a full artist page.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub struct LibraryArtistItem {
+    pub tile: TileItem,
+    pub catalog_id: Option<String>,
+}
+
+impl LibraryArtistItem {
+    /// ID of the full artist page: the catalog artist if the link is
+    /// present, else the library artist.
+    pub fn page_id(&self) -> &str {
+        self.catalog_id.as_deref().unwrap_or(&self.tile.id)
+    }
+}
+
+impl From<&LibraryArtist> for LibraryArtistItem {
+    fn from(artist: &LibraryArtist) -> Self {
+        Self {
+            tile: TileItem::from(artist),
+            catalog_id: catalog_artist(artist).map(|catalog| catalog.id.to_string()),
         }
     }
 }
@@ -292,5 +330,49 @@ mod tests {
         assert_eq!(TileKind::Album.open_action(), "win.open-album");
         assert_eq!(TileKind::Artist.open_action(), "win.open-artist");
         assert_eq!(TileKind::Playlist.open_action(), "win.open-playlist");
+    }
+
+    #[test]
+    fn library_artist_tile_takes_the_photo_of_the_catalog_artist() {
+        let with_catalog: LibraryArtist = serde_json::from_value(json!({
+            "id": "r.1",
+            "attributes": { "name": "Band" },
+            "relationships": { "catalog": { "data": [{
+                "id": "5",
+                "attributes": { "name": "Band", "artwork": { "url": "photo/{w}x{h}bb.jpg" } }
+            }] } }
+        }))
+        .expect("the test artist is valid");
+        let without_catalog: LibraryArtist =
+            serde_json::from_value(json!({ "id": "r.2", "attributes": { "name": "Solo" } }))
+                .expect("the test artist is valid");
+
+        let tile = TileItem::from(&with_catalog);
+
+        assert_eq!(
+            tile.artwork_template.as_deref(),
+            Some("photo/{w}x{h}bb.jpg")
+        );
+        assert_eq!(tile.id, "r.1");
+        assert_eq!(TileItem::from(&without_catalog).artwork_template, None);
+    }
+
+    #[test]
+    fn library_artist_item_opens_the_catalog_artist_if_linked() {
+        let with_catalog: LibraryArtist = serde_json::from_value(json!({
+            "id": "r.1",
+            "attributes": { "name": "Band" },
+            "relationships": { "catalog": { "data": [{
+                "id": "5",
+                "attributes": { "name": "Band" }
+            }] } }
+        }))
+        .expect("the test artist is valid");
+        let without_catalog: LibraryArtist =
+            serde_json::from_value(json!({ "id": "r.2", "attributes": { "name": "Solo" } }))
+                .expect("the test artist is valid");
+
+        assert_eq!(LibraryArtistItem::from(&with_catalog).page_id(), "5");
+        assert_eq!(LibraryArtistItem::from(&without_catalog).page_id(), "r.2");
     }
 }

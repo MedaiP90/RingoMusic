@@ -20,6 +20,9 @@ const SEVEN_DAYS: Duration = Duration::from_hours(168);
 
 const CATALOG_PREFIX: &str = "/v1/catalog/";
 
+/// Prefix of the editorial pages, for example the New page. The content changes daily.
+const EDITORIAL_PREFIX: &str = "/v1/editorial/";
+
 /// Time to keep a response, by resource type. The type is the path segment after the storefront.
 const EXPIRY_BY_RESOURCE: &[(&str, Duration)] = &[
     ("songs", SEVEN_DAYS),
@@ -169,14 +172,16 @@ impl<T: ApiTransport, C: Clock + 'static> CachingTransport<T, C> {
     async fn write_cache(&self, key: String, value: &Value, lifetime: Duration) {
         let expires_at = unix_seconds(self.clock.now() + lifetime);
         let body = value.to_string();
+        let size = i64::try_from(body.len()).unwrap_or(i64::MAX);
         let max_bytes = i64::try_from(self.max_bytes).unwrap_or(i64::MAX);
         let now = unix_seconds(self.clock.now());
         let result = self
             .database
             .run(move |connection| {
                 connection.execute(
-                    "INSERT OR REPLACE INTO api_cache (key, body, expires_at) VALUES (?1, ?2, ?3)",
-                    (&key, &body, expires_at),
+                    "INSERT OR REPLACE INTO api_cache (key, body, size, expires_at)
+                     VALUES (?1, ?2, ?3, ?4)",
+                    (&key, &body, size, expires_at),
                 )?;
                 delete_expired(connection, now)?;
                 evict_over_limit(connection, max_bytes)?;
@@ -218,11 +223,9 @@ async fn sweep(database: &Database, clock: &impl Clock) {
 
 /// Returns the total size of the cached bodies in bytes.
 fn body_bytes(connection: &Connection) -> rusqlite::Result<i64> {
-    connection.query_row(
-        "SELECT COALESCE(SUM(length(CAST(body AS BLOB))), 0) FROM api_cache",
-        [],
-        |row| row.get(0),
-    )
+    connection.query_row("SELECT COALESCE(SUM(size), 0) FROM api_cache", [], |row| {
+        row.get(0)
+    })
 }
 
 /// Deletes the rows that are expired at `now` (seconds since the Unix epoch).
@@ -236,7 +239,7 @@ fn evict_over_limit(connection: &Connection, max_bytes: i64) -> rusqlite::Result
         "DELETE FROM api_cache WHERE key IN (
             SELECT key FROM (
                 SELECT key,
-                       SUM(length(CAST(body AS BLOB))) OVER (ORDER BY expires_at DESC, key) AS running
+                       SUM(size) OVER (ORDER BY expires_at DESC, key) AS running
                 FROM api_cache
             ) WHERE running > ?1
         )",
@@ -246,6 +249,9 @@ fn evict_over_limit(connection: &Connection, max_bytes: i64) -> rusqlite::Result
 
 /// Returns how long to keep the response for `path`, or `None` if the path is not cached.
 fn expiry_for(path: &str) -> Option<Duration> {
+    if path.starts_with(EDITORIAL_PREFIX) {
+        return Some(HOUR);
+    }
     let rest = path.strip_prefix(CATALOG_PREFIX)?;
     let resource = rest.split('/').nth(1)?;
     let expiry = EXPIRY_BY_RESOURCE
@@ -538,5 +544,7 @@ mod tests {
         assert_eq!(expiry_for("/v1/catalog/us/search"), Some(TEN_MINUTES));
         assert_eq!(expiry_for("/v1/catalog/us/charts"), Some(HOUR));
         assert_eq!(expiry_for("/v1/me/library/songs"), None);
+        assert_eq!(expiry_for("/v1/editorial/it/groupings"), Some(HOUR));
+        assert_eq!(expiry_for("/v1/me/library/playlists"), None);
     }
 }

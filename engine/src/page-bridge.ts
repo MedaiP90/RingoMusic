@@ -41,6 +41,7 @@ export class PageBridge {
   constructor(
     private readonly webContents: WebContents,
     private readonly notify: (notification: Notification) => void,
+    private readonly bridgeKey: string,
   ) {}
 
   // Starts to listen to the page and injects the hook on each load of the Apple Music page.
@@ -73,9 +74,12 @@ export class PageBridge {
     }
     try {
       const script = await fs.readFile(path.join(__dirname, 'hook.js'), 'utf8');
-      await this.webContents.executeJavaScript(script);
+      // The wrapper gives the random bridge name to the hook as `bridgeKey`.
+      await this.webContents.executeJavaScript(
+        `((bridgeKey) => {\n${script}\n})(${JSON.stringify(this.bridgeKey)})`,
+      );
     } catch (error: unknown) {
-      log.error({ error }, 'hook injection failed');
+      log.error({ err: error }, 'hook injection failed');
     }
   }
 

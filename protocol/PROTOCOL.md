@@ -78,7 +78,7 @@ Rust owns the queue order, including shuffle. The engine never shuffles. `player
 |---|---|
 | `engine.hello` | `{ proto, engine_version, electron }` |
 | `engine.ready` | none |
-| `engine.incompatible` | `{ check, detail }`. A self-check failed. |
+| `engine.incompatible` | `{ check, detail }`. A self-check failed. The supervisor does not restart the engine. It waits for a restart request from the user. |
 | `engine.log` | `{ level, message, fields }` |
 | `auth.changed` | `{ authorized }` |
 | `player.state` | `{ state }`: `playing`, `paused`, `stopped`, `loading`, or `ended` |

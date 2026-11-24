@@ -46,6 +46,11 @@ const MIGRATIONS: &[&str] = &[
         repeat TEXT NOT NULL,
         position_ms INTEGER NOT NULL
     )",
+    // `size` keeps the byte length of `body`. The covering index lets the size
+    // and expiry queries skip the large bodies.
+    "ALTER TABLE api_cache ADD COLUMN size INTEGER NOT NULL DEFAULT 0;
+    UPDATE api_cache SET size = length(CAST(body AS BLOB));
+    CREATE INDEX api_cache_expiry ON api_cache (expires_at, key, size)",
 ];
 
 /// Handle to the application database. Clones share one connection.
@@ -182,7 +187,7 @@ mod tests {
         Database::open(&path).expect("database can be opened");
 
         let connection = Connection::open(&path).expect("file can be reopened");
-        assert_eq!(user_version(&connection), 2);
+        assert_eq!(user_version(&connection), 3);
         let rows: i64 = connection
             .query_row("SELECT count(*) FROM api_cache", [], |row| row.get(0))
             .expect("api_cache exists");
@@ -220,7 +225,7 @@ mod tests {
             error,
             Error::UnsupportedVersion {
                 found: 99,
-                supported: 2
+                supported: 3
             }
         ));
     }
@@ -233,7 +238,7 @@ mod tests {
         let future = unix_seconds(SystemTime::now()) + 3600;
         connection
             .execute_batch(&format!(
-                "INSERT INTO api_cache VALUES ('old', '1', 1), ('new', '2', {future})"
+                "INSERT INTO api_cache (key, body, expires_at) VALUES ('old', '1', 1), ('new', '2', {future})"
             ))
             .expect("rows can be inserted");
         drop(connection);
@@ -245,5 +250,27 @@ mod tests {
             .query_row("SELECT key FROM api_cache", [], |row| row.get(0))
             .expect("one row is left");
         assert_eq!(key, "new");
+    }
+
+    #[test]
+    fn migration_three_sets_the_size_of_existing_cache_rows() {
+        let path = scratch_path("size");
+        let mut existing = Connection::open(&path).expect("file can be created");
+        for step in &MIGRATIONS[..2] {
+            existing.execute_batch(step).expect("old step can run");
+        }
+        existing
+            .pragma_update(None, "user_version", 2)
+            .expect("version can be set");
+        let future = unix_seconds(SystemTime::now()) + 3600;
+        existing
+            .execute("INSERT INTO api_cache VALUES ('key', 'àbc', ?1)", [future])
+            .expect("row can be inserted");
+        migrate(&mut existing).expect("migration runs");
+
+        let size: i64 = existing
+            .query_row("SELECT size FROM api_cache", [], |row| row.get(0))
+            .expect("one row is left");
+        assert_eq!(size, 4);
     }
 }

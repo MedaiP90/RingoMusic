@@ -84,6 +84,14 @@ fn catalog_artist_deserializes_with_views() {
     let views = page.data[0].views.as_ref().unwrap();
     assert!(!views.top_songs.as_ref().unwrap().data.is_empty());
     assert!(!views.full_albums.as_ref().unwrap().data.is_empty());
+    assert!(!views.similar_artists.as_ref().unwrap().data.is_empty());
+    let attributes = &page.data[0].attributes;
+    assert_eq!(
+        attributes.origin.as_deref(),
+        Some("Abingdon, Oxfordshire, England")
+    );
+    assert_eq!(attributes.born_or_formed.as_deref(), Some("1985"));
+    assert_eq!(attributes.is_group, Some(true));
     assert!(
         page.data[0]
             .relationships
@@ -159,6 +167,12 @@ fn library_artists_deserialize() {
     let page = page::<LibraryArtist>("library_artists.json");
 
     assert!(!page.data.is_empty());
+    let catalog = page.data[0]
+        .relationships
+        .as_ref()
+        .and_then(|links| links.catalog.as_ref())
+        .expect("the first artist links to the catalog artist");
+    assert!(catalog.data[0].attributes.artwork.is_some());
 }
 
 #[test]

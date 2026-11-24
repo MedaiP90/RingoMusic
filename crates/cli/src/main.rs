@@ -142,6 +142,9 @@ async fn wait_until_ready(events: &mut broadcast::Receiver<EngineEvent>) -> Resu
             Ok(EngineEvent::Incompatible { check, detail }) => {
                 bail!("engine is incompatible: {check}: {detail}");
             }
+            Ok(EngineEvent::ProtocolMismatch { expected, actual }) => {
+                bail!("engine uses protocol {actual}, the app expects {expected}");
+            }
             Ok(EngineEvent::GaveUp) => bail!("engine did not start"),
             Ok(_) | Err(RecvError::Lagged(_)) => {}
             Err(RecvError::Closed) => bail!("engine stopped"),

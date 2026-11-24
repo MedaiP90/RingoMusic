@@ -29,8 +29,9 @@ pub(super) type StopSignal = oneshot::Receiver<()>;
 pub(super) enum SessionEnd {
     /// The caller asked to stop. Do not restart.
     Stopped,
-    /// The Chromium sandbox of the engine cannot start. Restarting does not help.
-    SandboxFailed,
+    /// A restart cannot help, for example when the sandbox cannot start, the
+    /// page failed the self-checks, or the protocol versions differ. Wait for the user. The reason is already emitted.
+    NeedsUser,
     /// The engine failed. Restart it if the policy allows.
     Failed {
         /// The engine was ready before it failed.
@@ -81,9 +82,12 @@ async fn drive<P: ChildProcess>(
         Ok(Startup::Incompatible { check, detail }) => {
             warn!(%check, %detail, "engine reports that it is incompatible");
             outputs.emit(EngineEvent::Incompatible { check, detail });
-            return SessionEnd::Failed {
-                reached_ready: false,
-            };
+            return SessionEnd::NeedsUser;
+        }
+        Err(Error::ProtocolMismatch { expected, actual }) => {
+            warn!(expected, actual, "engine uses another protocol version");
+            outputs.emit(EngineEvent::ProtocolMismatch { expected, actual });
+            return SessionEnd::NeedsUser;
         }
         Err(error) => {
             warn!(%error, "engine did not become ready");
@@ -96,10 +100,11 @@ async fn drive<P: ChildProcess>(
     outputs
         .connection
         .send_replace(Some(Arc::clone(&connection)));
-    outputs.emit(EngineEvent::Ready);
+    // `Restarted` comes first: the core keeps the resume point, and `Ready` uses it.
     if announce_restart {
         outputs.emit(EngineEvent::Restarted);
     }
+    outputs.emit(EngineEvent::Ready);
     forward_events(process, &connection, &mut events, outputs, stop).await
 }
 
@@ -110,7 +115,7 @@ fn report_sandbox_failure(outputs: &Outputs) -> SessionEnd {
         message: "the Chromium sandbox cannot start".to_owned(),
         fatal: true,
     });
-    SessionEnd::SandboxFailed
+    SessionEnd::NeedsUser
 }
 
 /// Forwards events until the engine fails or the caller stops it.

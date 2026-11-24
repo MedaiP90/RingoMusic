@@ -19,6 +19,13 @@ pub enum EngineEvent {
         /// Details of the failure.
         detail: String,
     },
+    /// The engine speaks another protocol version. The install is broken.
+    ProtocolMismatch {
+        /// Version that this client supports.
+        expected: u32,
+        /// Version that the engine reported.
+        actual: u32,
+    },
     /// The authorization changed.
     AuthChanged {
         /// The user authorized the app.
@@ -71,6 +78,24 @@ pub enum EngineEvent {
 }
 
 impl EngineEvent {
+    /// Returns `true` if the event changes the engine status. The engine keeps
+    /// the last such event for subscribers that come late.
+    #[must_use]
+    pub fn is_lifecycle(&self) -> bool {
+        match self {
+            Self::Ready
+            | Self::Incompatible { .. }
+            | Self::ProtocolMismatch { .. }
+            | Self::Restarted
+            | Self::GaveUp => true,
+            Self::Error { code, .. } => *code == ErrorCode::SandboxFailed,
+            Self::AuthChanged { .. }
+            | Self::State { .. }
+            | Self::NowPlaying { .. }
+            | Self::Position { .. } => false,
+        }
+    }
+
     /// Converts a notification. Returns `None` for notifications that are not events.
     #[must_use]
     pub fn from_notification(notification: FromEngine) -> Option<Self> {
@@ -121,6 +146,27 @@ impl EngineEvent {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn only_status_events_are_lifecycle() {
+        assert!(EngineEvent::Ready.is_lifecycle());
+        assert!(EngineEvent::GaveUp.is_lifecycle());
+        assert!(
+            EngineEvent::Error {
+                code: ErrorCode::SandboxFailed,
+                message: String::new(),
+                fatal: true,
+            }
+            .is_lifecycle()
+        );
+        assert!(!EngineEvent::AuthChanged { authorized: true }.is_lifecycle());
+        assert!(
+            !EngineEvent::Position {
+                position: Duration::ZERO
+            }
+            .is_lifecycle()
+        );
+    }
 
     #[test]
     fn hello_and_log_are_not_events() {

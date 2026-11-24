@@ -3,26 +3,26 @@
 
 // Electron main process: window, session, and socket client.
 
+import crypto from 'node:crypto';
 import path from 'node:path';
 
 import { app, BrowserWindow, components } from 'electron';
 import type { Session } from 'electron';
 
 import pkg from '../package.json' with { type: 'json' };
-import { forwardLogs, log } from './log.ts';
+import { flushLogs, forwardLogs, log } from './log.ts';
+import { BRIDGE_KEY_ARG } from './bridge.ts';
 import { PageBridge } from './page-bridge.ts';
 import { PAGE_METHODS } from './page-methods.ts';
 import { RpcClient } from './rpc.ts';
 import { decidePopup, SignIn, START_URL } from './sign-in.ts';
 
+// Random for each launch, so the page has no stable name to detect.
+const BRIDGE_KEY = `_${crypto.randomBytes(8).toString('hex')}`;
 const SESSION_PARTITION = 'persist:ringomusic';
 const EXIT_CODE_BAD_CONFIGURATION = 2;
 const QUIT_GRACE_MS = 3000;
-
-// The Rust side owns the MPRIS player and the media keys. Without this,
-// Chromium publishes a second MPRIS player. Chromium ignores the switch when it
-// is set after the first `await`, so keep it at the top level.
-app.commandLine.appendSwitch('disable-features', 'MediaSessionService,HardwareMediaKeyHandling');
+const FATAL_FLUSH_TIMEOUT_MS = 1000;
 
 // Set when the app quits, so that the window can close.
 let quitting = false;
@@ -57,6 +57,18 @@ function readDataDirectory(): string {
   return dataDirectory;
 }
 
+// Sets every path and switch that Electron reads before the `ready` event. Every value in
+// this function must be set before the first `await`: Chromium ignores a late switch.
+function configureChromium(): void {
+  app.setPath('userData', readDataDirectory());
+  app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+  // The Rust side owns the MPRIS player and the media keys. Without this,
+  // Chromium publishes a second MPRIS player.
+  app.commandLine.appendSwitch('disable-features', 'MediaSessionService,HardwareMediaKeyHandling');
+}
+
+configureChromium();
+
 function readSocketPath(): string {
   const socketPath = process.env['RINGO_ENGINE_SOCKET'];
   if (!socketPath) {
@@ -79,7 +91,10 @@ async function connectToRust(): Promise<RpcClient> {
     { engineVersion: pkg.version, electron: process.versions.electron },
     quitEngine,
   );
-  forwardLogs((notification) => client.notify(notification));
+  forwardLogs(
+    (notification) => client.notify(notification),
+    () => client.flush(),
+  );
   client.register('engine.shutdown', () => {
     // Reply first, then quit on the next tick.
     setImmediate(quitEngine);
@@ -93,7 +108,7 @@ function connectPageBridge(client: RpcClient, window: BrowserWindow): void {
   const bridge = new PageBridge(window.webContents, (notification) => {
     client.notify(notification);
     signIn.handleNotification(notification);
-  });
+  }, BRIDGE_KEY);
   const signIn = new SignIn(window, bridge);
   for (const method of PAGE_METHODS) {
     client.register(method, (params) => bridge.call(method, params));
@@ -145,6 +160,7 @@ function createWindow(userAgent: string): BrowserWindow {
       sandbox: true,
       nodeIntegration: false,
       preload: path.join(__dirname, 'preload.js'),
+      additionalArguments: [`${BRIDGE_KEY_ARG}${BRIDGE_KEY}`],
     },
   });
   window.webContents.setUserAgent(userAgent);
@@ -168,10 +184,7 @@ async function logPageBrands(window: BrowserWindow): Promise<void> {
 }
 
 async function start(): Promise<void> {
-  const dataDirectory = readDataDirectory();
   const client = await connectToRust();
-  app.setPath('userData', dataDirectory);
-  app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
   const userAgent = buildUserAgent();
   app.userAgentFallback = userAgent;
 
@@ -189,8 +202,11 @@ async function start(): Promise<void> {
   await window.loadURL(START_URL);
 }
 
-start().catch((error: unknown) => {
-  log.fatal({ error }, 'engine failed to start');
+start().catch(async (error: unknown) => {
+  log.fatal({ err: error }, 'engine failed to start');
+  // The log goes to the socket. Write the error to stderr too, in case the socket is down.
+  process.stderr.write(`engine failed to start: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`);
+  await flushLogs(FATAL_FLUSH_TIMEOUT_MS);
   process.exit(1);
 });
 

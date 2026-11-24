@@ -11,6 +11,9 @@ pub fn to_json(event: &EngineEvent) -> Value {
         EngineEvent::Incompatible { check, detail } => {
             json!({ "event": "incompatible", "check": check, "detail": detail })
         }
+        EngineEvent::ProtocolMismatch { expected, actual } => {
+            json!({ "event": "protocol.mismatch", "expected": expected, "actual": actual })
+        }
         EngineEvent::AuthChanged { authorized } => {
             json!({ "event": "auth.changed", "authorized": authorized })
         }

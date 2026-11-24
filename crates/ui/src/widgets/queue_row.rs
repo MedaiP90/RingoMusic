@@ -7,13 +7,13 @@
 use gettextrs::gettext;
 use relm4::gtk;
 use relm4::gtk::gdk::{ContentProvider, DragAction};
-use relm4::gtk::pango::EllipsizeMode;
 use relm4::gtk::prelude::*;
 use relm4::typed_view::list::RelmListItem;
 use ringo_core::queue::QueueItem;
 
 use crate::widgets::artwork_image::ArtworkImage;
 use crate::widgets::player_bar::format_time;
+use crate::widgets::song_row::{row_root, title_artist_texts};
 
 /// Name of the window action that removes an upcoming item. It takes the
 /// position in the list.
@@ -73,24 +73,10 @@ impl RelmListItem for QueueRow {
 impl QueueRowWidgets {
     /// Builds an empty row. Call [`Self::show`] to fill it.
     pub fn build() -> (gtk::Box, Self) {
-        let root = gtk::Box::builder()
-            .spacing(12)
-            .margin_top(6)
-            .margin_bottom(6)
-            .margin_start(12)
-            .margin_end(12)
-            .build();
+        let root = row_root();
         let artwork = ArtworkImage::shared();
         root.append(artwork.widget());
-        let texts = gtk::Box::builder()
-            .orientation(gtk::Orientation::Vertical)
-            .valign(gtk::Align::Center)
-            .hexpand(true)
-            .build();
-        let title = text_label(&[]);
-        let artist = text_label(&["dim-label", "caption"]);
-        texts.append(&title);
-        texts.append(&artist);
+        let (texts, title, artist) = title_artist_texts();
         root.append(&texts);
         let duration = gtk::Label::builder()
             .css_classes(["dim-label", "numeric"])
@@ -114,14 +100,6 @@ impl QueueRowWidgets {
         self.artwork
             .set_artwork(item.artwork_template.as_deref(), ARTWORK_SIZE);
     }
-}
-
-fn text_label(css_classes: &[&str]) -> gtk::Label {
-    gtk::Label::builder()
-        .xalign(0.0)
-        .ellipsize(EllipsizeMode::End)
-        .css_classes(css_classes)
-        .build()
 }
 
 /// Adds the drag handle, the remove button, and the drag and drop of the

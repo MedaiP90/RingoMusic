@@ -2,14 +2,24 @@
 // Copyright (C) 2026 RingoMusic contributors
 
 //! Tints from the dominant color of a cover. The player bar and the queue panel
-//! use the playing song (`--cover-tint`). An album page that is on screen uses
-//! its own album (`--album-tint`). `style.css` uses both variables.
+//! use the playing song (`--cover-tint`). An album or artist page that is on
+//! screen uses its own cover or photo (`--album-tint`). `style.css` uses both
+//! variables.
+//!
+//! GTK runs no CSS transition when a style provider changes, but it runs one
+//! when a class changes. So the provider keeps two slots of each variable,
+//! and a class on the window selects one. A new color goes into the free slot,
+//! and then the window changes its class. The `transition` rules in
+//! `style.css` then fade the color.
 
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
+use std::rc::Rc;
 
+use relm4::adw;
+use relm4::adw::prelude::*;
 use relm4::gtk;
 use relm4::gtk::gdk;
-use relm4::gtk::prelude::*;
+use relm4::gtk::glib;
 
 /// Samples that the color search reads on each side of the cover.
 const SAMPLES_PER_SIDE: usize = 24;
@@ -28,12 +38,70 @@ pub struct Rgb {
     b: u8,
 }
 
+/// One tint variable, with two slots. The window shows the active slot.
+struct Variable {
+    name: &'static str,
+    slots: [Option<Rgb>; 2],
+    active: usize,
+}
+
+impl Variable {
+    fn new(name: &'static str) -> Self {
+        Self {
+            name,
+            slots: [None; 2],
+            active: 0,
+        }
+    }
+
+    /// Puts `color` in the free slot and makes that slot active. Nothing
+    /// changes if the active slot already has `color`.
+    fn set(&mut self, color: Option<Rgb>) {
+        if self.slots[self.active] != color {
+            self.active = 1 - self.active;
+            self.slots[self.active] = color;
+        }
+    }
+
+    /// The window class that selects `slot`.
+    fn class(&self, slot: usize) -> String {
+        format!("{}-{slot}", self.name)
+    }
+
+    /// The CSS rules of the slots that have a color.
+    fn css(&self) -> String {
+        self.slots
+            .iter()
+            .enumerate()
+            .filter_map(|(slot, color)| {
+                color.map(|Rgb { r, g, b }| {
+                    let (class, name) = (self.class(slot), self.name);
+                    format!("window.{class} {{ --{name}: rgb({r}, {g}, {b}); }} ")
+                })
+            })
+            .collect()
+    }
+
+    /// Gives `window` the class of the active slot.
+    fn select_on(&self, window: &gtk::Widget) {
+        window.remove_css_class(&self.class(1 - self.active));
+        window.add_css_class(&self.class(self.active));
+    }
+}
+
 /// The colors that the window shows.
 struct Tint {
     provider: gtk::CssProvider,
+    /// The window that gets the slot classes.
+    window: glib::WeakRef<gtk::Widget>,
     playing: Option<Rgb>,
     /// The album page on screen: its ID and its color.
     viewed: Option<(String, Rgb)>,
+    cover: Variable,
+    album: Variable,
+    /// The CSS that the provider has now. A change of the provider restyles
+    /// the whole window, so the same CSS is not loaded again.
+    loaded: String,
 }
 
 thread_local! {
@@ -43,26 +111,50 @@ thread_local! {
 
 /// Follows the cover that `image` shows. The playing song sets the cover tint.
 pub fn follow_playing(image: &gtk::Image) {
-    let update = |image: &gtk::Image| update_tint(|tint| tint.playing = color_of(image));
+    let update = |image: &gtk::Image| update_tint(image, |tint| tint.playing = color_of(image));
     image.connect_paintable_notify(update);
     image.connect_icon_name_notify(update);
 }
 
 /// Follows the cover that `image` shows for the page `owner`. While `page` is
 /// on screen, the album tint is the color of the cover.
-pub fn follow_viewed(image: &gtk::Image, page: &impl IsA<gtk::Widget>, owner: &str) {
-    let on_screen = |page: &gtk::Widget| page.is_mapped();
-    let show = {
-        let (image, page, owner) = (image.clone(), page.clone().upcast(), owner.to_owned());
-        move || {
-            let color = color_of(&image).filter(|_| on_screen(&page));
-            update_tint(|tint| tint.set_viewed(&owner, color));
+///
+/// The tint changes only at the end of a navigation transition. A change
+/// restyles the whole window, and during the slide that drops frames.
+pub fn follow_viewed(image: &gtk::Image, page: &adw::NavigationPage, owner: &str) {
+    let shown = Rc::new(Cell::new(false));
+    let show = Rc::new({
+        let (shown, owner) = (Rc::clone(&shown), owner.to_owned());
+        move |image: &gtk::Image| {
+            let color = color_of(image).filter(|_| shown.get());
+            update_tint(image, |tint| tint.set_viewed(&owner, color));
         }
-    };
-    let (on_cover, on_map, on_unmap) = (show.clone(), show.clone(), show);
-    image.connect_paintable_notify(move |_| on_cover());
-    page.connect_map(move |_| on_map());
-    page.connect_unmap(move |_| on_unmap());
+    });
+    image.connect_paintable_notify(glib::clone!(
+        #[strong]
+        show,
+        move |image| show(image)
+    ));
+    page.connect_shown(glib::clone!(
+        #[weak]
+        image,
+        #[strong]
+        shown,
+        #[strong]
+        show,
+        move |_| {
+            shown.set(true);
+            show(&image);
+        }
+    ));
+    page.connect_hidden(glib::clone!(
+        #[weak]
+        image,
+        move |_| {
+            shown.set(false);
+            show(&image);
+        }
+    ));
 }
 
 impl Tint {
@@ -76,8 +168,12 @@ impl Tint {
         );
         Self {
             provider,
+            window: glib::WeakRef::new(),
             playing: None,
             viewed: None,
+            cover: Variable::new("cover-tint"),
+            album: Variable::new("album-tint"),
+            loaded: String::new(),
         }
     }
 
@@ -90,23 +186,31 @@ impl Tint {
         }
     }
 
-    fn apply(&self) {
-        let viewed = self.viewed.as_ref().map(|(_, color)| *color);
-        let declarations: String = [("cover-tint", self.playing), ("album-tint", viewed)]
-            .into_iter()
-            .filter_map(|(name, color)| {
-                color.map(|Rgb { r, g, b }| format!("--{name}: rgb({r}, {g}, {b}); "))
-            })
-            .collect();
-        self.provider
-            .load_from_string(&format!("window {{ {declarations}}}"));
+    /// Loads the new colors into the free slots, then selects them on the
+    /// window. The class change runs the transition.
+    fn apply(&mut self) {
+        self.cover.set(self.playing);
+        self.album
+            .set(self.viewed.as_ref().map(|(_, color)| *color));
+        let css = self.cover.css() + &self.album.css();
+        if css != self.loaded {
+            self.provider.load_from_string(&css);
+            self.loaded = css;
+        }
+        if let Some(window) = self.window.upgrade() {
+            self.cover.select_on(&window);
+            self.album.select_on(&window);
+        }
     }
 }
 
-/// Changes the tint with `change`, then shows it.
-fn update_tint(change: impl FnOnce(&mut Tint)) {
+/// Changes the tint with `change`, then shows it on the window of `image`.
+fn update_tint(image: &gtk::Image, change: impl FnOnce(&mut Tint)) {
     TINT.with_borrow_mut(|slot| {
         let tint = slot.get_or_insert_with(Tint::new);
+        if let Some(root) = image.root() {
+            tint.window.set(Some(root.upcast_ref()));
+        }
         change(tint);
         tint.apply();
     });
@@ -170,6 +274,31 @@ mod tests {
 
     fn solid(pixel: [u8; 4], count: usize) -> Vec<u8> {
         pixel.repeat(count)
+    }
+
+    const RED: Rgb = Rgb { r: 255, g: 0, b: 0 };
+    const BLUE: Rgb = Rgb { r: 0, g: 0, b: 255 };
+
+    #[test]
+    fn variable_set_keeps_the_old_color_in_the_other_slot() {
+        let mut variable = Variable::new("album-tint");
+        variable.set(Some(RED));
+        variable.set(Some(BLUE));
+        assert_eq!(
+            variable.css(),
+            "window.album-tint-0 { --album-tint: rgb(0, 0, 255); } \
+             window.album-tint-1 { --album-tint: rgb(255, 0, 0); } "
+        );
+        assert_eq!(variable.class(variable.active), "album-tint-0");
+    }
+
+    #[test]
+    fn variable_set_with_the_same_color_keeps_the_active_slot() {
+        let mut variable = Variable::new("album-tint");
+        variable.set(Some(RED));
+        let active = variable.active;
+        variable.set(Some(RED));
+        assert_eq!(variable.active, active);
     }
 
     #[test]

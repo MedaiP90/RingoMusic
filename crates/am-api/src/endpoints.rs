@@ -12,9 +12,10 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use crate::models::{
-    Album, AlbumId, ApiPage, Artist, ArtistId, LibraryAlbum, LibraryAlbumId, LibraryArtist,
+    Album, AlbumId, ApiPage, Artist, ArtistId, Group, LibraryAlbum, LibraryAlbumId, LibraryArtist,
     LibraryArtistId, LibraryPlaylist, LibraryPlaylistId, LibrarySearchResults, LibrarySong,
-    LibrarySongId, Playlist, PlaylistId, Recommendation, Resource, SearchResults, Song, SongId,
+    LibrarySongId, MapResponse, Playlist, PlaylistId, Recommendation, Resource, SearchResults,
+    Song, SongId,
 };
 use crate::{ApiTransport, Error, PAGE_SIZE, Page, Result};
 
@@ -70,7 +71,9 @@ impl LibrarySearchType {
 /// has its `relationships` with the album and the artist.
 ///
 /// `limit` is the maximum number of results for each type. Apple accepts
-/// values from 1 to 25 and rejects larger values.
+/// values from 1 to 25 and rejects larger values. `offset` is the position
+/// of the first result of each type. The `next` field of each list gives the
+/// offset of the next page.
 ///
 /// # Errors
 ///
@@ -82,15 +85,17 @@ pub async fn search(
     term: &str,
     types: &[CatalogSearchType],
     limit: u32,
+    offset: u32,
 ) -> Result<SearchResults> {
     let term = check_term(term)?;
     let types = join_types(types.iter().map(|kind| kind.as_str()))?;
     let path = format!("/v1/catalog/{}/search", segment("storefront", storefront)?);
-    let limit = limit.to_string();
+    let (limit, offset) = (limit.to_string(), offset.to_string());
     let query = [
         ("term", term),
         ("types", &types),
         ("limit", &limit),
+        ("offset", &offset),
         ("with", "topResults"),
         // Song results then link to their albums and artists.
         ("include[songs]", "albums,artists"),
@@ -102,7 +107,9 @@ pub async fn search(
 /// Searches the library of the user.
 ///
 /// `limit` is the maximum number of results for each type. Apple accepts
-/// values from 1 to 25 and rejects larger values.
+/// values from 1 to 25 and rejects larger values. `offset` is the position
+/// of the first result of each type. The `next` field of each list gives the
+/// offset of the next page.
 ///
 /// # Errors
 ///
@@ -113,11 +120,19 @@ pub async fn library_search(
     term: &str,
     types: &[LibrarySearchType],
     limit: u32,
+    offset: u32,
 ) -> Result<LibrarySearchResults> {
     let term = check_term(term)?;
     let types = join_types(types.iter().map(|kind| kind.as_str()))?;
-    let limit = limit.to_string();
-    let query = [("term", term), ("types", &types), ("limit", &limit)];
+    let (limit, offset) = (limit.to_string(), offset.to_string());
+    let query = [
+        ("term", term),
+        ("types", &types),
+        ("limit", &limit),
+        ("offset", &offset),
+        ("include[library-artists]", "catalog"),
+        ("fields[artists]", CATALOG_ARTIST_FIELDS),
+    ];
     let envelope: SearchEnvelope<LibrarySearchResults> =
         fetch(transport, "/v1/me/library/search", &query).await?;
     Ok(envelope.results)
@@ -147,7 +162,20 @@ pub async fn album(transport: &impl ApiTransport, storefront: &str, id: &AlbumId
     first(fetch(transport, &path, &[("include", "tracks")]).await?)
 }
 
-/// Gets one catalog artist with the views `top-songs` and `full-albums`.
+/// Attributes of the catalog artist that a library artist request includes.
+/// The library artist has no photo, so the request takes it from the catalog
+/// artist.
+const CATALOG_ARTIST_FIELDS: &str = "artwork,name";
+
+/// Views of a catalog artist that [`artist`] gets. [`artist_view`] gets the
+/// next pages of one view. The app cannot play music videos, so the
+/// `top-music-videos` view is not here. The `playlists` view is not here
+/// because it repeats `featured-playlists`.
+pub const ARTIST_VIEWS: &str = "latest-release,top-songs,full-albums,singles,live-albums,\
+compilation-albums,featured-playlists,appears-on-albums,similar-artists";
+
+/// Gets one catalog artist with the first page of each view in
+/// [`ARTIST_VIEWS`], and with the biography, the origin, and the start date.
 ///
 /// # Errors
 ///
@@ -160,7 +188,11 @@ pub async fn artist(
     id: &ArtistId,
 ) -> Result<Artist> {
     let path = catalog_path(storefront, "artists", id.as_str())?;
-    first(fetch(transport, &path, &[("views", "top-songs,full-albums")]).await?)
+    let query = [
+        ("views", ARTIST_VIEWS),
+        ("extend", "artistBio,bornOrFormed,origin,isGroup"),
+    ];
+    first(fetch(transport, &path, &query).await?)
 }
 
 /// Gets one page of the top songs of a catalog artist.
@@ -179,19 +211,23 @@ pub async fn artist_top_songs(
     fetch_page(transport, &path, offset).await
 }
 
-/// Gets one page of the full albums of a catalog artist.
+/// Gets one page of the view `view` of a catalog artist, for example
+/// `full-albums`. `T` is the resource type of the view: [`Album`] for the
+/// album views, [`Playlist`] for `featured-playlists`, and [`Artist`] for
+/// `similar-artists`.
 ///
 /// # Errors
 ///
 /// Returns [`Error::InvalidInput`] if an argument is empty.
 /// Returns an error if the request fails or the response is not valid.
-pub async fn artist_full_albums(
+pub async fn artist_view<T: DeserializeOwned>(
     transport: &impl ApiTransport,
     storefront: &str,
     id: &ArtistId,
+    view: &str,
     offset: u32,
-) -> Result<Page<Album>> {
-    let path = artist_view_path(storefront, id, "full-albums")?;
+) -> Result<Page<T>> {
+    let path = artist_view_path(storefront, id, view)?;
     fetch_page(transport, &path, offset).await
 }
 
@@ -264,7 +300,11 @@ pub async fn library_artists(
     transport: &impl ApiTransport,
     offset: u32,
 ) -> Result<Page<LibraryArtist>> {
-    fetch_page(transport, "/v1/me/library/artists", offset).await
+    let query = [
+        ("include", "catalog"),
+        ("fields[artists]", CATALOG_ARTIST_FIELDS),
+    ];
+    fetch_page_with(transport, "/v1/me/library/artists", offset, &query).await
 }
 
 /// Gets one page of the songs in the library.
@@ -365,6 +405,60 @@ pub async fn recommendations(transport: &impl ApiTransport) -> Result<Vec<Recomm
     Ok(page.data.into_vec())
 }
 
+/// Gets the groups of the New page. Groups of unsupported types are left out.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if `storefront` is not a valid path segment.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn new_releases(transport: &impl ApiTransport, storefront: &str) -> Result<Vec<Group>> {
+    let path = format!(
+        "/v1/editorial/{}/groupings",
+        segment("storefront", storefront)?
+    );
+    let query = [
+        ("name", "music"),
+        ("tabs", "subscriber"),
+        ("platform", "web"),
+        ("format[resources]", "map"),
+        ("art[url]", "c,f"),
+        ("extend", "artistUrl,editorialArtwork,plainEditorialNotes"),
+        (
+            "fields[albums]",
+            "artistName,artistUrl,artwork,contentRating,editorialArtwork,plainEditorialNotes,name,playParams,releaseDate,url,trackCount",
+        ),
+        ("include[albums]", "artists"),
+        ("include[songs]", "artists"),
+        ("omit[resource:artists]", "autos"),
+        ("relate[songs]", "albums"),
+    ];
+    let response: MapResponse = fetch(transport, &path, &query).await?;
+    Ok(response.new_page_groups())
+}
+
+/// Gets the "Made For You" playlists of the user as one group.
+///
+/// # Errors
+///
+/// Returns an error if the request fails or the response is not valid.
+pub async fn made_for_you(transport: &impl ApiTransport) -> Result<Vec<Group>> {
+    let query = [
+        ("filter[featured]", "made-for-you"),
+        ("format[resources]", "map"),
+        ("include[library-playlists]", "catalog"),
+        ("art[url]", "f"),
+        (
+            "fields[library-playlists]",
+            "artwork,dateAdded,name,playParams",
+        ),
+        ("fields[playlists]", "lastModifiedDate"),
+        ("sort", "type"),
+        ("platform", "web"),
+    ];
+    let response: MapResponse = fetch(transport, "/v1/me/library/playlists", &query).await?;
+    Ok(response.flat_groups())
+}
+
 /// Search responses wrap the results in a `results` object.
 #[derive(serde::Deserialize)]
 struct SearchEnvelope<T> {
@@ -387,10 +481,22 @@ async fn fetch_page<T: DeserializeOwned>(
     path: &str,
     offset: u32,
 ) -> Result<Page<T>> {
+    fetch_page_with(transport, path, offset, &[]).await
+}
+
+/// Sends a list request for the page at `offset`, with the parameters in
+/// `extra`.
+async fn fetch_page_with<T: DeserializeOwned>(
+    transport: &impl ApiTransport,
+    path: &str,
+    offset: u32,
+    extra: &[(&str, &str)],
+) -> Result<Page<T>> {
     let limit = PAGE_SIZE.to_string();
     let offset = offset.to_string();
-    let page: ApiPage<T> =
-        fetch(transport, path, &[("limit", &limit), ("offset", &offset)]).await?;
+    let mut query = vec![("limit", limit.as_str()), ("offset", offset.as_str())];
+    query.extend_from_slice(extra);
+    let page: ApiPage<T> = fetch(transport, path, &query).await?;
     Ok(page.into())
 }
 

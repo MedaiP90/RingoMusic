@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
+use super::catalog::{AlbumAttributes, Artist, SongAttributes};
 use super::id::{LibraryAlbumId, LibraryArtistId, LibraryPlaylistId, LibrarySongId};
 use super::resource::Resource;
-use super::shared::{Artwork, ContentRating, Description, PlayParams, Relationship, ResourceRef};
+use super::shared::{Artwork, Description, PlayParams, Relationship, ResourceRef};
 
 /// A song in the library of the user.
 #[derive(Clone, Debug, PartialEq, serde::Deserialize)]
@@ -25,32 +26,9 @@ pub struct LibrarySongRelationships {
     pub artists: Option<Relationship<ResourceRef>>,
 }
 
-/// Attributes of a library song.
-#[derive(Clone, Debug, PartialEq, serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct LibrarySongAttributes {
-    /// Title of the song.
-    pub name: String,
-    /// Name of the artist.
-    pub artist_name: Option<String>,
-    /// Name of the album.
-    pub album_name: Option<String>,
-    /// Duration in milliseconds.
-    #[serde(rename = "durationInMillis")]
-    pub duration_millis: Option<u32>,
-    /// Position of the song on its disc.
-    pub track_number: Option<u32>,
-    /// Number of the disc.
-    pub disc_number: Option<u32>,
-    /// Release date. Apple can send only the year.
-    pub release_date: Option<String>,
-    /// Cover image.
-    pub artwork: Option<Artwork>,
-    /// Content rating.
-    pub content_rating: Option<ContentRating>,
-    /// Data for the player.
-    pub play_params: Option<PlayParams>,
-}
+/// Attributes of a library song. Apple sends the same fields as for a
+/// catalog song.
+pub type LibrarySongAttributes = SongAttributes;
 
 /// An album in the library of the user.
 #[derive(Clone, Debug, PartialEq, serde::Deserialize)]
@@ -63,25 +41,9 @@ pub struct LibraryAlbum {
     pub relationships: Option<LibraryAlbumRelationships>,
 }
 
-/// Attributes of a library album.
-#[derive(Clone, Debug, PartialEq, serde::Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct LibraryAlbumAttributes {
-    /// Title of the album.
-    pub name: String,
-    /// Name of the artist.
-    pub artist_name: Option<String>,
-    /// Release date. Apple can send only the year.
-    pub release_date: Option<String>,
-    /// Number of tracks.
-    pub track_count: Option<u32>,
-    /// Cover image.
-    pub artwork: Option<Artwork>,
-    /// Content rating.
-    pub content_rating: Option<ContentRating>,
-    /// Data for the player.
-    pub play_params: Option<PlayParams>,
-}
+/// Attributes of a library album. Apple sends the same fields as for a
+/// catalog album.
+pub type LibraryAlbumAttributes = AlbumAttributes;
 
 /// Resources that a library album links to.
 #[derive(Clone, Debug, PartialEq, serde::Deserialize)]
@@ -99,6 +61,15 @@ pub struct LibraryArtist {
     pub id: LibraryArtistId,
     /// Attributes of the artist.
     pub attributes: LibraryArtistAttributes,
+    /// Related resources, if the request asked for them.
+    pub relationships: Option<LibraryArtistRelationships>,
+}
+
+/// Resources that a library artist links to.
+#[derive(Clone, Debug, PartialEq, serde::Deserialize)]
+pub struct LibraryArtistRelationships {
+    /// The catalog artist, with the photo. The library artist has no photo.
+    pub catalog: Option<Relationship<Artist>>,
 }
 
 /// Attributes of a library artist.

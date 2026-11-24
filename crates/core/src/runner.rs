@@ -10,6 +10,7 @@
 
 mod core;
 mod engine_queue;
+mod engine_worker;
 mod handle;
 
 pub use self::core::Core;

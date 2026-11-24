@@ -193,11 +193,14 @@ fn start_sign_in(state: &mut AppState) -> Vec<Command> {
     vec![Command::SignIn]
 }
 
-/// Starts the engine again. Only an engine that gave up or has a sandbox failure needs it.
+/// Starts the engine again. Only an engine that waits for the user needs it.
 fn restart_engine(state: &mut AppState) -> Vec<Command> {
     if !matches!(
         state.engine,
-        EngineStatus::GaveUp | EngineStatus::SandboxFailed
+        EngineStatus::GaveUp
+            | EngineStatus::SandboxFailed
+            | EngineStatus::Incompatible { .. }
+            | EngineStatus::ProtocolMismatch { .. }
     ) {
         return Vec::new();
     }
@@ -223,6 +226,10 @@ fn apply_event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
             state.engine = EngineStatus::Incompatible { check, detail };
             Vec::new()
         }
+        EngineEvent::ProtocolMismatch { expected, actual } => {
+            state.engine = EngineStatus::ProtocolMismatch { expected, actual };
+            Vec::new()
+        }
         EngineEvent::AuthChanged { authorized: true } => vec![Command::RefreshAuth],
         EngineEvent::AuthChanged { authorized: false } => {
             set_auth(state, None);
@@ -230,7 +237,13 @@ fn apply_event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
         }
         EngineEvent::State { state: playback } => {
             state.playback.state = playback;
-            Vec::new()
+            match state.pending_seek {
+                Some(position) if playback == PlaybackState::Playing => {
+                    state.pending_seek = None;
+                    vec![Command::Seek(position)]
+                }
+                _ => Vec::new(),
+            }
         }
         EngineEvent::NowPlaying {
             id,
@@ -268,6 +281,7 @@ fn apply_event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
                     play: state.playback.state == PlaybackState::Playing,
                 });
             }
+            state.pending_seek = None;
             state.engine = EngineStatus::Restarting;
             state.playback.state = PlaybackState::Stopped;
             state.playback.position = Duration::ZERO;
@@ -328,11 +342,12 @@ fn resume_commands(state: &mut AppState) -> Vec<Command> {
         items: state.queue.playback_order(),
         start,
     }];
-    if !resume.position.is_zero() {
-        commands.push(Command::Seek(resume.position));
-    }
     if resume.play {
+        // The seek waits for `Playing`: before that the engine loses it.
         commands.push(Command::Play);
+        state.pending_seek = Some(resume.position).filter(|position| !position.is_zero());
+    } else if !resume.position.is_zero() {
+        commands.push(Command::Seek(resume.position));
     }
     commands
 }

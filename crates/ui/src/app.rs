@@ -28,11 +28,12 @@ use crate::item_actions::{self, SongCatalog};
 use crate::preferences::{Preferences, PreferencesInit};
 use crate::section::Section;
 use crate::services::AppServices;
-use crate::views::home::{HomeInit, HomeInput, HomeView};
 use crate::views::library::{LibraryInit, LibraryKind, LibraryView};
 use crate::views::queue::{QueueInit, QueueView};
 use crate::views::search::{SearchInit, SearchInput, SearchView};
 use crate::views::section_page;
+use crate::views::sections::{SectionsInit, SectionsInput, SectionsView};
+use crate::views::{home, made_for_you, new_releases};
 use crate::widgets::player_bar::{PlayerBar, PlayerBarInit, PlayerBarInput, TOGGLE_QUEUE};
 use crate::{
     about, accent, artwork, menu, network_banner, notification, sidebar, subscription, theme,
@@ -78,6 +79,9 @@ pub struct App {
     sidebar_list: gtk::ListBox,
     split_view: adw::NavigationSplitView,
     search: relm4::Sender<SearchInput>,
+    home: relm4::Sender<SectionsInput>,
+    new_releases: relm4::Sender<SectionsInput>,
+    made_for_you: relm4::Sender<SectionsInput>,
     player_bar: relm4::Sender<PlayerBarInput>,
     queue_open: bool,
     services: AppServices,
@@ -97,6 +101,8 @@ pub enum Input {
     Raise,
     /// The user or a D-Bus client asks to quit.
     QuitRequested,
+    /// The user asks to reload the current page.
+    Refresh,
     /// The user asks to search: show the search page and focus its entry.
     ShowSearch,
     /// The user opens or closes the queue panel.
@@ -244,21 +250,18 @@ impl SimpleComponent for App {
         }
         update_notice::start(&services, &sender);
         let split_view = adw::NavigationSplitView::new();
-        let mut search = SearchView::builder().launch(SearchInit {
-            services: services.clone(),
-            catalog: catalog.clone(),
-        });
-        let search_page = search.widget().clone();
-        let search_input = search.sender().clone();
-        // Like the gate, the search view lives as long as its widget.
-        search.detach_runtime();
-        let mut home = HomeView::builder().launch(HomeInit {
-            services: services.clone(),
-        });
-        let home_page = home.widget().clone();
-        register_refresh(&root, home.sender());
-        // The home view also lives as long as its widget.
-        home.detach_runtime();
+        let (search_page, search_input) = launch_search(&services, &catalog);
+        let [
+            (home_page, home_input),
+            (new_page, new_input),
+            (made_for_you_page, made_for_you_input),
+        ] = [
+            home::init(services.clone(), catalog.clone()),
+            new_releases::init(services.clone(), catalog.clone()),
+            made_for_you::init(services.clone(), catalog.clone()),
+        ]
+        .map(launch_sections);
+        register_refresh(&root, sender.input_sender());
         let library_pages = LibraryKind::ALL.map(|kind| launch_library(kind, &services, &catalog));
         let mut queue = QueueView::builder().launch(QueueInit {
             core: core.clone(),
@@ -268,7 +271,13 @@ impl SimpleComponent for App {
         close_queue_on_escape(&queue_page, &sender);
         // The queue view also lives as long as its widget.
         queue.detach_runtime();
-        let content_stack = build_content_stack(&home_page, &search_page, &library_pages);
+        let content_stack = build_content_stack(
+            &home_page,
+            &search_page,
+            &new_page,
+            &made_for_you_page,
+            &library_pages,
+        );
         detail_pages::register(
             &root,
             PageSources {
@@ -289,6 +298,9 @@ impl SimpleComponent for App {
             sidebar_list: sidebar_list.clone(),
             split_view: split_view.clone(),
             search: search_input,
+            home: home_input,
+            new_releases: new_input,
+            made_for_you: made_for_you_input,
             player_bar: bar_input,
             queue_open: false,
             services,
@@ -311,6 +323,7 @@ impl SimpleComponent for App {
             Input::SummaryChanged(summary) => self.follow(&summary),
             Input::Raise => self.window.present(),
             Input::QuitRequested => self.quit(),
+            Input::Refresh => self.refresh(),
             Input::ShowSearch => self.show_search(),
             Input::ToggleQueue => self.set_queue_open(!self.queue_open),
             Input::QueueVisibility(open) => self.set_queue_open(open),
@@ -345,12 +358,30 @@ impl App {
         self.sign_in_failed = summary.sign_in_failed;
     }
 
-    /// Makes `section` the current one. The refresh action works on the home page only.
+    /// Makes `section` the current one. The refresh action works on the pages
+    /// of the shared sections view only.
     fn select(&mut self, section: Section) {
         self.section = section;
         let refresh = self.window.lookup_action("refresh");
         if let Some(refresh) = refresh.and_then(|action| action.downcast::<SimpleAction>().ok()) {
-            refresh.set_enabled(section == Section::Home);
+            refresh.set_enabled(matches!(
+                section,
+                Section::Home | Section::New | Section::MadeForYou
+            ));
+        }
+    }
+
+    /// Reloads the current page, if it can reload.
+    fn refresh(&self) {
+        match self.section {
+            Section::Home => self.home.emit(SectionsInput::Refresh),
+            Section::New => self.new_releases.emit(SectionsInput::Refresh),
+            Section::MadeForYou => self.made_for_you.emit(SectionsInput::Refresh),
+            Section::Search
+            | Section::Playlists
+            | Section::Albums
+            | Section::Artists
+            | Section::Songs => {}
         }
     }
 
@@ -471,11 +502,11 @@ fn register_window_actions(
     item_actions::register(window, core, catalog);
 }
 
-/// Adds the `win.refresh` action. It sends a refresh to the home view.
-fn register_refresh(window: &adw::ApplicationWindow, home: &relm4::Sender<HomeInput>) {
-    let input = home.clone();
+/// Adds the `win.refresh` action. The window sends the refresh to the current page.
+fn register_refresh(window: &adw::ApplicationWindow, input: &relm4::Sender<Input>) {
+    let input = input.clone();
     let refresh = ActionEntry::builder("refresh")
-        .activate(move |_: &adw::ApplicationWindow, _, _| input.emit(HomeInput::Refresh))
+        .activate(move |_: &adw::ApplicationWindow, _, _| input.emit(Input::Refresh))
         .build();
     window.add_action_entries([refresh]);
     relm4::main_application().set_accels_for_action("win.refresh", &["F5"]);
@@ -498,11 +529,39 @@ fn launch_library(
     (kind, page)
 }
 
+/// Launches the search view. Returns its page and its input sender.
+/// The view lives as long as its widget.
+fn launch_search(
+    services: &AppServices,
+    catalog: &SongCatalog,
+) -> (adw::ToolbarView, relm4::Sender<SearchInput>) {
+    let mut view = SearchView::builder().launch(SearchInit {
+        services: services.clone(),
+        catalog: catalog.clone(),
+    });
+    let page = view.widget().clone();
+    let input = view.sender().clone();
+    view.detach_runtime();
+    (page, input)
+}
+
+/// Launches a shared sections view. Returns its page and its input sender.
+/// The view lives as long as its widget.
+fn launch_sections(init: SectionsInit) -> (adw::ToolbarView, relm4::Sender<SectionsInput>) {
+    let mut view = SectionsView::builder().launch(init);
+    let page = view.widget().clone();
+    let input = view.sender().clone();
+    view.detach_runtime();
+    (page, input)
+}
+
 /// Builds the stack with the navigation stack of each section. A section
 /// without a view shows an empty page.
 fn build_content_stack(
     home_page: &adw::ToolbarView,
     search_page: &adw::ToolbarView,
+    new_page: &adw::ToolbarView,
+    made_for_you_page: &adw::ToolbarView,
     library_pages: &[(LibraryKind, adw::ToolbarView)],
 ) -> gtk::Stack {
     let stack = gtk::Stack::new();
@@ -514,6 +573,8 @@ fn build_content_stack(
             (_, Some((_, page))) => section_page::wrap(section, page),
             (Section::Home, None) => section_page::wrap(section, home_page),
             (Section::Search, None) => section_page::wrap(section, search_page),
+            (Section::New, None) => section_page::wrap(section, new_page),
+            (Section::MadeForYou, None) => section_page::wrap(section, made_for_you_page),
             _ => section_page::build(section),
         };
         stack.add_named(&page, Some(section.id()));
@@ -555,8 +616,8 @@ fn close_queue_on_escape(page: &adw::ToolbarView, sender: &ComponentSender<App>)
     page.add_controller(keys);
 }
 
-/// Builds the breakpoint for a window narrower than `width` sp.
-fn narrow_breakpoint(width: f64) -> adw::Breakpoint {
+/// Builds the breakpoint for a window or a bin narrower than `width` sp.
+pub(crate) fn narrow_breakpoint(width: f64) -> adw::Breakpoint {
     adw::Breakpoint::new(adw::BreakpointCondition::new_length(
         adw::BreakpointConditionLengthType::MaxWidth,
         width,

@@ -16,6 +16,7 @@ use ringo_core::queue::QueueItem;
 use ringo_core::runner::CoreHandle;
 use ringo_core::state::Message;
 
+use crate::detail::ArtistList;
 use crate::item::SongItem;
 use crate::playback_actions;
 
@@ -26,8 +27,6 @@ pub const OPEN_ALBUM: &str = "win.open-album";
 pub const OPEN_ARTIST: &str = "win.open-artist";
 /// Opens the page with all top songs of an artist.
 pub const OPEN_ARTIST_SONGS: &str = "win.open-artist-songs";
-/// Opens the page with all albums of an artist.
-pub const OPEN_ARTIST_ALBUMS: &str = "win.open-artist-albums";
 
 /// The songs that the views showed, by ID. An action gets only an ID, so it
 /// finds the data of the song here. Clones share the same map.
@@ -175,10 +174,17 @@ pub fn item_action(name: &str) -> SimpleAction {
     SimpleAction::new(name, Some(VariantTy::STRING))
 }
 
-/// Creates an action that opens a list of an artist. Its parameter is the
-/// artist ID and the artist name. Build it with [`artist_list_target`].
-pub fn artist_list_action(name: &str) -> SimpleAction {
+/// Creates an action that opens a page with all items of a list. Its
+/// parameter is two strings: the artist ID and the artist name (build it
+/// with [`artist_list_target`]), or the search scope and the search term.
+pub fn list_action(name: &str) -> SimpleAction {
     SimpleAction::new(name, Some(&<(String, String)>::static_variant_type()))
+}
+
+/// Name of the action that opens the page with all tiles of `list`, without
+/// the `win.` prefix.
+pub fn open_artist_list_name(list: ArtistList) -> String {
+    format!("open-artist-{}", list.view())
 }
 
 /// The parameter of an artist list action.

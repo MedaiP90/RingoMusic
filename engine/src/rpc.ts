@@ -80,6 +80,17 @@ export class RpcClient {
     this.send(notification);
   }
 
+  // Resolves when the socket has written all queued data. Writes finish in order, so the
+  // callback of an empty write runs after every earlier write.
+  flush(): Promise<void> {
+    if (this.socket.destroyed) {
+      return Promise.resolve();
+    }
+    return new Promise((resolve) => {
+      this.socket.write('', () => resolve());
+    });
+  }
+
   close(): void {
     this.socket.end();
   }
@@ -125,7 +136,7 @@ export class RpcClient {
       if (error instanceof RpcError) {
         this.sendError(id, error.code, error.message);
       } else {
-        log.error({ method, error }, 'handler failed');
+        log.error({ method, err: error }, 'handler failed');
         this.sendError(id, ErrorCode.InternalError, 'internal error in handler');
       }
     }

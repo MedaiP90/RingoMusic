@@ -104,16 +104,31 @@ pub struct Artist {
     /// Related resources, if the request asked for them.
     pub relationships: Option<ArtistRelationships>,
     /// Views of the artist, if the request used `views=...`.
-    pub views: Option<ArtistViews>,
+    /// Boxed, because the views are much bigger than the other fields.
+    pub views: Option<Box<ArtistViews>>,
 }
 
-/// Attributes of a catalog artist.
+/// Attributes of a catalog artist. The fields after `genre_names` are
+/// present only if the request used `extend=...`.
 #[derive(Clone, Debug, PartialEq, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct ArtistAttributes {
     /// Name of the artist.
     pub name: String,
     /// Photo of the artist.
     pub artwork: Option<Artwork>,
+    /// Genres of the artist, in the language of the storefront.
+    #[serde(default)]
+    pub genre_names: Vec<String>,
+    /// Biography of the artist. It can contain HTML tags such as `<i>`.
+    pub artist_bio: Option<String>,
+    /// Birth date of a person or start year of a group, as a full date or a
+    /// year.
+    pub born_or_formed: Option<String>,
+    /// Place where the artist comes from.
+    pub origin: Option<String>,
+    /// True for a group, false for a person.
+    pub is_group: Option<bool>,
 }
 
 /// Resources that a catalog artist links to.
@@ -123,15 +138,29 @@ pub struct ArtistRelationships {
     pub albums: Option<Relationship<ResourceRef>>,
 }
 
-/// Views of a catalog artist.
+/// Views of a catalog artist. A view is `None` if the request did not ask
+/// for it, or if the artist has nothing in it.
 #[derive(Clone, Debug, PartialEq, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub struct ArtistViews {
+    /// The newest release of the artist.
+    pub latest_release: Option<ApiPage<Album>>,
     /// Most played songs of the artist.
-    #[serde(rename = "top-songs")]
     pub top_songs: Option<ApiPage<Song>>,
     /// Full albums of the artist.
-    #[serde(rename = "full-albums")]
     pub full_albums: Option<ApiPage<Album>>,
+    /// Singles and EPs of the artist.
+    pub singles: Option<ApiPage<Album>>,
+    /// Live albums of the artist.
+    pub live_albums: Option<ApiPage<Album>>,
+    /// Compilations of the artist.
+    pub compilation_albums: Option<ApiPage<Album>>,
+    /// Editorial playlists about the artist, for example the essentials.
+    pub featured_playlists: Option<ApiPage<Playlist>>,
+    /// Albums of other artists that the artist appears on.
+    pub appears_on_albums: Option<ApiPage<Album>>,
+    /// Artists that Apple Music finds similar to the artist.
+    pub similar_artists: Option<ApiPage<Artist>>,
 }
 
 /// A playlist of the Apple Music catalog.

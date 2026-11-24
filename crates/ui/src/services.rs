@@ -98,8 +98,6 @@ impl Services {
                 config = config.through_zypak();
             }
             let engine = Arc::new(SidecarEngine::start(config).context("cannot start the engine")?);
-            // The core subscribes to the engine events now. No `await` may come
-            // between the engine start and this call, or `engine.ready` can be lost.
             let (core, handle) = Core::new(engine.clone());
             let core = core.with_queue_store(QueueStore::new(database.clone()));
             let runner = tokio::spawn(core.run());
