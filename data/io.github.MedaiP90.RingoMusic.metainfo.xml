@@ -62,10 +62,10 @@ Copyright (C) 2026 RingoMusic contributors
         <ul>
           <li>New page: see the latest releases from Apple Music.</li>
           <li>Made For You page in the library: your personal mixes from Apple Music.</li>
-          <li>The artist page shows its albums in a row that scrolls sideways, and similar artists at the bottom, like in Apple Music.</li>
+          <li>The artist page shows the latest release, the albums, the singles and EPs, the live albums, the compilations, the playlists, the albums the artist appears on, and similar artists, like in Apple Music. Each list scrolls sideways, and lists without items are hidden.</li>
           <li>The artist page shows the genre, the origin, and the start year under the name. The Info button opens all the information about the artist, with the biography.</li>
           <li>The artist page and its information take a tint from the artist photo.</li>
-          <li>On the artist page, the Show More buttons are small and sit at the right of the section titles.</li>
+          <li>On the artist page, each list with more items has a small Show More button at the right of its title.</li>
           <li>Songs on the Search, New, and artist pages show in columns that scroll sideways, like in Apple Music.</li>
           <li>Fix: some albums and songs on the New page had no artwork.</li>
           <li>Fix: on a slow start, the Widevine module and the session could go to the wrong folder, and autoplay could be blocked.</li>

@@ -1,7 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
-//! Page with all top songs or all albums of an artist. The items load page by
+//! Page with all top songs or all tiles of one list of an artist, for
+//! example all singles. The items load page by
 //! page when the user scrolls near the end.
 
 use std::sync::Arc;
@@ -16,7 +17,7 @@ use ringo_core::runner::CoreHandle;
 use tokio::task::JoinHandle;
 use tracing::warn;
 
-use crate::detail;
+use crate::detail::{self, ArtistList};
 use crate::item::{SongItem, TileItem};
 use crate::item_actions::{self, SongCatalog};
 use crate::paged::{self, PageCursor};
@@ -34,14 +35,14 @@ const MORE_SPINNER_SIZE: i32 = 24;
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 pub enum MoreKind {
     TopSongs,
-    Albums,
+    Tiles(ArtistList),
 }
 
 impl MoreKind {
     fn title(self) -> String {
         match self {
             Self::TopSongs => gettext("Top Songs"),
-            Self::Albums => gettext("Albums"),
+            Self::Tiles(list) => list.title(),
         }
     }
 
@@ -53,7 +54,7 @@ impl MoreKind {
     ) -> Box<dyn MoreList> {
         match self {
             Self::TopSongs => Box::new(SongsList::new(catalog, input)),
-            Self::Albums => Box::new(AlbumsList::new()),
+            Self::Tiles(list) => Box::new(TilesList::new(&list.title())),
         }
     }
 
@@ -69,9 +70,9 @@ impl MoreKind {
             Self::TopSongs => detail::load_artist_top_songs(api, storefront, id, offset)
                 .await
                 .map(MorePage::Songs),
-            Self::Albums => detail::load_artist_albums(api, storefront, id, offset)
+            Self::Tiles(list) => detail::load_artist_tiles(api, storefront, id, list, offset)
                 .await
-                .map(MorePage::Albums),
+                .map(MorePage::Tiles),
         }
     }
 }
@@ -91,14 +92,14 @@ pub struct ArtistMoreInit {
 #[derive(Debug)]
 pub enum MorePage {
     Songs(Page<SongItem>),
-    Albums(Page<TileItem>),
+    Tiles(Page<TileItem>),
 }
 
 impl MorePage {
     fn next_offset(&self) -> Option<u32> {
         match self {
             Self::Songs(page) => page.next_offset,
-            Self::Albums(page) => page.next_offset,
+            Self::Tiles(page) => page.next_offset,
         }
     }
 }
@@ -172,19 +173,19 @@ impl MoreList for SongsList {
     }
 }
 
-struct AlbumsList {
+struct TilesList {
     grid: TileGrid,
 }
 
-impl AlbumsList {
-    fn new() -> Self {
+impl TilesList {
+    fn new(title: &str) -> Self {
         Self {
-            grid: TileGrid::new(&gettext("Albums")),
+            grid: TileGrid::new(title),
         }
     }
 }
 
-impl MoreList for AlbumsList {
+impl MoreList for TilesList {
     fn widget(&self) -> gtk::Widget {
         self.grid.widget().clone().upcast()
     }
@@ -194,7 +195,7 @@ impl MoreList for AlbumsList {
     }
 
     fn append(&mut self, page: MorePage) -> usize {
-        let MorePage::Albums(page) = page else {
+        let MorePage::Tiles(page) = page else {
             return 0;
         };
         self.grid.append_items(&page.items);
@@ -204,7 +205,7 @@ impl MoreList for AlbumsList {
     fn play(&self, _core: &CoreHandle, _position: usize) {}
 }
 
-/// The page of all top songs or all albums of an artist.
+/// The page of all top songs or all tiles of one list of an artist.
 pub struct ArtistMoreView {
     id: String,
     kind: MoreKind,

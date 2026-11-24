@@ -2,6 +2,7 @@ crates/ui/src/about.rs
 crates/ui/src/accent.rs
 crates/ui/src/app.rs
 crates/ui/src/background.rs
+crates/ui/src/detail.rs
 crates/ui/src/gate.rs
 crates/ui/src/main.rs
 crates/ui/src/menu.rs

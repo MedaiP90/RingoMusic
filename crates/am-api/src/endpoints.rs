@@ -148,8 +148,15 @@ pub async fn album(transport: &impl ApiTransport, storefront: &str, id: &AlbumId
     first(fetch(transport, &path, &[("include", "tracks")]).await?)
 }
 
-/// Gets one catalog artist with the views `top-songs`, `full-albums`, and
-/// `similar-artists`, and with the biography, the origin, and the start date.
+/// Views of a catalog artist that [`artist`] gets. [`artist_view`] gets the
+/// next pages of one view. The app cannot play music videos, so the
+/// `top-music-videos` view is not here. The `playlists` view is not here
+/// because it repeats `featured-playlists`.
+pub const ARTIST_VIEWS: &str = "latest-release,top-songs,full-albums,singles,live-albums,\
+compilation-albums,featured-playlists,appears-on-albums,similar-artists";
+
+/// Gets one catalog artist with the first page of each view in
+/// [`ARTIST_VIEWS`], and with the biography, the origin, and the start date.
 ///
 /// # Errors
 ///
@@ -163,7 +170,7 @@ pub async fn artist(
 ) -> Result<Artist> {
     let path = catalog_path(storefront, "artists", id.as_str())?;
     let query = [
-        ("views", "top-songs,full-albums,similar-artists"),
+        ("views", ARTIST_VIEWS),
         ("extend", "artistBio,bornOrFormed,origin,isGroup"),
     ];
     first(fetch(transport, &path, &query).await?)
@@ -185,19 +192,23 @@ pub async fn artist_top_songs(
     fetch_page(transport, &path, offset).await
 }
 
-/// Gets one page of the full albums of a catalog artist.
+/// Gets one page of the view `view` of a catalog artist, for example
+/// `full-albums`. `T` is the resource type of the view: [`Album`] for the
+/// album views, [`Playlist`] for `featured-playlists`, and [`Artist`] for
+/// `similar-artists`.
 ///
 /// # Errors
 ///
 /// Returns [`Error::InvalidInput`] if an argument is empty.
 /// Returns an error if the request fails or the response is not valid.
-pub async fn artist_full_albums(
+pub async fn artist_view<T: DeserializeOwned>(
     transport: &impl ApiTransport,
     storefront: &str,
     id: &ArtistId,
+    view: &str,
     offset: u32,
-) -> Result<Page<Album>> {
-    let path = artist_view_path(storefront, id, "full-albums")?;
+) -> Result<Page<T>> {
+    let path = artist_view_path(storefront, id, view)?;
     fetch_page(transport, &path, offset).await
 }
 

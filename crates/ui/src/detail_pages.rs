@@ -6,6 +6,7 @@
 
 use std::any::Any;
 use std::cell::RefCell;
+use std::iter;
 use std::rc::Rc;
 
 use relm4::adw;
@@ -14,6 +15,7 @@ use relm4::gtk;
 use relm4::gtk::glib::Variant;
 use relm4::prelude::*;
 
+use crate::detail::ArtistList;
 use crate::item::TileKind;
 use crate::item_actions::{self, SongCatalog};
 use crate::services::AppServices;
@@ -69,12 +71,16 @@ pub fn register(window: &adw::ApplicationWindow, sources: PageSources) {
         });
         window.add_action(&action);
     }
-    let more_pages = [
-        ("open-artist-songs", MoreKind::TopSongs),
-        ("open-artist-albums", MoreKind::Albums),
-    ];
+    let tile_pages = ArtistList::ALL.into_iter().map(|list| {
+        (
+            item_actions::open_artist_list_name(list),
+            MoreKind::Tiles(list),
+        )
+    });
+    let more_pages =
+        iter::once(("open-artist-songs".to_owned(), MoreKind::TopSongs)).chain(tile_pages);
     for (name, kind) in more_pages {
-        let action = item_actions::artist_list_action(name);
+        let action = item_actions::artist_list_action(&name);
         let opener = opener.clone();
         action.connect_activate(move |_, parameter| {
             if let Some((id, artist_name)) = parameter.and_then(Variant::get::<(String, String)>) {
@@ -105,7 +111,8 @@ impl Opener {
         self.sources.split_view.set_show_content(true);
     }
 
-    /// Pushes the page with all top songs or all albums of an artist.
+    /// Pushes the page with all top songs or all tiles of one list of an
+    /// artist.
     fn open_more(&self, kind: MoreKind, id: String, artist_name: String) {
         let Some(navigation) = self.active_navigation() else {
             return;

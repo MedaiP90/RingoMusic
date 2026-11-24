@@ -34,7 +34,7 @@ F=tests/fixtures/api
 ringo-cli api-get '/v1/catalog/{storefront}/search' term=radiohead types=songs,albums,artists,playlists limit=5 > $F/catalog_search.json
 ringo-cli api-get '/v1/catalog/{storefront}/songs/1097861769' > $F/catalog_song.json
 ringo-cli api-get '/v1/catalog/{storefront}/albums/1097861387' include=tracks > $F/catalog_album.json
-ringo-cli api-get '/v1/catalog/{storefront}/artists/657515' views=top-songs,full-albums,similar-artists extend=artistBio,bornOrFormed,origin,isGroup > $F/catalog_artist.json
+ringo-cli api-get '/v1/catalog/{storefront}/artists/657515' views=latest-release,top-songs,full-albums,singles,live-albums,compilation-albums,featured-playlists,appears-on-albums,similar-artists extend=artistBio,bornOrFormed,origin,isGroup > $F/catalog_artist.json
 ringo-cli api-get '/v1/catalog/{storefront}/playlists/pl.f4d106fed2bd41149aaacabb233eb5eb' include=tracks > $F/catalog_playlist.json
 ```
 
@@ -88,7 +88,7 @@ ringo-cli api-get /v1/me/library/playlists 'filter[featured]=made-for-you' 'form
 | `catalog_search.json` | `/v1/catalog/{storefront}/search` |
 | `catalog_song.json` | `/v1/catalog/{storefront}/songs/1097861769` |
 | `catalog_album.json` | `/v1/catalog/{storefront}/albums/1097861387` with `include=tracks` |
-| `catalog_artist.json` | `/v1/catalog/{storefront}/artists/657515` with `views=top-songs,full-albums` |
+| `catalog_artist.json` | `/v1/catalog/{storefront}/artists/657515` with all views but `top-music-videos` and `playlists` |
 | `catalog_playlist.json` | `/v1/catalog/{storefront}/playlists/pl.f4d106fed2bd41149aaacabb233eb5eb` with `include=tracks` |
 | `library_playlists.json` | `/v1/me/library/playlists` |
 | `library_albums.json` | `/v1/me/library/albums` |

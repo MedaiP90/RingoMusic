@@ -104,7 +104,8 @@ pub struct Artist {
     /// Related resources, if the request asked for them.
     pub relationships: Option<ArtistRelationships>,
     /// Views of the artist, if the request used `views=...`.
-    pub views: Option<ArtistViews>,
+    /// Boxed, because the views are much bigger than the other fields.
+    pub views: Option<Box<ArtistViews>>,
 }
 
 /// Attributes of a catalog artist. The fields after `genre_names` are
@@ -137,17 +138,28 @@ pub struct ArtistRelationships {
     pub albums: Option<Relationship<ResourceRef>>,
 }
 
-/// Views of a catalog artist.
+/// Views of a catalog artist. A view is `None` if the request did not ask
+/// for it, or if the artist has nothing in it.
 #[derive(Clone, Debug, PartialEq, serde::Deserialize)]
+#[serde(rename_all = "kebab-case")]
 pub struct ArtistViews {
+    /// The newest release of the artist.
+    pub latest_release: Option<ApiPage<Album>>,
     /// Most played songs of the artist.
-    #[serde(rename = "top-songs")]
     pub top_songs: Option<ApiPage<Song>>,
     /// Full albums of the artist.
-    #[serde(rename = "full-albums")]
     pub full_albums: Option<ApiPage<Album>>,
+    /// Singles and EPs of the artist.
+    pub singles: Option<ApiPage<Album>>,
+    /// Live albums of the artist.
+    pub live_albums: Option<ApiPage<Album>>,
+    /// Compilations of the artist.
+    pub compilation_albums: Option<ApiPage<Album>>,
+    /// Editorial playlists about the artist, for example the essentials.
+    pub featured_playlists: Option<ApiPage<Playlist>>,
+    /// Albums of other artists that the artist appears on.
+    pub appears_on_albums: Option<ApiPage<Album>>,
     /// Artists that Apple Music finds similar to the artist.
-    #[serde(rename = "similar-artists")]
     pub similar_artists: Option<ApiPage<Artist>>,
 }
 

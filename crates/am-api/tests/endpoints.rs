@@ -7,10 +7,10 @@
 
 use ringo_am_api::endpoints::{self, CatalogSearchType, LibrarySearchType};
 use ringo_am_api::models::{
-    AlbumId, ArtistId, Group, GroupKind, LibraryAlbumId, LibraryArtistId, LibraryPlaylistId,
+    Album, AlbumId, ArtistId, Group, GroupKind, LibraryAlbumId, LibraryArtistId, LibraryPlaylistId,
     LibrarySongId, PlaylistId, Resource, SongId,
 };
-use ringo_am_api::{Error, FixtureTransport};
+use ringo_am_api::{Error, FixtureTransport, Page};
 
 const STOREFRONT: &str = "it";
 const PLAYLIST_ID: &str = "pl.f4d106fed2bd41149aaacabb233eb5eb";
@@ -189,17 +189,18 @@ async fn artist_top_songs_returns_a_page_with_the_next_offset() {
 }
 
 #[tokio::test]
-async fn artist_full_albums_returns_a_page_with_the_next_offset() {
+async fn artist_view_returns_a_page_with_the_next_offset() {
     let transport = FixtureTransport::new().with(
         &catalog("artists/657515/view/full-albums"),
         &PAGE_QUERY,
         "catalog_artist_full_albums.json",
     );
 
-    let page = endpoints::artist_full_albums(
+    let page: Page<Album> = endpoints::artist_view(
         &transport,
         STOREFRONT,
         &ArtistId::from("657515".to_owned()),
+        "full-albums",
         0,
     )
     .await
@@ -213,7 +214,7 @@ async fn artist_returns_the_artist_with_views() {
     let transport = FixtureTransport::new().with(
         &catalog("artists/657515"),
         &[
-            ("views", "top-songs,full-albums,similar-artists"),
+            ("views", endpoints::ARTIST_VIEWS),
             ("extend", "artistBio,bornOrFormed,origin,isGroup"),
         ],
         "catalog_artist.json",
@@ -227,6 +228,12 @@ async fn artist_returns_the_artist_with_views() {
     let views = artist.views.unwrap();
     assert!(!views.top_songs.unwrap().data.is_empty());
     assert!(!views.full_albums.unwrap().data.is_empty());
+    assert!(!views.latest_release.unwrap().data.is_empty());
+    assert!(!views.singles.unwrap().data.is_empty());
+    assert!(!views.live_albums.unwrap().data.is_empty());
+    assert!(!views.compilation_albums.unwrap().data.is_empty());
+    assert!(!views.featured_playlists.unwrap().data.is_empty());
+    assert!(!views.appears_on_albums.unwrap().data.is_empty());
     assert!(!views.similar_artists.unwrap().data.is_empty());
 }
 

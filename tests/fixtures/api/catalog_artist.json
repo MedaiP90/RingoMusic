@@ -29,8 +29,14 @@
       "meta": {
         "views": {
           "order": [
+            "latest-release",
             "top-songs",
             "full-albums",
+            "featured-playlists",
+            "singles",
+            "live-albums",
+            "compilation-albums",
+            "appears-on-albums",
             "similar-artists"
           ]
         }
@@ -170,6 +176,551 @@
       },
       "type": "artists",
       "views": {
+        "appears-on-albums": {
+          "attributes": {
+            "title": "Collaborazioni"
+          },
+          "data": [
+            {
+              "attributes": {
+                "artistName": "Thom Yorke",
+                "artwork": {
+                  "bgColor": "f4e1b7",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "191612",
+                  "textColor2": "28251f",
+                  "textColor3": "443f33",
+                  "textColor4": "514b3d",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/7c/58/79/7c58796f-6e64-98ac-73c2-e16d0959e875/191404120750.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2021 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": true,
+                "name": "Creep (Very 2021 Rmx) [feat. Radiohead] - Single",
+                "playParams": {
+                  "id": "1573936428",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2021-07-13",
+                "trackCount": 1,
+                "upc": "191404120750",
+                "url": "https://music.apple.com/it/album/creep-very-2021-rmx-feat-radiohead-single/1573936428"
+              },
+              "href": "/v1/catalog/it/albums/1573936428",
+              "id": "1573936428",
+              "type": "albums"
+            }
+          ],
+          "href": "/v1/catalog/it/artists/657515/view/appears-on-albums"
+        },
+        "compilation-albums": {
+          "attributes": {
+            "title": "Compilation"
+          },
+          "data": [
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "000000",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "eff5f5",
+                  "textColor2": "d9d8d3",
+                  "textColor3": "bfc4c4",
+                  "textColor4": "aeada9",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music112/v4/45/fb/81/45fb8153-21f0-8a66-ba39-4bbd66a12be0/191404116654.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2021 XL Recordings Ltd",
+                "editorialNotes": {
+                  "short": "Versioni alternative e inediti per celebrare due capolavori."
+                },
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": true,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "KID A MNESIA",
+                "playParams": {
+                  "id": "1581785974",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2021-11-05",
+                "trackCount": 34,
+                "upc": "191404116654",
+                "url": "https://music.apple.com/it/album/kid-a-mnesia/1581785974"
+              },
+              "href": "/v1/catalog/it/albums/1581785974",
+              "id": "1581785974",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "5e361b",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "f8faf8",
+                  "textColor2": "dddddf",
+                  "textColor3": "d9d3cc",
+                  "textColor4": "c4bcb8",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/e4/6b/f2/e46bf28e-6e75-ca39-69ce-4d02ad1366e5/634904080969.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2011 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Elettronica",
+                  "Rock",
+                  "Alternativa adulti"
+                ],
+                "isCompilation": true,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "TKOL RMX 1234567",
+                "playParams": {
+                  "id": "1109714866",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2011-09-16",
+                "trackCount": 19,
+                "upc": "634904080969",
+                "url": "https://music.apple.com/it/album/tkol-rmx-1234567/1109714866"
+              },
+              "href": "/v1/catalog/it/albums/1109714866",
+              "id": "1109714866",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "ffffff",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "282424",
+                  "textColor2": "2e3442",
+                  "textColor3": "535050",
+                  "textColor4": "585d68",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/77/fd/0a/77fd0a4e-e5b1-8597-12dc-8917ead835bb/634904080853.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2004 XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Rock",
+                  "Alternativa adulti",
+                  "Elettronica",
+                  "Rock progressive/Art-rock"
+                ],
+                "isCompilation": true,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "Com Lag: 2+2=5 - EP",
+                "playParams": {
+                  "id": "1143391524",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2004-03-24",
+                "trackCount": 10,
+                "upc": "634904080853",
+                "url": "https://music.apple.com/it/album/com-lag-2-2-5-ep/1143391524"
+              },
+              "href": "/v1/catalog/it/albums/1143391524",
+              "id": "1143391524",
+              "type": "albums"
+            }
+          ],
+          "href": "/v1/catalog/it/artists/657515/view/compilation-albums"
+        },
+        "featured-playlists": {
+          "attributes": {
+            "title": "Playlist: artisti"
+          },
+          "data": [
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "131313",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "eba140",
+                  "textColor2": "e29438",
+                  "textColor3": "c08437",
+                  "textColor4": "b87a31",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPESS05.jpg?l=it-IT",
+                  "width": 1080
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music Alternative",
+                "description": {
+                  "short": "L'opera sorprendente di un fenomeno che ha trasceso il rock.",
+                  "standard": "Affreschi post-moderni e ritratti di interiorità spezzate decorano la galleria di capolavori dei Radiohead. Apostati del britpop, discepoli del prog più atmosferico, pionieri di uno stile che incorpora elettronica e jazz, i musicisti dell'Oxfordshire sono architetti di impressioni sonore e liriche tanto profonde quanto eteree, enigmatiche come un incantesimo ma vibranti come una ballata popolare. In un continuo cammino di evoluzione del proprio stile, la band ha sfidato barriere intellettuali e di genere, creando momenti di sospensione ma anche strappi elettrici dal forte impatto emotivo."
+                },
+                "editorialNotes": {
+                  "name": "Radiohead: brani essenziali",
+                  "short": "L'opera sorprendente di un fenomeno che ha trasceso il rock.",
+                  "standard": "Affreschi post-moderni e ritratti di interiorità spezzate decorano la galleria di capolavori dei Radiohead. Apostati del britpop, discepoli del prog più atmosferico, pionieri di uno stile che incorpora elettronica e jazz, i musicisti dell'Oxfordshire sono architetti di impressioni sonore e liriche tanto profonde quanto eteree, enigmatiche come un incantesimo ma vibranti come una ballata popolare. In un continuo cammino di evoluzione del proprio stile, la band ha sfidato barriere intellettuali e di genere, creando momenti di sospensione ma anche strappi elettrici dal forte impatto emotivo."
+                },
+                "editorialPlaylistKind": "artist-franchise",
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2026-11-17T21:58:06Z",
+                "name": "Radiohead: brani essenziali",
+                "playParams": {
+                  "id": "pl.fdc21e2843764a8a99076ad5b6c40f4d",
+                  "kind": "playlist",
+                  "versionHash": "f575b28995b6a90577a51964568687eca5f56196b676edae54c29121ae80b4c8"
+                },
+                "playlistType": "editorial",
+                "supportsSing": false,
+                "url": "https://music.apple.com/it/playlist/radiohead-brani-essenziali/pl.fdc21e2843764a8a99076ad5b6c40f4d"
+              },
+              "href": "/v1/catalog/it/playlists/pl.fdc21e2843764a8a99076ad5b6c40f4d",
+              "id": "pl.fdc21e2843764a8a99076ad5b6c40f4d",
+              "type": "playlists"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "131313",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "eba140",
+                  "textColor2": "e29438",
+                  "textColor3": "c08437",
+                  "textColor4": "b87a31",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.MVESS05.jpg?l=it-IT",
+                  "width": 1080
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music Alternative",
+                "description": {
+                  "standard": "Grandi firme e drum machine in un itinerario nell'avanguardia."
+                },
+                "editorialNotes": {
+                  "name": "Radiohead: video essenziali",
+                  "short": "Grandi firme e drum machine in un itinerario nell'avanguardia.",
+                  "standard": "Grandi firme e drum machine in un itinerario nell'avanguardia."
+                },
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2018-03-29T19:00:39Z",
+                "name": "Radiohead: video essenziali",
+                "playParams": {
+                  "id": "pl.0d3b4d2af6e24dc595868e3deacaae23",
+                  "kind": "playlist",
+                  "versionHash": "e4634ccec3efdbae43534de6729658561ef2eb0d7dd4db5b2ab0e5374cc8d7fc"
+                },
+                "playlistType": "editorial",
+                "supportsSing": false,
+                "url": "https://music.apple.com/it/playlist/radiohead-video-essenziali/pl.0d3b4d2af6e24dc595868e3deacaae23"
+              },
+              "href": "/v1/catalog/it/playlists/pl.0d3b4d2af6e24dc595868e3deacaae23",
+              "id": "pl.0d3b4d2af6e24dc595868e3deacaae23",
+              "type": "playlists"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "131313",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "eba140",
+                  "textColor2": "e29438",
+                  "textColor3": "c08437",
+                  "textColor4": "b87a31",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPCHL03.jpg?l=it-IT",
+                  "width": 1080
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music Alternative",
+                "editorialPlaylistKind": "artist-franchise",
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2023-04-11T13:54:48Z",
+                "name": "Radiohead: Chill",
+                "playParams": {
+                  "id": "pl.c1b72602d9f24dc9adb6e0bfd1e70573",
+                  "kind": "playlist",
+                  "versionHash": "23c4f9698e25d38daa59b769c8186227a9e500fb647d1e99fcd8ab43cd8ce460"
+                },
+                "playlistType": "editorial",
+                "supportsSing": false,
+                "url": "https://music.apple.com/it/playlist/radiohead-chill/pl.c1b72602d9f24dc9adb6e0bfd1e70573"
+              },
+              "href": "/v1/catalog/it/playlists/pl.c1b72602d9f24dc9adb6e0bfd1e70573",
+              "id": "pl.c1b72602d9f24dc9adb6e0bfd1e70573",
+              "type": "playlists"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "131313",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "eba140",
+                  "textColor2": "e29438",
+                  "textColor3": "c08437",
+                  "textColor4": "b87a31",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPDC04.jpg?l=it-IT",
+                  "width": 1080
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music Alternative",
+                "editorialPlaylistKind": "artist-franchise",
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2022-11-30T03:01:24Z",
+                "name": "Radiohead: Deep Cuts ",
+                "playParams": {
+                  "id": "pl.20b70a5a1efb4db982a127453fb385b2",
+                  "kind": "playlist",
+                  "versionHash": "dcacebbe677c0c1bbcd1f108d75bb9fceacdff0542a5980e773e9ee8a4bb9277"
+                },
+                "playlistType": "editorial",
+                "supportsSing": false,
+                "url": "https://music.apple.com/it/playlist/radiohead-deep-cuts/pl.20b70a5a1efb4db982a127453fb385b2"
+              },
+              "href": "/v1/catalog/it/playlists/pl.20b70a5a1efb4db982a127453fb385b2",
+              "id": "pl.20b70a5a1efb4db982a127453fb385b2",
+              "type": "playlists"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "131313",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "eba140",
+                  "textColor2": "e29438",
+                  "textColor3": "c08437",
+                  "textColor4": "b87a31",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPINF04.jpg?l=it-IT",
+                  "width": 1080
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music Alternative",
+                "description": {
+                  "short": "Una formazione sperimentale, al passo con elettronica e rock.",
+                  "standard": "Nel suono dei Radiohead si sono raccolti decenni di slanci fra popolare e avanguardia: con la malinconia elettrica dei Pixies e il prog più empatico la band ha costruito chitarre ambientali e melodie inquiete ispirate da krautrock, new wave e persino dal lavoro di Brian Eno come solista e produttore. Cresciuti ascoltando The Smiths, hanno colto stimoli da techno, hard bop e geni del sampling."
+                },
+                "editorialNotes": {
+                  "name": "Radiohead: influenze",
+                  "short": "Una formazione sperimentale, al passo con elettronica e rock.",
+                  "standard": "Nel suono dei Radiohead si sono raccolti decenni di slanci fra popolare e avanguardia: con la malinconia elettrica dei Pixies e il prog più empatico la band ha costruito chitarre ambientali e melodie inquiete ispirate da krautrock, new wave e persino dal lavoro di Brian Eno come solista e produttore. Cresciuti ascoltando The Smiths, hanno colto stimoli da techno, hard bop e geni del sampling."
+                },
+                "editorialPlaylistKind": "artist-franchise",
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2023-06-07T01:06:28Z",
+                "name": "Radiohead: influenze",
+                "playParams": {
+                  "id": "pl.1631c4a4658f43b88cc409c4ebb9c8fb",
+                  "kind": "playlist",
+                  "versionHash": "e8bcea51cb659cd764c3807ccfe36f42d0e8e0977ca08d3de2bacbef1ca7165b"
+                },
+                "playlistType": "editorial",
+                "supportsSing": false,
+                "url": "https://music.apple.com/it/playlist/radiohead-influenze/pl.1631c4a4658f43b88cc409c4ebb9c8fb"
+              },
+              "href": "/v1/catalog/it/playlists/pl.1631c4a4658f43b88cc409c4ebb9c8fb",
+              "id": "pl.1631c4a4658f43b88cc409c4ebb9c8fb",
+              "type": "playlists"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "131313",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "eba140",
+                  "textColor2": "e29438",
+                  "textColor3": "c08437",
+                  "textColor4": "b87a31",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPINS04.jpg?l=it-IT",
+                  "width": 1080
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music Alternative",
+                "description": {
+                  "short": "Ibridazioni artificiali e ipnosi nel loro invito a sorprendere.",
+                  "standard": "La lezione universale dei Radiohead è smarrirsi nella sperimentazione. La band ha dato modelli non solo a chi come i Coldplay e gli alt-J ha provato a mutare i codici del rock, innestandovi elementi sintetici, metri spezzati o altri spunti d'avanguardia, ma ha influenzato anche figure di confine dell'elettronica come The Knife, a caccia di melodie sospese nel sogno."
+                },
+                "editorialNotes": {
+                  "name": "Ispirati ai Radiohead",
+                  "short": "Ibridazioni artificiali e ipnosi nel loro invito a sorprendere.",
+                  "standard": "La lezione universale dei Radiohead è smarrirsi nella sperimentazione. La band ha dato modelli non solo a chi come i Coldplay e gli alt-J ha provato a mutare i codici del rock, innestandovi elementi sintetici, metri spezzati o altri spunti d'avanguardia, ma ha influenzato anche figure di confine dell'elettronica come The Knife, a caccia di melodie sospese nel sogno."
+                },
+                "editorialPlaylistKind": "artist-franchise",
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2023-01-27T20:34:58Z",
+                "name": "Ispirati ai Radiohead",
+                "playParams": {
+                  "id": "pl.b1038cbbb76547a1b3ebdf6c5ddee8ec",
+                  "kind": "playlist",
+                  "versionHash": "2cdbe7c271760f97732d735556e4e587463fd2eaaaef7010d274b9643cd7cc1c"
+                },
+                "playlistType": "editorial",
+                "supportsSing": false,
+                "url": "https://music.apple.com/it/playlist/ispirati-ai-radiohead/pl.b1038cbbb76547a1b3ebdf6c5ddee8ec"
+              },
+              "href": "/v1/catalog/it/playlists/pl.b1038cbbb76547a1b3ebdf6c5ddee8ec",
+              "id": "pl.b1038cbbb76547a1b3ebdf6c5ddee8ec",
+              "type": "playlists"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "131313",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "eba140",
+                  "textColor2": "e29438",
+                  "textColor3": "c08437",
+                  "textColor4": "b87a31",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPSING03.jpg?l=it-IT",
+                  "width": 1080
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music Alternative",
+                "editorialPlaylistKind": "artist-franchise",
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2023-06-16T17:47:05Z",
+                "name": "Radiohead: Sing",
+                "playParams": {
+                  "id": "pl.6688cf01fb1744278bd594eed3730a10",
+                  "kind": "playlist",
+                  "versionHash": "c4965f663324a20188da6dd52810b0c396221360028ff208ccbf1ee6e0ad2303"
+                },
+                "playlistType": "editorial",
+                "supportsSing": true,
+                "url": "https://music.apple.com/it/playlist/radiohead-sing/pl.6688cf01fb1744278bd594eed3730a10"
+              },
+              "href": "/v1/catalog/it/playlists/pl.6688cf01fb1744278bd594eed3730a10",
+              "id": "pl.6688cf01fb1744278bd594eed3730a10",
+              "type": "playlists"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "131313",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "eba140",
+                  "textColor2": "e29438",
+                  "textColor3": "c08437",
+                  "textColor4": "b87a31",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPSL03.jpg?l=it-IT",
+                  "width": 1080
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music Alternative",
+                "editorialNotes": {
+                  "name": "Setlist del concerto: 2025 Live in Bologna di Radiohead"
+                },
+                "editorialPlaylistKind": "artist-franchise",
+                "editorialPlaylistSubKind": "artist-created-set-list",
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2025-11-21T15:47:34Z",
+                "name": "Setlist del concerto: 2025 Live in Bologna di Radiohead",
+                "playParams": {
+                  "id": "pl.ee4c049e0692484aa901b82d5fce0039",
+                  "kind": "playlist",
+                  "versionHash": "f50e229768e239674177d6420b628a9383de1eaba4dc6aacf33077a6368a61cd"
+                },
+                "playlistType": "editorial",
+                "supportsSing": false,
+                "url": "https://music.apple.com/it/playlist/setlist-del-concerto-2025-live-in-bologna-di-radiohead/pl.ee4c049e0692484aa901b82d5fce0039"
+              },
+              "href": "/v1/catalog/it/playlists/pl.ee4c049e0692484aa901b82d5fce0039",
+              "id": "pl.ee4c049e0692484aa901b82d5fce0039",
+              "type": "playlists"
+            },
+            {
+              "attributes": {
+                "artwork": {
+                  "bgColor": "131313",
+                  "hasP3": false,
+                  "height": 1080,
+                  "textColor1": "eba140",
+                  "textColor2": "e29438",
+                  "textColor3": "c08437",
+                  "textColor4": "b87a31",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/AMCArtistImages211/v4/8a/49/84/8a498443-718e-40c0-404e-d1380c2352b7/ami-identity-531db02daa273271c643ba631a46b9d5-2026-09-07T07-12-12.872Z_cropped.png/{w}x{h}SC.FPSL03.jpg?l=it-IT",
+                  "width": 1080
+                },
+                "audioTraits": [],
+                "curatorName": "Apple Music Alternative",
+                "editorialNotes": {
+                  "name": "Setlist del concerto: 2025 Live in Madrid di Radiohead"
+                },
+                "editorialPlaylistKind": "artist-franchise",
+                "editorialPlaylistSubKind": "artist-created-set-list",
+                "hasCollaboration": false,
+                "isChart": false,
+                "lastModifiedDate": "2025-11-13T10:05:52Z",
+                "name": "Setlist del concerto: 2025 Live in Madrid di Radiohead",
+                "playParams": {
+                  "id": "pl.9a032baabf4f470196286f22b16376bf",
+                  "kind": "playlist",
+                  "versionHash": "688e94179f88e1b7d40b4a3379059bcce9c17081edbd303978e887557e6dd89e"
+                },
+                "playlistType": "editorial",
+                "supportsSing": false,
+                "url": "https://music.apple.com/it/playlist/setlist-del-concerto-2025-live-in-madrid-di-radiohead/pl.9a032baabf4f470196286f22b16376bf"
+              },
+              "href": "/v1/catalog/it/playlists/pl.9a032baabf4f470196286f22b16376bf",
+              "id": "pl.9a032baabf4f470196286f22b16376bf",
+              "type": "playlists"
+            }
+          ],
+          "href": "/v1/catalog/it/artists/657515/view/featured-playlists"
+        },
         "full-albums": {
           "attributes": {
             "title": "Album"
@@ -663,6 +1214,198 @@
           ],
           "href": "/v1/catalog/it/artists/657515/view/full-albums",
           "next": "/v1/catalog/it/artists/657515/view/full-albums?offset=10"
+        },
+        "latest-release": {
+          "attributes": {
+            "title": "Ultima uscita"
+          },
+          "data": [
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "111618",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "c6e2f3",
+                  "textColor2": "b9c0cc",
+                  "textColor3": "a2b9c7",
+                  "textColor4": "979ea8",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/8e/8b/bd/8e8bbda2-4f83-6e06-ce1e-08f7c2ef5e46/191404156377.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "hi-res-lossless",
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "contentRating": "explicit",
+                "copyright": "℗ 2025 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": true,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "Hail to the Thief (Live Recordings 2003-2009)",
+                "playParams": {
+                  "id": "1828175826",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2025-08-13",
+                "trackCount": 12,
+                "upc": "191404156377",
+                "url": "https://music.apple.com/it/album/hail-to-the-thief-live-recordings-2003-2009/1828175826"
+              },
+              "href": "/v1/catalog/it/albums/1828175826",
+              "id": "1828175826",
+              "type": "albums"
+            }
+          ],
+          "href": "/v1/catalog/it/artists/657515/view/latest-release"
+        },
+        "live-albums": {
+          "attributes": {
+            "title": "Album live"
+          },
+          "data": [
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "111618",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "c6e2f3",
+                  "textColor2": "b9c0cc",
+                  "textColor3": "a2b9c7",
+                  "textColor4": "979ea8",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music211/v4/8e/8b/bd/8e8bbda2-4f83-6e06-ce1e-08f7c2ef5e46/191404156377.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "hi-res-lossless",
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "contentRating": "explicit",
+                "copyright": "℗ 2025 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": true,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "Hail to the Thief (Live Recordings 2003-2009)",
+                "playParams": {
+                  "id": "1828175826",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2025-08-13",
+                "trackCount": 12,
+                "upc": "191404156377",
+                "url": "https://music.apple.com/it/album/hail-to-the-thief-live-recordings-2003-2009/1828175826"
+              },
+              "href": "/v1/catalog/it/albums/1828175826",
+              "id": "1828175826",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "000000",
+                  "hasP3": false,
+                  "height": 1500,
+                  "textColor1": "e1e1e2",
+                  "textColor2": "cdcdcd",
+                  "textColor3": "b4b4b5",
+                  "textColor4": "a4a4a4",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music/df/80/1f/mzi.llgcrvep.jpg/{w}x{h}bb.jpg",
+                  "width": 1500
+                },
+                "audioTraits": [],
+                "copyright": "℗ 2011 Ticker Tape Ltd.",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Rock",
+                  "Rock progressive/Art-rock",
+                  "Alternativa adulti"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "The King of Limbs - Live from the Basement",
+                "playParams": {
+                  "id": "483049207",
+                  "kind": "album"
+                },
+                "recordLabel": "Ticker Tape Ltd.",
+                "releaseDate": "2011-12-19",
+                "trackCount": 11,
+                "upc": "827565058921",
+                "url": "https://music.apple.com/it/album/the-king-of-limbs-live-from-the-basement/483049207"
+              },
+              "href": "/v1/catalog/it/albums/483049207",
+              "id": "483049207",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "030301",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "e5c18b",
+                  "textColor2": "d7ab67",
+                  "textColor3": "b89b6f",
+                  "textColor4": "ac8952",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/48/bc/68/48bc6874-b2d7-8c34-4999-cb111f45c6fe/634904078461.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2001 XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "I Might Be Wrong (Live)",
+                "playParams": {
+                  "id": "1097873905",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2001-11-12",
+                "trackCount": 8,
+                "upc": "634904078461",
+                "url": "https://music.apple.com/it/album/i-might-be-wrong-live/1097873905"
+              },
+              "href": "/v1/catalog/it/albums/1097873905",
+              "id": "1097873905",
+              "type": "albums"
+            }
+          ],
+          "href": "/v1/catalog/it/artists/657515/view/live-albums"
         },
         "similar-artists": {
           "attributes": {
@@ -1950,6 +2693,446 @@
           ],
           "href": "/v1/catalog/it/artists/657515/view/similar-artists",
           "next": "/v1/catalog/it/artists/657515/view/similar-artists?offset=10"
+        },
+        "singles": {
+          "attributes": {
+            "title": "Singoli e EP"
+          },
+          "data": [
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "272727",
+                  "hasP3": false,
+                  "height": 1400,
+                  "textColor1": "ededed",
+                  "textColor2": "cecece",
+                  "textColor3": "c6c6c6",
+                  "textColor4": "acacac",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music124/v4/7c/c1/f8/7cc1f880-9c18-b257-a66a-d774061ead1a/cover.jpg/{w}x{h}bb.jpg",
+                  "width": 1400
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2016 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": true,
+                "isPrerelease": false,
+                "isSingle": true,
+                "name": "Daydreaming - Single",
+                "playParams": {
+                  "id": "1111495817",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2016-05-06",
+                "trackCount": 1,
+                "upc": "634904081256",
+                "url": "https://music.apple.com/it/album/daydreaming-single/1111495817"
+              },
+              "href": "/v1/catalog/it/albums/1111495817",
+              "id": "1111495817",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "afafaf",
+                  "hasP3": false,
+                  "height": 1400,
+                  "textColor1": "030303",
+                  "textColor2": "111111",
+                  "textColor3": "252525",
+                  "textColor4": "313131",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music18/v4/e1/1b/87/e11b87d2-b763-65ad-6e2d-f83cd08c7cd7/cover.jpg/{w}x{h}bb.jpg",
+                  "width": 1400
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2016 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": true,
+                "isPrerelease": false,
+                "isSingle": true,
+                "name": "Burn the Witch - Single",
+                "playParams": {
+                  "id": "1110448315",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2016-05-03",
+                "trackCount": 1,
+                "upc": "634904079130",
+                "url": "https://music.apple.com/it/album/burn-the-witch-single/1110448315"
+              },
+              "href": "/v1/catalog/it/albums/1110448315",
+              "id": "1110448315",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "50647e",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "f6f7f8",
+                  "textColor2": "edeff2",
+                  "textColor3": "d4d9e0",
+                  "textColor4": "cdd3da",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/6c/a1/45/6ca1451a-2313-65ab-45c1-781733108717/191404098059.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2016 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": true,
+                "name": "Ill Wind - Single",
+                "playParams": {
+                  "id": "1446881820",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2016",
+                "trackCount": 1,
+                "upc": "191404098059",
+                "url": "https://music.apple.com/it/album/ill-wind-single/1446881820"
+              },
+              "href": "/v1/catalog/it/albums/1446881820",
+              "id": "1446881820",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "666467",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "f3e8f9",
+                  "textColor2": "e1d0ea",
+                  "textColor3": "d7cedc",
+                  "textColor4": "c9bad0",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/cf/88/57/cf885754-e21a-97bf-6931-f1fcd918c5d0/634904081867.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2016 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": true,
+                "name": "Spectre - Single",
+                "playParams": {
+                  "id": "1113546075",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2015-12-25",
+                "trackCount": 1,
+                "upc": "634904081867",
+                "url": "https://music.apple.com/it/album/spectre-single/1113546075"
+              },
+              "href": "/v1/catalog/it/albums/1113546075",
+              "id": "1113546075",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "1d1d1d",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "f3f3f3",
+                  "textColor2": "e0e0e0",
+                  "textColor3": "c8c8c8",
+                  "textColor4": "b9b9b9",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/6b/e6/2c/6be62c8b-12bf-d3d2-bb43-bfde45a67c08/634904081065.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2011 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "The Daily Mail / Staircase - Single",
+                "playParams": {
+                  "id": "1114686637",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2011-12-19",
+                "trackCount": 2,
+                "upc": "634904081065",
+                "url": "https://music.apple.com/it/album/the-daily-mail-staircase-single/1114686637"
+              },
+              "href": "/v1/catalog/it/albums/1114686637",
+              "id": "1114686637",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "2c2c2c",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "f1f1f1",
+                  "textColor2": "e1e1e1",
+                  "textColor3": "c9c9c9",
+                  "textColor4": "bdbdbd",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/b2/d7/4d/b2d74d35-8392-02cc-8480-c799aad12e91/191404102756.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2011 Ticker Tape Ltd under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "TKOL RMX 8 - Single",
+                "playParams": {
+                  "id": "1491563997",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2011-11-18",
+                "trackCount": 3,
+                "upc": "191404102756",
+                "url": "https://music.apple.com/it/album/tkol-rmx-8-single/1491563997"
+              },
+              "href": "/v1/catalog/it/albums/1491563997",
+              "id": "1491563997",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "260e07",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "edbe31",
+                  "textColor2": "cfa62b",
+                  "textColor3": "c59a28",
+                  "textColor4": "ad8823",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/bb/41/2a/bb412a24-e35c-3b33-f0b3-4574b7fbef23/634904084264.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2016 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica",
+                  "Rock"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": false,
+                "name": "Supercollider / The Butcher - Single",
+                "playParams": {
+                  "id": "1166533619",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2011-04-16",
+                "trackCount": 2,
+                "upc": "634904084264",
+                "url": "https://music.apple.com/it/album/supercollider-the-butcher-single/1166533619"
+              },
+              "href": "/v1/catalog/it/albums/1166533619",
+              "id": "1166533619",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "bfbfbf",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "080808",
+                  "textColor2": "212121",
+                  "textColor3": "2c2c2c",
+                  "textColor4": "404040",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/a7/a0/42/a7a04238-6e92-3a32-f4d2-63a4d4352078/634904084066.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2009 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": true,
+                "name": "These Are My Twisted Words - Single",
+                "playParams": {
+                  "id": "1167367262",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2009-08-17",
+                "trackCount": 1,
+                "upc": "634904084066",
+                "url": "https://music.apple.com/it/album/these-are-my-twisted-words-single/1167367262"
+              },
+              "href": "/v1/catalog/it/albums/1167367262",
+              "id": "1167367262",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "949496",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "090909",
+                  "textColor2": "111111",
+                  "textColor3": "252525",
+                  "textColor4": "2b2b2c",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music116/v4/60/b6/96/60b696e8-e47f-e4ea-b967-6f01b94bb484/634904084165.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2016 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": true,
+                "name": "Harry Patch (In Memory Of) - Single",
+                "playParams": {
+                  "id": "1173487443",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2009-08-05",
+                "trackCount": 1,
+                "upc": "634904084165",
+                "url": "https://music.apple.com/it/album/harry-patch-in-memory-of-single/1173487443"
+              },
+              "href": "/v1/catalog/it/albums/1173487443",
+              "id": "1173487443",
+              "type": "albums"
+            },
+            {
+              "attributes": {
+                "artistName": "Radiohead",
+                "artwork": {
+                  "bgColor": "232227",
+                  "hasP3": false,
+                  "height": 4000,
+                  "textColor1": "e7e23a",
+                  "textColor2": "cfcb39",
+                  "textColor3": "bfbc36",
+                  "textColor4": "aca935",
+                  "url": "https://is1-ssl.mzstatic.com/image/thumb/Music126/v4/44/3c/e6/443ce62f-7a42-f219-f7d3-407be718f3aa/191404101766.png/{w}x{h}bb.jpg",
+                  "width": 4000
+                },
+                "audioTraits": [
+                  "lossless",
+                  "lossy-stereo"
+                ],
+                "copyright": "℗ 2005 LLLP LLP under exclusive license to XL Recordings Ltd",
+                "genreNames": [
+                  "Alternativa",
+                  "Musica"
+                ],
+                "isCompilation": false,
+                "isComplete": true,
+                "isMasteredForItunes": false,
+                "isPrerelease": false,
+                "isSingle": true,
+                "name": "I Want None of This - Single",
+                "playParams": {
+                  "id": "1491582070",
+                  "kind": "album"
+                },
+                "recordLabel": "XL Recordings",
+                "releaseDate": "2005-09-09",
+                "trackCount": 1,
+                "upc": "191404101766",
+                "url": "https://music.apple.com/it/album/i-want-none-of-this-single/1491582070"
+              },
+              "href": "/v1/catalog/it/albums/1491582070",
+              "id": "1491582070",
+              "type": "albums"
+            }
+          ],
+          "href": "/v1/catalog/it/artists/657515/view/singles",
+          "next": "/v1/catalog/it/artists/657515/view/singles?offset=10"
         },
         "top-songs": {
           "attributes": {

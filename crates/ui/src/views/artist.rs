@@ -2,7 +2,9 @@
 // Copyright (C) 2026 RingoMusic contributors
 
 //! Artist page: the header with the genre, the origin, and the start year,
-//! the top songs, the albums, and the similar artists. The page takes a tint
+//! the top songs, and one row for each list of the artist, for example the
+//! albums, the singles, and the similar artists. A list without items is
+//! hidden. The page takes a tint
 //! from the artist photo. The Info button opens all the artist information.
 
 use std::sync::Arc;
@@ -11,14 +13,15 @@ use gettextrs::gettext;
 use relm4::adw;
 use relm4::adw::prelude::*;
 use relm4::gtk;
+use relm4::gtk::glib::Variant;
 use relm4::prelude::*;
 use ringo_core::runner::CoreHandle;
 use tokio::task::JoinHandle;
 use tracing::warn;
 
-use crate::detail::{self, ArtistData, ArtistStart};
+use crate::detail::{self, ArtistData, ArtistList, ArtistStart};
 use crate::item::SongItem;
-use crate::item_actions::{self, OPEN_ARTIST_ALBUMS, OPEN_ARTIST_SONGS, SongCatalog};
+use crate::item_actions::{self, OPEN_ARTIST_SONGS, SongCatalog};
 use crate::services::{ApiClient, AppServices};
 use crate::tint;
 use crate::views::artist_info;
@@ -67,15 +70,14 @@ pub struct ArtistView {
     actions: PlayActions,
     songs_section: gtk::Box,
     song_list: SongCarousel,
-    albums: TileRow,
+    /// Opens the page with all top songs.
+    more_songs: gtk::Button,
+    /// One row for each list, in the order of [`ArtistList::ALL`].
+    rows: Vec<ListRow>,
     /// Opens the information dialog. Hidden when the artist has no information.
     info_button: gtk::Button,
     /// The loaded artist, for the information dialog.
     data: Option<Box<ArtistData>>,
-    similar_artists: TileRow,
-    /// Open the pages with all top songs and all albums.
-    more_songs: gtk::Button,
-    more_albums: gtk::Button,
     pending: Option<JoinHandle<()>>,
 }
 
@@ -125,21 +127,8 @@ impl SimpleComponent for ArtistView {
             SongCarousel::new(move |position| input.emit(ArtistInput::PlaySong(position)));
         let more_songs = more_button(OPEN_ARTIST_SONGS);
         let songs_section = build_songs_section(&song_list, &more_songs);
-        let albums = TileRow::new(&gettext("Albums"));
-        let more_albums = more_button(OPEN_ARTIST_ALBUMS);
-        albums.append_header_button(&more_albums);
-        let similar_artists = TileRow::new_with_artwork_size(
-            &gettext("Similar Artists"),
-            SIMILAR_ARTIST_ARTWORK_SIZE,
-        );
-        // More space between the albums and the similar artists.
-        similar_artists.widget().set_margin_top(12);
-        let content = build_content(&[
-            header.widget().upcast_ref(),
-            songs_section.upcast_ref(),
-            albums.widget().upcast_ref(),
-            similar_artists.widget().upcast_ref(),
-        ]);
+        let rows: Vec<ListRow> = ArtistList::ALL.into_iter().map(ListRow::new).collect();
+        let content = build_content(&header, &songs_section, &rows);
         let input = sender.input_sender().clone();
         let frame = DetailFrame::new(
             &content,
@@ -165,12 +154,10 @@ impl SimpleComponent for ArtistView {
             actions,
             songs_section,
             song_list,
-            albums,
+            more_songs,
+            rows,
             info_button,
             data: None,
-            similar_artists,
-            more_songs,
-            more_albums,
             pending: None,
         };
         model.reload(&sender);
@@ -240,24 +227,60 @@ impl ArtistView {
             .set_visible(!details.is_empty() || data.biography.is_some());
         self.song_list.set_songs(&self.top_songs);
         self.songs_section.set_visible(!self.top_songs.is_empty());
-        self.albums.set_items(&data.albums);
-        self.similar_artists.set_items(&data.similar_artists);
         let target = item_actions::artist_list_target(&self.id, &data.name);
-        for (button, has_more) in [
-            (&self.more_songs, data.top_songs_next.is_some()),
-            (&self.more_albums, data.albums_next.is_some()),
-        ] {
-            button.set_action_target_value(Some(&target));
-            button.set_visible(has_more);
+        self.more_songs.set_action_target_value(Some(&target));
+        self.more_songs.set_visible(data.top_songs_next.is_some());
+        for row in &self.rows {
+            row.show(data, &target);
         }
         let is_empty =
-            self.top_songs.is_empty() && data.albums.is_empty() && data.similar_artists.is_empty();
+            self.top_songs.is_empty() && data.lists.iter().all(|tiles| tiles.items.is_empty());
         let phase = if is_empty {
             Phase::Empty
         } else {
             Phase::Content
         };
         self.set_phase(phase, !self.top_songs.is_empty());
+    }
+}
+
+/// The row of one artist list, with its Show More button.
+struct ListRow {
+    list: ArtistList,
+    tiles: TileRow,
+    more: gtk::Button,
+}
+
+impl ListRow {
+    fn new(list: ArtistList) -> Self {
+        let tiles = if list == ArtistList::SimilarArtists {
+            let tiles = TileRow::new_with_artwork_size(&list.title(), SIMILAR_ARTIST_ARTWORK_SIZE);
+            // More space between the row above and the similar artists.
+            tiles.widget().set_margin_top(12);
+            tiles
+        } else {
+            TileRow::new(&list.title())
+        };
+        let more = more_button(&format!(
+            "win.{}",
+            item_actions::open_artist_list_name(list)
+        ));
+        tiles.append_header_button(&more);
+        Self { list, tiles, more }
+    }
+
+    /// Shows the tiles of the list in `data`. The row hides itself when the
+    /// list is empty. `target` is the parameter of the Show More action.
+    fn show(&self, data: &ArtistData, target: &Variant) {
+        let tiles = data.tiles(self.list);
+        self.tiles.set_items(
+            tiles
+                .map(|tiles| tiles.items.as_slice())
+                .unwrap_or_default(),
+        );
+        self.more.set_action_target_value(Some(target));
+        self.more
+            .set_visible(tiles.is_some_and(|tiles| tiles.next_offset.is_some()));
     }
 }
 
@@ -318,15 +341,20 @@ fn build_info_button() -> gtk::Button {
         .build()
 }
 
-/// Builds the scrolling content with `sections` from top to bottom.
-fn build_content(sections: &[&gtk::Widget]) -> gtk::ScrolledWindow {
+/// Builds the scrolling content: the header, the latest release, the top
+/// songs, and the other rows, like in Apple Music.
+fn build_content(header: &DetailHeader, songs: &gtk::Box, rows: &[ListRow]) -> gtk::ScrolledWindow {
     let page = gtk::Box::builder()
         .orientation(gtk::Orientation::Vertical)
         .spacing(18)
         .margin_bottom(18)
         .build();
-    for section in sections {
-        page.append(*section);
+    page.append(header.widget());
+    for row in rows {
+        page.append(row.tiles.widget());
+        if row.list == ArtistList::LatestRelease {
+            page.append(songs);
+        }
     }
     gtk::ScrolledWindow::builder()
         .hscrollbar_policy(gtk::PolicyType::Never)

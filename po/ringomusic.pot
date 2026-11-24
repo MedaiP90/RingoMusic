@@ -82,6 +82,40 @@ msgid ""
 "window closes."
 msgstr ""
 
+#: crates/ui/src/detail.rs crates/ui/src/section.rs
+#: crates/ui/src/views/search.rs
+msgid "Albums"
+msgstr ""
+
+#: crates/ui/src/detail.rs
+msgid "Appears On"
+msgstr ""
+
+#: crates/ui/src/detail.rs
+msgid "Compilations"
+msgstr ""
+
+#: crates/ui/src/detail.rs
+msgid "Latest Release"
+msgstr ""
+
+#: crates/ui/src/detail.rs
+msgid "Live Albums"
+msgstr ""
+
+#: crates/ui/src/detail.rs crates/ui/src/section.rs
+#: crates/ui/src/views/search.rs
+msgid "Playlists"
+msgstr ""
+
+#: crates/ui/src/detail.rs
+msgid "Similar Artists"
+msgstr ""
+
+#: crates/ui/src/detail.rs
+msgid "Singles & EPs"
+msgstr ""
+
 #: crates/ui/src/gate.rs
 msgid "Check Again"
 msgstr ""
@@ -317,11 +351,6 @@ msgstr ""
 msgid "{used} of {limit}"
 msgstr ""
 
-#: crates/ui/src/section.rs crates/ui/src/views/artist.rs
-#: crates/ui/src/views/artist_more.rs crates/ui/src/views/search.rs
-msgid "Albums"
-msgstr ""
-
 #: crates/ui/src/section.rs crates/ui/src/views/search.rs
 msgid "Artists"
 msgstr ""
@@ -336,10 +365,6 @@ msgstr ""
 
 #: crates/ui/src/section.rs
 msgid "New"
-msgstr ""
-
-#: crates/ui/src/section.rs crates/ui/src/views/search.rs
-msgid "Playlists"
 msgstr ""
 
 #: crates/ui/src/section.rs
@@ -424,10 +449,6 @@ msgstr ""
 
 #: crates/ui/src/views/artist.rs crates/ui/src/widgets/detail_header.rs
 msgid "Show More"
-msgstr ""
-
-#: crates/ui/src/views/artist.rs
-msgid "Similar Artists"
 msgstr ""
 
 #: crates/ui/src/views/artist.rs crates/ui/src/views/artist_more.rs
@@ -767,8 +788,10 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
-"The artist page shows its albums in a row that scrolls sideways, and similar "
-"artists at the bottom, like in Apple Music."
+"The artist page shows the latest release, the albums, the singles and EPs, "
+"the live albums, the compilations, the playlists, the albums the artist "
+"appears on, and similar artists, like in Apple Music. Each list scrolls "
+"sideways, and lists without items are hidden."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
@@ -784,8 +807,8 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
-"On the artist page, the Show More buttons are small and sit at the right of "
-"the section titles."
+"On the artist page, each list with more items has a small Show More button "
+"at the right of its title."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
