@@ -14,5 +14,6 @@ pub mod playlist;
 pub mod queue;
 pub mod search;
 pub mod section_page;
+pub mod sections;
 
 mod queue_diff;

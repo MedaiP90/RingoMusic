@@ -28,11 +28,12 @@ use crate::item_actions::{self, SongCatalog};
 use crate::preferences::{Preferences, PreferencesInit};
 use crate::section::Section;
 use crate::services::AppServices;
-use crate::views::home::{HomeInit, HomeInput, HomeView};
+use crate::views::home;
 use crate::views::library::{LibraryInit, LibraryKind, LibraryView};
 use crate::views::queue::{QueueInit, QueueView};
 use crate::views::search::{SearchInit, SearchInput, SearchView};
 use crate::views::section_page;
+use crate::views::sections::{SectionsInput, SectionsView};
 use crate::widgets::player_bar::{PlayerBar, PlayerBarInit, PlayerBarInput, TOGGLE_QUEUE};
 use crate::{
     about, accent, artwork, menu, network_banner, notification, sidebar, subscription, theme,
@@ -252,9 +253,8 @@ impl SimpleComponent for App {
         let search_input = search.sender().clone();
         // Like the gate, the search view lives as long as its widget.
         search.detach_runtime();
-        let mut home = HomeView::builder().launch(HomeInit {
-            services: services.clone(),
-        });
+        let mut home =
+            SectionsView::builder().launch(home::init(services.clone(), catalog.clone()));
         let home_page = home.widget().clone();
         register_refresh(&root, home.sender());
         // The home view also lives as long as its widget.
@@ -472,10 +472,10 @@ fn register_window_actions(
 }
 
 /// Adds the `win.refresh` action. It sends a refresh to the home view.
-fn register_refresh(window: &adw::ApplicationWindow, home: &relm4::Sender<HomeInput>) {
+fn register_refresh(window: &adw::ApplicationWindow, home: &relm4::Sender<SectionsInput>) {
     let input = home.clone();
     let refresh = ActionEntry::builder("refresh")
-        .activate(move |_: &adw::ApplicationWindow, _, _| input.emit(HomeInput::Refresh))
+        .activate(move |_: &adw::ApplicationWindow, _, _| input.emit(SectionsInput::Refresh))
         .build();
     window.add_action_entries([refresh]);
     relm4::main_application().set_accels_for_action("win.refresh", &["F5"]);
