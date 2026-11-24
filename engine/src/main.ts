@@ -19,11 +19,6 @@ const SESSION_PARTITION = 'persist:ringomusic';
 const EXIT_CODE_BAD_CONFIGURATION = 2;
 const QUIT_GRACE_MS = 3000;
 
-// The Rust side owns the MPRIS player and the media keys. Without this,
-// Chromium publishes a second MPRIS player. Chromium ignores the switch when it
-// is set after the first `await`, so keep it at the top level.
-app.commandLine.appendSwitch('disable-features', 'MediaSessionService,HardwareMediaKeyHandling');
-
 // Set when the app quits, so that the window can close.
 let quitting = false;
 app.on('before-quit', () => {
@@ -56,6 +51,18 @@ function readDataDirectory(): string {
   }
   return dataDirectory;
 }
+
+// Sets every path and switch that Electron reads before the `ready` event. Every value in
+// this function must be set before the first `await`: Chromium ignores a late switch.
+function configureChromium(): void {
+  app.setPath('userData', readDataDirectory());
+  app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
+  // The Rust side owns the MPRIS player and the media keys. Without this,
+  // Chromium publishes a second MPRIS player.
+  app.commandLine.appendSwitch('disable-features', 'MediaSessionService,HardwareMediaKeyHandling');
+}
+
+configureChromium();
 
 function readSocketPath(): string {
   const socketPath = process.env['RINGO_ENGINE_SOCKET'];
@@ -168,10 +175,7 @@ async function logPageBrands(window: BrowserWindow): Promise<void> {
 }
 
 async function start(): Promise<void> {
-  const dataDirectory = readDataDirectory();
   const client = await connectToRust();
-  app.setPath('userData', dataDirectory);
-  app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required');
   const userAgent = buildUserAgent();
   app.userAgentFallback = userAgent;
 

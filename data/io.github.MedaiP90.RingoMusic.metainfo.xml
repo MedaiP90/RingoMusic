@@ -59,6 +59,9 @@ Copyright (C) 2026 RingoMusic contributors
     <release version="1.1.0" date="2026-11-24">
       <description>
         <p>Release 1.1.0.</p>
+        <ul>
+          <li>Fix: on a slow start, the Widevine module and the session could go to the wrong folder, and autoplay could be blocked.</li>
+        </ul>
       </description>
     </release>
     <release version="1.0.2" date="2026-11-23">
