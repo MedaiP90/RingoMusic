@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
-//! Catalog search: a search entry in the header bar and the results in four
-//! sections.
+//! Search of the catalog or of the library: a search entry and a scope
+//! switch in the header bar, and the results in four sections.
 
 use std::sync::Arc;
 
@@ -11,8 +11,8 @@ use relm4::adw;
 use relm4::gtk;
 use relm4::gtk::prelude::*;
 use relm4::prelude::*;
-use ringo_am_api::endpoints::{self, CatalogSearchType};
-use ringo_am_api::models::{ApiPage, SearchResults};
+use ringo_am_api::endpoints::{self, CatalogSearchType, LibrarySearchType};
+use ringo_am_api::models::{ApiPage, LibrarySearchResults, SearchResults};
 use ringo_core::runner::CoreHandle;
 use tokio::task::JoinHandle;
 use tracing::warn;
@@ -38,6 +38,58 @@ const SEARCH_TYPES: [CatalogSearchType; 4] = [
     CatalogSearchType::Playlists,
 ];
 
+const LIBRARY_SEARCH_TYPES: [LibrarySearchType; 4] = [
+    LibrarySearchType::Songs,
+    LibrarySearchType::Albums,
+    LibrarySearchType::Artists,
+    LibrarySearchType::Playlists,
+];
+
+/// Where the search looks.
+#[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
+pub enum Scope {
+    /// The Apple Music catalog.
+    #[default]
+    Catalog,
+    /// The library of the user.
+    Library,
+}
+
+impl Scope {
+    const ALL: [Self; 2] = [Self::Catalog, Self::Library];
+
+    /// Name of the toggle in the scope switch.
+    fn name(self) -> &'static str {
+        match self {
+            Self::Catalog => "catalog",
+            Self::Library => "library",
+        }
+    }
+
+    fn from_name(name: &str) -> Self {
+        Self::ALL
+            .into_iter()
+            .find(|scope| scope.name() == name)
+            .unwrap_or_default()
+    }
+
+    /// Label of the toggle in the scope switch.
+    fn label(self) -> String {
+        match self {
+            Self::Catalog => gettext("Apple Music"),
+            Self::Library => gettext("Library"),
+        }
+    }
+
+    /// Title of the hint page and placeholder of the entry.
+    fn hint(self) -> String {
+        match self {
+            Self::Catalog => gettext("Search Apple Music"),
+            Self::Library => gettext("Search Your Library"),
+        }
+    }
+}
+
 /// The results of one search, ready for the widgets.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
 pub struct SearchSections {
@@ -58,6 +110,17 @@ impl SearchSections {
 
 impl From<&SearchResults> for SearchSections {
     fn from(results: &SearchResults) -> Self {
+        Self {
+            songs: convert(results.songs.as_ref()),
+            albums: convert(results.albums.as_ref()),
+            artists: convert(results.artists.as_ref()),
+            playlists: convert(results.playlists.as_ref()),
+        }
+    }
+}
+
+impl From<&LibrarySearchResults> for SearchSections {
+    fn from(results: &LibrarySearchResults) -> Self {
         Self {
             songs: convert(results.songs.as_ref()),
             albums: convert(results.albums.as_ref()),
@@ -106,6 +169,8 @@ pub struct SearchInit {
 pub enum SearchInput {
     /// The user typed a term. An empty term clears the results.
     TermChanged(String),
+    /// The user picked where to search. The last term is searched again.
+    ScopeChanged(Scope),
     /// Searches the last term again.
     Retry,
     /// A search ended. The number tells which search it was.
@@ -123,6 +188,7 @@ pub struct SearchView {
     catalog: SongCatalog,
     entry: gtk::SearchEntry,
     phase: Phase,
+    scope: Scope,
     term: String,
     /// Number of the last search. The result of an older search is dropped.
     generation: u64,
@@ -149,7 +215,12 @@ impl SimpleComponent for SearchView {
                     set_maximum_size: 480,
 
                     #[wrap(Some)]
-                    set_child = &search_entry.clone() -> gtk::SearchEntry {},
+                    set_child = &gtk::Box {
+                        set_spacing: 6,
+
+                        append = &search_entry.clone() -> gtk::SearchEntry {},
+                        append = &build_scope_switch(&sender) -> adw::ToggleGroup {},
+                    },
                 },
             },
 
@@ -160,7 +231,8 @@ impl SimpleComponent for SearchView {
 
                 add_named[Some(Phase::Hint.page())] = &adw::StatusPage {
                     set_icon_name: Some("system-search-symbolic"),
-                    set_title: &gettext("Search Apple Music"),
+                    #[watch]
+                    set_title: &model.scope.hint(),
                     set_description: Some(&gettext("Look for songs, albums, artists, and playlists.")),
                 },
 
@@ -203,6 +275,7 @@ impl SimpleComponent for SearchView {
             catalog,
             entry: search_entry.clone(),
             phase: Phase::Hint,
+            scope: Scope::default(),
             term: String::new(),
             generation: 0,
             pending: None,
@@ -224,6 +297,12 @@ impl SimpleComponent for SearchView {
     fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
             SearchInput::TermChanged(term) => self.search(&term, &sender),
+            SearchInput::ScopeChanged(scope) => {
+                self.scope = scope;
+                self.entry.set_placeholder_text(Some(&scope.hint()));
+                let term = self.term.clone();
+                self.search(&term, &sender);
+            }
             SearchInput::Retry => {
                 let term = self.term.clone();
                 self.search(&term, &sender);
@@ -256,15 +335,13 @@ impl SearchView {
             self.show(SearchSections::default());
             return;
         }
-        let Some(storefront) = storefront(&self.core.subscribe().borrow()) else {
-            self.phase = Phase::Failed;
-            return;
-        };
+        let storefront = storefront(&self.core.subscribe().borrow());
         self.phase = Phase::Loading;
         let (api, term, generation) = (Arc::clone(&self.api), self.term.clone(), self.generation);
+        let scope = self.scope;
         let input = sender.input_sender().clone();
         self.pending = Some(relm4::spawn(async move {
-            let sections = fetch(&api, &storefront, &term).await;
+            let sections = fetch(&api, scope, storefront.as_deref(), &term).await;
             input.emit(SearchInput::Loaded(generation, sections));
         }));
     }
@@ -295,15 +372,31 @@ impl SearchView {
     }
 }
 
-/// Searches the catalog. Returns `None` if the request fails.
-async fn fetch(api: &ApiClient, storefront: &str, term: &str) -> Option<SearchSections> {
-    match endpoints::search(api, storefront, term, &SEARCH_TYPES, RESULT_LIMIT).await {
-        Ok(results) => Some(SearchSections::from(&results)),
-        Err(error) => {
-            warn!(%error, "catalog search failed");
-            None
+/// Searches `scope` for `term`. The catalog search needs `storefront`.
+/// Returns `None` if the request fails or the storefront is not known.
+async fn fetch(
+    api: &ApiClient,
+    scope: Scope,
+    storefront: Option<&str>,
+    term: &str,
+) -> Option<SearchSections> {
+    let sections = match scope {
+        Scope::Catalog => {
+            let Some(storefront) = storefront else {
+                warn!("cannot search the catalog: the storefront is not known");
+                return None;
+            };
+            endpoints::search(api, storefront, term, &SEARCH_TYPES, RESULT_LIMIT)
+                .await
+                .map(|results| SearchSections::from(&results))
         }
-    }
+        Scope::Library => endpoints::library_search(api, term, &LIBRARY_SEARCH_TYPES, RESULT_LIMIT)
+            .await
+            .map(|results| SearchSections::from(&results)),
+    };
+    sections
+        .inspect_err(|error| warn!(%error, ?scope, "search failed"))
+        .ok()
 }
 
 /// Builds the entry. It sends the term after a short pause, and at once on Enter.
@@ -311,7 +404,7 @@ fn build_entry(sender: &ComponentSender<SearchView>) -> gtk::SearchEntry {
     let entry = gtk::SearchEntry::builder()
         .hexpand(true)
         .search_delay(SEARCH_DELAY_MS)
-        .placeholder_text(gettext("Search Apple Music"))
+        .placeholder_text(Scope::default().hint())
         .build();
     let input = sender.input_sender().clone();
     entry.connect_search_changed(move |entry| {
@@ -323,6 +416,25 @@ fn build_entry(sender: &ComponentSender<SearchView>) -> gtk::SearchEntry {
     });
     entry.connect_stop_search(|entry| entry.set_text(""));
     entry
+}
+
+/// Builds the switch between the catalog and the library.
+fn build_scope_switch(sender: &ComponentSender<SearchView>) -> adw::ToggleGroup {
+    let switch = adw::ToggleGroup::new();
+    for scope in Scope::ALL {
+        let toggle = adw::Toggle::builder()
+            .name(scope.name())
+            .label(scope.label())
+            .build();
+        switch.add(toggle);
+    }
+    switch.set_active_name(Some(Scope::default().name()));
+    let input = sender.input_sender().clone();
+    switch.connect_active_name_notify(move |switch| {
+        let name = switch.active_name().unwrap_or_default();
+        input.emit(SearchInput::ScopeChanged(Scope::from_name(&name)));
+    });
+    switch
 }
 
 /// Builds the songs heading with the list under it. It hides itself when empty.
@@ -382,6 +494,35 @@ mod tests {
         let ids: Vec<&str> = sections.songs.iter().map(SongItem::id).collect();
         assert_eq!(ids, ["1", "2"]);
         assert!(!sections.is_empty());
+    }
+
+    #[test]
+    fn library_sections_convert_all_types() {
+        let value = json!({
+            "library-songs": { "data": [{ "id": "i.1", "type": "library-songs", "attributes": { "name": "S" } }] },
+            "library-albums": { "data": [{ "id": "l.a", "type": "library-albums", "attributes": { "name": "A" } }] },
+            "library-artists": { "data": [{ "id": "r.b", "type": "library-artists", "attributes": { "name": "B" } }] },
+            "library-playlists": { "data": [{ "id": "p.c", "type": "library-playlists", "attributes": { "name": "C" } }] }
+        });
+        let results: LibrarySearchResults =
+            serde_json::from_value(value).expect("the test results are valid");
+        let sections = SearchSections::from(&results);
+        assert_eq!(
+            (
+                sections.songs.len(),
+                sections.albums.len(),
+                sections.artists.len(),
+                sections.playlists.len()
+            ),
+            (1, 1, 1, 1)
+        );
+    }
+
+    #[test]
+    fn scope_names_round_trip() {
+        for scope in Scope::ALL {
+            assert_eq!(Scope::from_name(scope.name()), scope);
+        }
     }
 
     #[test]

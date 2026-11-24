@@ -374,7 +374,7 @@ msgstr ""
 msgid "Songs"
 msgstr ""
 
-#: crates/ui/src/sidebar.rs
+#: crates/ui/src/sidebar.rs crates/ui/src/views/search.rs
 msgid "Library"
 msgstr ""
 
@@ -652,6 +652,10 @@ msgstr[0] ""
 msgstr[1] ""
 
 #: crates/ui/src/views/search.rs
+msgid "Apple Music"
+msgstr ""
+
+#: crates/ui/src/views/search.rs
 msgid "Look for songs, albums, artists, and playlists."
 msgstr ""
 
@@ -665,6 +669,10 @@ msgstr ""
 
 #: crates/ui/src/views/search.rs
 msgid "Search Failed"
+msgstr ""
+
+#: crates/ui/src/views/search.rs
+msgid "Search Your Library"
 msgstr ""
 
 #: crates/ui/src/views/search.rs
@@ -861,6 +869,12 @@ msgstr ""
 msgid ""
 "Songs on the Search, New, and artist pages show in columns that scroll "
 "sideways, like in Apple Music."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The Search page can search your library: use the Apple Music and Library "
+"switch next to the search field."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
