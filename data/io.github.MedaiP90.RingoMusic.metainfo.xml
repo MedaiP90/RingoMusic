@@ -81,6 +81,9 @@ Copyright (C) 2026 RingoMusic contributors
           <li>The cache of Apple Music data saves new responses faster when it is large.</li>
           <li>Artwork that shows in many places at the same time loads and decodes only once.</li>
           <li>The filter of the library lists reacts faster in large libraries.</li>
+          <li>Fix: the animation was not smooth when an album opened from an artist page. The page color now changes after the animation.</li>
+          <li>The colors of the pages and of the player bar fade smoothly when they change.</li>
+          <li>Fix: closed album and artist pages stayed in memory.</li>
         </ul>
       </description>
     </release>
