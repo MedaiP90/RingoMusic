@@ -118,7 +118,13 @@ pub async fn library_search(
     let term = check_term(term)?;
     let types = join_types(types.iter().map(|kind| kind.as_str()))?;
     let limit = limit.to_string();
-    let query = [("term", term), ("types", &types), ("limit", &limit)];
+    let query = [
+        ("term", term),
+        ("types", &types),
+        ("limit", &limit),
+        ("include[library-artists]", "catalog"),
+        ("fields[artists]", CATALOG_ARTIST_FIELDS),
+    ];
     let envelope: SearchEnvelope<LibrarySearchResults> =
         fetch(transport, "/v1/me/library/search", &query).await?;
     Ok(envelope.results)
@@ -147,6 +153,11 @@ pub async fn album(transport: &impl ApiTransport, storefront: &str, id: &AlbumId
     let path = catalog_path(storefront, "albums", id.as_str())?;
     first(fetch(transport, &path, &[("include", "tracks")]).await?)
 }
+
+/// Attributes of the catalog artist that a library artist request includes.
+/// The library artist has no photo, so the request takes it from the catalog
+/// artist.
+const CATALOG_ARTIST_FIELDS: &str = "artwork,name";
 
 /// Views of a catalog artist that [`artist`] gets. [`artist_view`] gets the
 /// next pages of one view. The app cannot play music videos, so the
@@ -281,7 +292,11 @@ pub async fn library_artists(
     transport: &impl ApiTransport,
     offset: u32,
 ) -> Result<Page<LibraryArtist>> {
-    fetch_page(transport, "/v1/me/library/artists", offset).await
+    let query = [
+        ("include", "catalog"),
+        ("fields[artists]", CATALOG_ARTIST_FIELDS),
+    ];
+    fetch_page_with(transport, "/v1/me/library/artists", offset, &query).await
 }
 
 /// Gets one page of the songs in the library.
@@ -458,10 +473,22 @@ async fn fetch_page<T: DeserializeOwned>(
     path: &str,
     offset: u32,
 ) -> Result<Page<T>> {
+    fetch_page_with(transport, path, offset, &[]).await
+}
+
+/// Sends a list request for the page at `offset`, with the parameters in
+/// `extra`.
+async fn fetch_page_with<T: DeserializeOwned>(
+    transport: &impl ApiTransport,
+    path: &str,
+    offset: u32,
+    extra: &[(&str, &str)],
+) -> Result<Page<T>> {
     let limit = PAGE_SIZE.to_string();
     let offset = offset.to_string();
-    let page: ApiPage<T> =
-        fetch(transport, path, &[("limit", &limit), ("offset", &offset)]).await?;
+    let mut query = vec![("limit", limit.as_str()), ("offset", offset.as_str())];
+    query.extend_from_slice(extra);
+    let page: ApiPage<T> = fetch(transport, path, &query).await?;
     Ok(page.into())
 }
 

@@ -830,6 +830,10 @@ msgid "Fix: some albums and songs on the New page had no artwork."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Fix: artists in the library and in the library search had no photo."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
 "Fix: on a slow start, the Widevine module and the session could go to the "
 "wrong folder, and autoplay could be blocked."

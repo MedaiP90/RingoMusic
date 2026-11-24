@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
+use super::catalog::Artist;
 use super::id::{LibraryAlbumId, LibraryArtistId, LibraryPlaylistId, LibrarySongId};
 use super::resource::Resource;
 use super::shared::{Artwork, ContentRating, Description, PlayParams, Relationship, ResourceRef};
@@ -99,6 +100,15 @@ pub struct LibraryArtist {
     pub id: LibraryArtistId,
     /// Attributes of the artist.
     pub attributes: LibraryArtistAttributes,
+    /// Related resources, if the request asked for them.
+    pub relationships: Option<LibraryArtistRelationships>,
+}
+
+/// Resources that a library artist links to.
+#[derive(Clone, Debug, PartialEq, serde::Deserialize)]
+pub struct LibraryArtistRelationships {
+    /// The catalog artist, with the photo. The library artist has no photo.
+    pub catalog: Option<Relationship<Artist>>,
 }
 
 /// Attributes of a library artist.

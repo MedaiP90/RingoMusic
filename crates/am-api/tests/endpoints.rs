@@ -78,6 +78,8 @@ async fn library_search_returns_results() {
             ("term", "example"),
             ("types", "library-songs,library-artists"),
             ("limit", "5"),
+            ("include[library-artists]", "catalog"),
+            ("fields[artists]", "artwork,name"),
         ],
         "library_search.json",
     );
@@ -307,7 +309,12 @@ async fn library_albums_returns_a_page_with_the_next_offset() {
 async fn library_artists_returns_a_page_with_the_next_offset() {
     let transport = FixtureTransport::new().with(
         "/v1/me/library/artists",
-        &PAGE_QUERY,
+        &[
+            ("limit", "25"),
+            ("offset", "0"),
+            ("include", "catalog"),
+            ("fields[artists]", "artwork,name"),
+        ],
         "library_artists.json",
     );
 

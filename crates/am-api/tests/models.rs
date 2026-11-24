@@ -167,6 +167,12 @@ fn library_artists_deserialize() {
     let page = page::<LibraryArtist>("library_artists.json");
 
     assert!(!page.data.is_empty());
+    let catalog = page.data[0]
+        .relationships
+        .as_ref()
+        .and_then(|links| links.catalog.as_ref())
+        .expect("the first artist links to the catalog artist");
+    assert!(catalog.data[0].attributes.artwork.is_some());
 }
 
 #[test]

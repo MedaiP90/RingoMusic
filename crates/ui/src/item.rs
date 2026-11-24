@@ -177,14 +177,22 @@ impl From<&LibraryAlbum> for TileItem {
 }
 
 impl From<&LibraryArtist> for TileItem {
-    /// The API sends no artwork for a library artist.
+    /// A library artist has no photo. The tile uses the photo of the linked
+    /// catalog artist, if the request included it.
     fn from(artist: &LibraryArtist) -> Self {
+        let artwork_template = artist
+            .relationships
+            .as_ref()
+            .and_then(|links| links.catalog.as_ref())
+            .and_then(|catalog| catalog.data.iter().next())
+            .and_then(|catalog_artist| catalog_artist.attributes.artwork.as_ref())
+            .map(|artwork| artwork.url.clone());
         Self {
             kind: TileKind::Artist,
             id: artist.id.to_string(),
             title: artist.attributes.name.clone(),
             subtitle: String::new(),
-            artwork_template: None,
+            artwork_template,
         }
     }
 }
@@ -292,5 +300,30 @@ mod tests {
         assert_eq!(TileKind::Album.open_action(), "win.open-album");
         assert_eq!(TileKind::Artist.open_action(), "win.open-artist");
         assert_eq!(TileKind::Playlist.open_action(), "win.open-playlist");
+    }
+
+    #[test]
+    fn library_artist_tile_takes_the_photo_of_the_catalog_artist() {
+        let with_catalog: LibraryArtist = serde_json::from_value(json!({
+            "id": "r.1",
+            "attributes": { "name": "Band" },
+            "relationships": { "catalog": { "data": [{
+                "id": "5",
+                "attributes": { "name": "Band", "artwork": { "url": "photo/{w}x{h}bb.jpg" } }
+            }] } }
+        }))
+        .expect("the test artist is valid");
+        let without_catalog: LibraryArtist =
+            serde_json::from_value(json!({ "id": "r.2", "attributes": { "name": "Solo" } }))
+                .expect("the test artist is valid");
+
+        let tile = TileItem::from(&with_catalog);
+
+        assert_eq!(
+            tile.artwork_template.as_deref(),
+            Some("photo/{w}x{h}bb.jpg")
+        );
+        assert_eq!(tile.id, "r.1");
+        assert_eq!(TileItem::from(&without_catalog).artwork_template, None);
     }
 }

@@ -43,7 +43,7 @@ ringo-cli api-get '/v1/catalog/{storefront}/playlists/pl.f4d106fed2bd41149aaacab
 ```sh
 ringo-cli api-get /v1/me/library/playlists limit=25 > $F/library_playlists.json
 ringo-cli api-get /v1/me/library/albums limit=25 > $F/library_albums.json
-ringo-cli api-get /v1/me/library/artists limit=25 > $F/library_artists.json
+ringo-cli api-get /v1/me/library/artists limit=25 include=catalog 'fields[artists]=artwork,name' > $F/library_artists.json
 ringo-cli api-get /v1/me/library/songs limit=25 > $F/library_songs.json
 ```
 
@@ -54,7 +54,7 @@ Top results are not a type. Add `with=topResults` to the search request.
 
 ```sh
 ringo-cli api-get '/v1/catalog/{storefront}/search' term=radiohead types=songs,albums,artists,playlists limit=5 with=topResults > $F/catalog_search_top.json
-ringo-cli api-get /v1/me/library/search term=<a word from your library> types=library-songs,library-albums,library-artists,library-playlists limit=5 > $F/library_search.json
+ringo-cli api-get /v1/me/library/search term=<a word from your library> types=library-songs,library-albums,library-artists,library-playlists limit=5 'include[library-artists]=catalog' 'fields[artists]=artwork,name' > $F/library_search.json
 ```
 
 ### Recommendations (personal data: apply the privacy rule)
@@ -92,7 +92,7 @@ ringo-cli api-get /v1/me/library/playlists 'filter[featured]=made-for-you' 'form
 | `catalog_playlist.json` | `/v1/catalog/{storefront}/playlists/pl.f4d106fed2bd41149aaacabb233eb5eb` with `include=tracks` |
 | `library_playlists.json` | `/v1/me/library/playlists` |
 | `library_albums.json` | `/v1/me/library/albums` |
-| `library_artists.json` | `/v1/me/library/artists` |
+| `library_artists.json` | `/v1/me/library/artists` with `include=catalog`. The catalog link of the first artist is hand-made from `catalog_artist.json` |
 | `library_songs.json` | `/v1/me/library/songs` |
 | `catalog_search_top.json` | `/v1/catalog/{storefront}/search` with `with=topResults` |
 | `library_search.json` | `/v1/me/library/search` with `types=library-songs,...` |

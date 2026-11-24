@@ -70,6 +70,7 @@ Copyright (C) 2026 RingoMusic contributors
           <li>A long album or playlist title wraps next to the artwork. The text moves under the artwork only in a narrow window.</li>
           <li>Songs on the Search, New, and artist pages show in columns that scroll sideways, like in Apple Music.</li>
           <li>Fix: some albums and songs on the New page had no artwork.</li>
+          <li>Fix: artists in the library and in the library search had no photo.</li>
           <li>Fix: on a slow start, the Widevine module and the session could go to the wrong folder, and autoplay could be blocked.</li>
           <li>When Apple Music changes its web page in a way that RingoMusic cannot use, RingoMusic stops and shows a message. It does not restart the player again and again.</li>
           <li>If the app and its player have different versions, RingoMusic tells you to install it again.</li>
