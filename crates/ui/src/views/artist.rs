@@ -329,14 +329,14 @@ fn details_line(data: &ArtistData) -> String {
     parts.join(" · ")
 }
 
-/// Builds the hidden round Info button. `show` shows it when the artist has
+/// Builds the hidden Info button. `show` shows it when the artist has
 /// information.
 fn build_info_button() -> gtk::Button {
     gtk::Button::builder()
         .icon_name("help-about-symbolic")
         .tooltip_text(gettext("Artist Information"))
         .valign(gtk::Align::Center)
-        .css_classes(["circular", "artist-info-button"])
+        .css_classes(["boxy"])
         .visible(false)
         .build()
 }

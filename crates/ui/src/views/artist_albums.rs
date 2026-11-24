@@ -105,6 +105,7 @@ impl SimpleComponent for ArtistAlbumsView {
 
                     append = &gtk::Button {
                         set_label: &gettext("Open Artist Page"),
+                        add_css_class: "boxy",
                         set_valign: gtk::Align::Center,
                         connect_clicked => ArtistAlbumsInput::OpenArtist,
                     },
@@ -143,7 +144,7 @@ impl SimpleComponent for ArtistAlbumsView {
                         set_child = &gtk::Button {
                             set_label: &gettext("Try Again"),
                             set_halign: gtk::Align::Center,
-                            add_css_class: "pill",
+                            add_css_class: "boxy",
                             add_css_class: "suggested-action",
                             connect_clicked => ArtistAlbumsInput::Retry,
                         },

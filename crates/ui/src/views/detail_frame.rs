@@ -63,7 +63,7 @@ fn failed_page(on_retry: impl Fn() + 'static) -> adw::StatusPage {
     let retry = gtk::Button::builder()
         .label(gettext("Try Again"))
         .halign(gtk::Align::Center)
-        .css_classes(["pill", "suggested-action"])
+        .css_classes(["boxy", "suggested-action"])
         .build();
     retry.connect_clicked(move |_| on_retry());
     adw::StatusPage::builder()

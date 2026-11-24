@@ -257,7 +257,7 @@ fn action_button(label: &str, icon_name: &str, action: &str) -> gtk::Button {
                 .build(),
         )
         .action_name(format!("{ACTION_GROUP}.{action}"))
-        .css_classes(["pill"])
+        .css_classes(["boxy"])
         .build()
 }
 

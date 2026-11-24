@@ -210,7 +210,7 @@ impl SimpleComponent for Gate {
                         set_halign: gtk::Align::Center,
                         set_action_name: Some("app.sign-in"),
                         add_css_class: "suggested-action",
-                        add_css_class: "pill",
+                        add_css_class: "boxy",
 
                         #[wrap(Some)]
                         set_child = &gtk::Box {
@@ -256,7 +256,7 @@ impl SimpleComponent for Gate {
                         gtk::Button {
                             set_label: &gettext("Check Again"),
                             set_action_name: Some("app.check-subscription"),
-                            add_css_class: "pill",
+                            add_css_class: "boxy",
                         },
                     },
                 },
@@ -320,7 +320,7 @@ impl SimpleComponent for Gate {
                             set_label: &gettext("Try Again"),
                             set_action_name: Some("app.restart-engine"),
                             add_css_class: "suggested-action",
-                            add_css_class: "pill",
+                            add_css_class: "boxy",
                         },
                     },
                 },
@@ -354,7 +354,7 @@ impl SimpleComponent for Gate {
                             set_label: &gettext("Try Again"),
                             set_action_name: Some("app.restart-engine"),
                             add_css_class: "suggested-action",
-                            add_css_class: "pill",
+                            add_css_class: "boxy",
                         },
                     },
                 },
@@ -386,7 +386,7 @@ impl SimpleComponent for Gate {
                             set_label: &gettext("Try Again"),
                             set_action_name: Some("app.restart-engine"),
                             add_css_class: "suggested-action",
-                            add_css_class: "pill",
+                            add_css_class: "boxy",
                         },
                     },
                 },

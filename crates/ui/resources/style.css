@@ -35,9 +35,11 @@ button.byline-link {
   min-width: 0;
 }
 
-/* The round Info button of the artist page has the height of the pill
-   buttons next to it: 24px of content and 10px of padding above and below. */
-button.circular.artist-info-button { min-width: 44px; min-height: 44px; }
+/* The main buttons of the pages have rounded corners and more space around
+   the text than a normal button. An icon-only button is a square of the
+   same height. */
+button.boxy { padding: 7px 18px; }
+button.boxy.image-button { padding: 7px; }
 
 /* The Show More button at the right of a section heading is small, so it
    does not draw attention from the content. */

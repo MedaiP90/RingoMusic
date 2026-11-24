@@ -63,6 +63,7 @@ Copyright (C) 2026 RingoMusic contributors
           <li>New page: see the latest releases from Apple Music.</li>
           <li>Made For You page in the library: your personal mixes from Apple Music.</li>
           <li>The Artists page in the library shows the artist list and, next to it, the albums in your library of the selected artist. The Open Artist Page button over the albums opens the full artist page. In a narrow window, the list and the albums show one at a time.</li>
+          <li>The buttons of the app have rounded corners and no longer have the pill shape.</li>
           <li>The artist page shows the latest release, the albums, the singles and EPs, the live albums, the compilations, the playlists, the albums the artist appears on, and similar artists, like in Apple Music. Each list scrolls sideways, and lists without items are hidden.</li>
           <li>The artist page shows the genre, the origin, and the start year under the name. The Info button opens all the information about the artist, with the biography.</li>
           <li>The artist page and its information take a tint from the artist photo.</li>

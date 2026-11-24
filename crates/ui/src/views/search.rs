@@ -185,7 +185,7 @@ impl SimpleComponent for SearchView {
                     set_child = &gtk::Button {
                         set_label: &gettext("Try Again"),
                         set_halign: gtk::Align::Center,
-                        add_css_class: "pill",
+                        add_css_class: "boxy",
                         add_css_class: "suggested-action",
                         connect_clicked => SearchInput::Retry,
                     },

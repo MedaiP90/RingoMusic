@@ -818,6 +818,12 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
+"The buttons of the app have rounded corners and no longer have the pill "
+"shape."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
 "The artist page shows the latest release, the albums, the singles and EPs, "
 "the live albums, the compilations, the playlists, the albums the artist "
 "appears on, and similar artists, like in Apple Music. Each list scrolls "
