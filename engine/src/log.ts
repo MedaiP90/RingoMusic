@@ -19,10 +19,26 @@ const LEVEL_NAMES: Record<number, LogParams['level']> = {
 };
 
 let forwarder: Forwarder | undefined;
+let flusher: (() => Promise<void>) | undefined;
 
 // Sends logs to the socket after it connects (decision D9). Before that, logs go to stderr.
-export function forwardLogs(send: Forwarder): void {
+// `flush` resolves when the socket has written all queued data.
+export function forwardLogs(send: Forwarder, flush: () => Promise<void>): void {
   forwarder = send;
+  flusher = flush;
+}
+
+// Waits until the socket has sent all queued logs, or until the timeout ends.
+export async function flushLogs(timeoutMs: number): Promise<void> {
+  if (!flusher) {
+    return;
+  }
+  let timer: NodeJS.Timeout | undefined;
+  const timeout = new Promise<void>((resolve) => {
+    timer = setTimeout(resolve, timeoutMs);
+  });
+  await Promise.race([flusher(), timeout]);
+  clearTimeout(timer);
 }
 
 function toNotification(line: string): LogNotification {

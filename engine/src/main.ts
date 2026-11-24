@@ -9,7 +9,7 @@ import { app, BrowserWindow, components } from 'electron';
 import type { Session } from 'electron';
 
 import pkg from '../package.json' with { type: 'json' };
-import { forwardLogs, log } from './log.ts';
+import { flushLogs, forwardLogs, log } from './log.ts';
 import { PageBridge } from './page-bridge.ts';
 import { PAGE_METHODS } from './page-methods.ts';
 import { RpcClient } from './rpc.ts';
@@ -18,6 +18,7 @@ import { decidePopup, SignIn, START_URL } from './sign-in.ts';
 const SESSION_PARTITION = 'persist:ringomusic';
 const EXIT_CODE_BAD_CONFIGURATION = 2;
 const QUIT_GRACE_MS = 3000;
+const FATAL_FLUSH_TIMEOUT_MS = 1000;
 
 // Set when the app quits, so that the window can close.
 let quitting = false;
@@ -86,7 +87,10 @@ async function connectToRust(): Promise<RpcClient> {
     { engineVersion: pkg.version, electron: process.versions.electron },
     quitEngine,
   );
-  forwardLogs((notification) => client.notify(notification));
+  forwardLogs(
+    (notification) => client.notify(notification),
+    () => client.flush(),
+  );
   client.register('engine.shutdown', () => {
     // Reply first, then quit on the next tick.
     setImmediate(quitEngine);
@@ -193,8 +197,11 @@ async function start(): Promise<void> {
   await window.loadURL(START_URL);
 }
 
-start().catch((error: unknown) => {
-  log.fatal({ error }, 'engine failed to start');
+start().catch(async (error: unknown) => {
+  log.fatal({ err: error }, 'engine failed to start');
+  // The log goes to the socket. Write the error to stderr too, in case the socket is down.
+  process.stderr.write(`engine failed to start: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`);
+  await flushLogs(FATAL_FLUSH_TIMEOUT_MS);
   process.exit(1);
 });
 

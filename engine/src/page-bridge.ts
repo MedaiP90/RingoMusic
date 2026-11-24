@@ -75,7 +75,7 @@ export class PageBridge {
       const script = await fs.readFile(path.join(__dirname, 'hook.js'), 'utf8');
       await this.webContents.executeJavaScript(script);
     } catch (error: unknown) {
-      log.error({ error }, 'hook injection failed');
+      log.error({ err: error }, 'hook injection failed');
     }
   }
 
