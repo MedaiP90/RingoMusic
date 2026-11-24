@@ -797,7 +797,9 @@ msgid "The narrow layout"
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
-msgid "Release 1.1.0."
+msgid ""
+"This release adds the New page, the Made For You page, and a richer artist "
+"page. It also makes the player more stable."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

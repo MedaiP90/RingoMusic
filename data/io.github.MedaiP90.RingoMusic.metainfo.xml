@@ -58,7 +58,7 @@ Copyright (C) 2026 RingoMusic contributors
   <releases>
     <release version="1.1.0" date="2026-11-24">
       <description>
-        <p>Release 1.1.0.</p>
+        <p>This release adds the New page, the Made For You page, and a richer artist page. It also makes the player more stable.</p>
         <ul>
           <li>New page: see the latest releases from Apple Music.</li>
           <li>Made For You page in the library: your personal mixes from Apple Music.</li>
