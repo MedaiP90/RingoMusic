@@ -12,9 +12,10 @@ use serde::de::DeserializeOwned;
 use serde_json::Value;
 
 use crate::models::{
-    Album, AlbumId, ApiPage, Artist, ArtistId, LibraryAlbum, LibraryAlbumId, LibraryArtist,
+    Album, AlbumId, ApiPage, Artist, ArtistId, Group, LibraryAlbum, LibraryAlbumId, LibraryArtist,
     LibraryArtistId, LibraryPlaylist, LibraryPlaylistId, LibrarySearchResults, LibrarySong,
-    LibrarySongId, Playlist, PlaylistId, Recommendation, Resource, SearchResults, Song, SongId,
+    LibrarySongId, MapResponse, Playlist, PlaylistId, Recommendation, Resource, SearchResults,
+    Song, SongId,
 };
 use crate::{ApiTransport, Error, PAGE_SIZE, Page, Result};
 
@@ -363,6 +364,60 @@ pub async fn library_playlist_tracks(
 pub async fn recommendations(transport: &impl ApiTransport) -> Result<Vec<Recommendation>> {
     let page: ApiPage<Recommendation> = fetch(transport, "/v1/me/recommendations", &[]).await?;
     Ok(page.data.into_vec())
+}
+
+/// Gets the groups of the New page. Groups of unsupported types are left out.
+///
+/// # Errors
+///
+/// Returns [`Error::InvalidInput`] if `storefront` is not a valid path segment.
+/// Returns an error if the request fails or the response is not valid.
+pub async fn new_releases(transport: &impl ApiTransport, storefront: &str) -> Result<Vec<Group>> {
+    let path = format!(
+        "/v1/editorial/{}/groupings",
+        segment("storefront", storefront)?
+    );
+    let query = [
+        ("name", "music"),
+        ("tabs", "subscriber"),
+        ("platform", "web"),
+        ("format[resources]", "map"),
+        ("art[url]", "c,f"),
+        ("extend", "artistUrl,editorialArtwork,plainEditorialNotes"),
+        (
+            "fields[albums]",
+            "artistName,artistUrl,artwork,contentRating,editorialArtwork,plainEditorialNotes,name,playParams,releaseDate,url,trackCount",
+        ),
+        ("include[albums]", "artists"),
+        ("include[songs]", "artists"),
+        ("omit[resource:artists]", "autos"),
+        ("relate[songs]", "albums"),
+    ];
+    let response: MapResponse = fetch(transport, &path, &query).await?;
+    Ok(response.new_page_groups())
+}
+
+/// Gets the "Made For You" playlists of the user as one group.
+///
+/// # Errors
+///
+/// Returns an error if the request fails or the response is not valid.
+pub async fn made_for_you(transport: &impl ApiTransport) -> Result<Vec<Group>> {
+    let query = [
+        ("filter[featured]", "made-for-you"),
+        ("format[resources]", "map"),
+        ("include[library-playlists]", "catalog"),
+        ("art[url]", "f"),
+        (
+            "fields[library-playlists]",
+            "artwork,dateAdded,name,playParams",
+        ),
+        ("fields[playlists]", "lastModifiedDate"),
+        ("sort", "type"),
+        ("platform", "web"),
+    ];
+    let response: MapResponse = fetch(transport, "/v1/me/library/playlists", &query).await?;
+    Ok(response.flat_groups())
 }
 
 /// Search responses wrap the results in a `results` object.

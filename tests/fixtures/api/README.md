@@ -112,3 +112,8 @@ and have a `next` link, so the pagination tests have a second page.
 | `library_playlist.json` | `/v1/me/library/playlists/p.example1` with `include=tracks` |
 | `library_playlist_tracks.json` | `/v1/me/library/playlists/p.example1/tracks` |
 | `empty_data.json` | Any detail request for an unknown ID: `{"data": []}` |
+
+### New page with a broken item
+
+`editorial_new_broken_item.json` is `editorial_new.json` with the `attributes`
+of one album of "Novità di questa settimana" replaced by a string.

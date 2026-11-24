@@ -7,8 +7,8 @@
 
 use ringo_am_api::endpoints::{self, CatalogSearchType, LibrarySearchType};
 use ringo_am_api::models::{
-    AlbumId, ArtistId, LibraryAlbumId, LibraryArtistId, LibraryPlaylistId, LibrarySongId,
-    PlaylistId, Resource, SongId,
+    AlbumId, ArtistId, Group, GroupKind, LibraryAlbumId, LibraryArtistId, LibraryPlaylistId,
+    LibrarySongId, PlaylistId, Resource, SongId,
 };
 use ringo_am_api::{Error, FixtureTransport};
 
@@ -421,4 +421,116 @@ async fn recommendations_returns_the_groups() {
     let groups = endpoints::recommendations(&transport).await.unwrap();
 
     assert_ne!(groups.len(), 0);
+}
+
+fn new_query() -> [(&'static str, &'static str); 11] {
+    [
+        ("name", "music"),
+        ("tabs", "subscriber"),
+        ("platform", "web"),
+        ("format[resources]", "map"),
+        ("art[url]", "c,f"),
+        ("extend", "artistUrl,editorialArtwork,plainEditorialNotes"),
+        (
+            "fields[albums]",
+            "artistName,artistUrl,artwork,contentRating,editorialArtwork,plainEditorialNotes,name,playParams,releaseDate,url,trackCount",
+        ),
+        ("include[albums]", "artists"),
+        ("include[songs]", "artists"),
+        ("omit[resource:artists]", "autos"),
+        ("relate[songs]", "albums"),
+    ]
+}
+
+fn new_transport(fixture: &str) -> FixtureTransport {
+    FixtureTransport::new().with("/v1/editorial/it/groupings", &new_query(), fixture)
+}
+
+#[tokio::test]
+async fn new_releases_returns_titled_groups_without_unsupported_ones() {
+    let groups = endpoints::new_releases(&new_transport("editorial_new.json"), STOREFRONT)
+        .await
+        .unwrap();
+
+    let titles: Vec<_> = groups.iter().map(|group| group.title.as_deref()).collect();
+    // The first group is the untitled container of kind 316. Stations are dropped.
+    assert_eq!(groups.len(), 14, "{titles:?}");
+    assert_eq!(titles[0], None);
+    assert_eq!(titles[1], Some("I brani del momento"));
+    assert!(!titles.contains(&Some("Successi natalizi non-stop")));
+    assert!(!titles.contains(&Some("Nuovi episodi radio")));
+    assert!(!titles.contains(&Some("Nuovi video musicali")));
+}
+
+#[tokio::test]
+async fn new_releases_marks_song_lists_and_tile_rows() {
+    let groups = endpoints::new_releases(&new_transport("editorial_new.json"), STOREFRONT)
+        .await
+        .unwrap();
+
+    let song_lists: Vec<_> = groups
+        .iter()
+        .filter(|group| group.kind == GroupKind::SongList)
+        .map(|group| group.title.as_deref())
+        .collect();
+    assert_eq!(
+        song_lists,
+        vec![Some("I brani del momento"), Some("Musica di tendenza")]
+    );
+    assert!(matches!(groups[1].items[0], Resource::Song(_)));
+    assert!(groups.iter().any(|group| {
+        group.kind == GroupKind::TileRow && matches!(group.items[0], Resource::Album(_))
+    }));
+}
+
+#[tokio::test]
+async fn new_releases_skips_a_broken_item() {
+    let good = endpoints::new_releases(&new_transport("editorial_new.json"), STOREFRONT)
+        .await
+        .unwrap();
+    let broken =
+        endpoints::new_releases(&new_transport("editorial_new_broken_item.json"), STOREFRONT)
+            .await
+            .unwrap();
+
+    let count = |groups: &[Group], title: &str| {
+        groups
+            .iter()
+            .find(|group| group.title.as_deref() == Some(title))
+            .unwrap()
+            .items
+            .len()
+    };
+    assert_eq!(good.len(), broken.len());
+    assert_eq!(
+        count(&broken, "Novità di questa settimana") + 1,
+        count(&good, "Novità di questa settimana")
+    );
+}
+
+#[tokio::test]
+async fn made_for_you_returns_one_group_of_library_playlists() {
+    let transport = FixtureTransport::new().with(
+        "/v1/me/library/playlists",
+        &[
+            ("filter[featured]", "made-for-you"),
+            ("format[resources]", "map"),
+            ("include[library-playlists]", "catalog"),
+            ("art[url]", "f"),
+            (
+                "fields[library-playlists]",
+                "artwork,dateAdded,name,playParams",
+            ),
+            ("fields[playlists]", "lastModifiedDate"),
+            ("sort", "type"),
+            ("platform", "web"),
+        ],
+        "made_for_you.json",
+    );
+
+    let groups = endpoints::made_for_you(&transport).await.unwrap();
+
+    assert_eq!(groups.len(), 1);
+    assert_eq!(groups[0].kind, GroupKind::TileRow);
+    assert!(matches!(groups[0].items[0], Resource::LibraryPlaylist(_)));
 }

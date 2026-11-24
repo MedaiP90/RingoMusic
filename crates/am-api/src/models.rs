@@ -7,11 +7,13 @@
 //! resources uses [`LenientVec`], so one broken item never breaks a response.
 
 mod catalog;
+mod grouping;
 mod id;
 mod lenient;
 mod library;
 mod recommendation;
 mod resource;
+mod resource_map;
 mod search;
 mod shared;
 
@@ -20,6 +22,7 @@ pub use catalog::{
     ArtistViews, Playlist, PlaylistAttributes, PlaylistRelationships, Song, SongAttributes,
     SongRelationships,
 };
+pub use grouping::{Group, GroupKind};
 pub use id::{
     AlbumId, ArtistId, LibraryAlbumId, LibraryArtistId, LibraryPlaylistId, LibrarySongId,
     PlaylistId, SongId,
@@ -36,3 +39,5 @@ pub use search::{LibrarySearchResults, SearchResults};
 pub use shared::{
     ApiPage, Artwork, ContentRating, Description, PlayParams, Relationship, ResourceRef,
 };
+
+pub(crate) use grouping::MapResponse;

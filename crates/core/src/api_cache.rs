@@ -20,6 +20,9 @@ const SEVEN_DAYS: Duration = Duration::from_hours(168);
 
 const CATALOG_PREFIX: &str = "/v1/catalog/";
 
+/// Prefix of the editorial pages, for example the New page. The content changes daily.
+const EDITORIAL_PREFIX: &str = "/v1/editorial/";
+
 /// Time to keep a response, by resource type. The type is the path segment after the storefront.
 const EXPIRY_BY_RESOURCE: &[(&str, Duration)] = &[
     ("songs", SEVEN_DAYS),
@@ -246,6 +249,9 @@ fn evict_over_limit(connection: &Connection, max_bytes: i64) -> rusqlite::Result
 
 /// Returns how long to keep the response for `path`, or `None` if the path is not cached.
 fn expiry_for(path: &str) -> Option<Duration> {
+    if path.starts_with(EDITORIAL_PREFIX) {
+        return Some(HOUR);
+    }
     let rest = path.strip_prefix(CATALOG_PREFIX)?;
     let resource = rest.split('/').nth(1)?;
     let expiry = EXPIRY_BY_RESOURCE
@@ -538,5 +544,7 @@ mod tests {
         assert_eq!(expiry_for("/v1/catalog/us/search"), Some(TEN_MINUTES));
         assert_eq!(expiry_for("/v1/catalog/us/charts"), Some(HOUR));
         assert_eq!(expiry_for("/v1/me/library/songs"), None);
+        assert_eq!(expiry_for("/v1/editorial/it/groupings"), Some(HOUR));
+        assert_eq!(expiry_for("/v1/me/library/playlists"), None);
     }
 }
