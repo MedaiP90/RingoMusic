@@ -193,11 +193,14 @@ fn start_sign_in(state: &mut AppState) -> Vec<Command> {
     vec![Command::SignIn]
 }
 
-/// Starts the engine again. Only an engine that gave up or has a sandbox failure needs it.
+/// Starts the engine again. Only an engine that waits for the user needs it.
 fn restart_engine(state: &mut AppState) -> Vec<Command> {
     if !matches!(
         state.engine,
-        EngineStatus::GaveUp | EngineStatus::SandboxFailed
+        EngineStatus::GaveUp
+            | EngineStatus::SandboxFailed
+            | EngineStatus::Incompatible { .. }
+            | EngineStatus::ProtocolMismatch { .. }
     ) {
         return Vec::new();
     }
@@ -221,6 +224,10 @@ fn apply_event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
         EngineEvent::Ready => on_ready(state),
         EngineEvent::Incompatible { check, detail } => {
             state.engine = EngineStatus::Incompatible { check, detail };
+            Vec::new()
+        }
+        EngineEvent::ProtocolMismatch { expected, actual } => {
+            state.engine = EngineStatus::ProtocolMismatch { expected, actual };
             Vec::new()
         }
         EngineEvent::AuthChanged { authorized: true } => vec![Command::RefreshAuth],

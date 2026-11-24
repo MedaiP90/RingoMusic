@@ -40,6 +40,7 @@ const NO_SUBSCRIPTION_PAGE: &str = "no-subscription";
 const INCOMPATIBLE_PAGE: &str = "incompatible";
 const GAVE_UP_PAGE: &str = "gave-up";
 const SANDBOX_FAILED_PAGE: &str = "sandbox-failed";
+const PROTOCOL_MISMATCH_PAGE: &str = "protocol-mismatch";
 
 /// Text of the sandbox error page. The `AppImage` has no SUID helper, so it
 /// needs unprivileged user namespaces. Ubuntu blocks them.
@@ -65,6 +66,8 @@ pub enum Screen {
     NoSubscription,
     /// A self-check of the engine failed.
     Incompatible { check: String, detail: String },
+    /// The engine and the app use different protocol versions.
+    ProtocolMismatch { expected: u32, actual: u32 },
     /// The engine failed too often.
     GaveUp,
     /// The Chromium sandbox of the engine cannot start.
@@ -80,6 +83,10 @@ impl Screen {
             EngineStatus::Incompatible { check, detail } => Self::Incompatible {
                 check: check.clone(),
                 detail: detail.clone(),
+            },
+            EngineStatus::ProtocolMismatch { expected, actual } => Self::ProtocolMismatch {
+                expected: *expected,
+                actual: *actual,
             },
             EngineStatus::GaveUp => Self::GaveUp,
             EngineStatus::SandboxFailed => Self::SandboxFailed,
@@ -105,6 +112,7 @@ impl Screen {
             Self::FirstRun => FIRST_RUN_PAGE,
             Self::NoSubscription => NO_SUBSCRIPTION_PAGE,
             Self::Incompatible { .. } => INCOMPATIBLE_PAGE,
+            Self::ProtocolMismatch { .. } => PROTOCOL_MISMATCH_PAGE,
             Self::GaveUp => GAVE_UP_PAGE,
             Self::SandboxFailed => SANDBOX_FAILED_PAGE,
             Self::Content => CONTENT_PAGE,
@@ -117,6 +125,18 @@ impl Screen {
             Self::Incompatible { check, detail } => gettext("The check “{check}” failed: {detail}")
                 .replace("{check}", check)
                 .replace("{detail}", detail),
+            _ => String::new(),
+        }
+    }
+
+    /// Text of the protocol mismatch page. It is empty for the other screens.
+    fn protocol_mismatch_description(&self) -> String {
+        match self {
+            Self::ProtocolMismatch { expected, actual } => gettext(
+                "The app and its player have different versions (protocol {expected} and {actual}). Install RingoMusic again.",
+            )
+            .replace("{expected}", &expected.to_string())
+            .replace("{actual}", &actual.to_string()),
             _ => String::new(),
         }
     }
@@ -268,6 +288,39 @@ impl SimpleComponent for Gate {
                         gtk::LinkButton {
                             set_uri: ISSUES_URL,
                             set_label: &gettext("Report Problem"),
+                        },
+                    },
+                },
+            },
+
+            add_named[Some(PROTOCOL_MISMATCH_PAGE)] = &adw::ToolbarView {
+                add_top_bar = &adw::HeaderBar {
+                    pack_end = &menu::primary_button(),
+                },
+
+                #[wrap(Some)]
+                set_content = &adw::StatusPage {
+                    set_icon_name: Some("dialog-error-symbolic"),
+                    set_title: &gettext("RingoMusic Is Not Installed Correctly"),
+                    #[watch]
+                    set_description: Some(&model.state.screen.protocol_mismatch_description()),
+
+                    #[wrap(Some)]
+                    set_child = &gtk::Box {
+                        set_orientation: gtk::Orientation::Vertical,
+                        set_spacing: 12,
+                        set_halign: gtk::Align::Center,
+
+                        gtk::LinkButton {
+                            set_uri: ISSUES_URL,
+                            set_label: &gettext("Report Problem"),
+                        },
+
+                        gtk::Button {
+                            set_label: &gettext("Try Again"),
+                            set_action_name: Some("app.restart-engine"),
+                            add_css_class: "suggested-action",
+                            add_css_class: "pill",
                         },
                     },
                 },
@@ -460,6 +513,22 @@ mod tests {
             Screen::Incompatible {
                 check: "widevine".to_owned(),
                 detail: "no CDM".to_owned()
+            }
+        );
+    }
+
+    #[test]
+    fn protocol_mismatch_shows_its_screen() {
+        let engine = EngineStatus::ProtocolMismatch {
+            expected: 1,
+            actual: 2,
+        };
+        let screen = Screen::of(&state(engine, signed_in()));
+        assert_eq!(
+            screen,
+            Screen::ProtocolMismatch {
+                expected: 1,
+                actual: 2
             }
         );
     }

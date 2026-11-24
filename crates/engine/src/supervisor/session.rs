@@ -29,8 +29,8 @@ pub(super) type StopSignal = oneshot::Receiver<()>;
 pub(super) enum SessionEnd {
     /// The caller asked to stop. Do not restart.
     Stopped,
-    /// A restart cannot help, for example when the sandbox cannot start or the
-    /// page failed the self-checks. Wait for the user. The reason is already emitted.
+    /// A restart cannot help, for example when the sandbox cannot start, the
+    /// page failed the self-checks, or the protocol versions differ. Wait for the user. The reason is already emitted.
     NeedsUser,
     /// The engine failed. Restart it if the policy allows.
     Failed {
@@ -82,6 +82,11 @@ async fn drive<P: ChildProcess>(
         Ok(Startup::Incompatible { check, detail }) => {
             warn!(%check, %detail, "engine reports that it is incompatible");
             outputs.emit(EngineEvent::Incompatible { check, detail });
+            return SessionEnd::NeedsUser;
+        }
+        Err(Error::ProtocolMismatch { expected, actual }) => {
+            warn!(expected, actual, "engine uses another protocol version");
+            outputs.emit(EngineEvent::ProtocolMismatch { expected, actual });
             return SessionEnd::NeedsUser;
         }
         Err(error) => {

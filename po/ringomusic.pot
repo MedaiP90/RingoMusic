@@ -103,6 +103,10 @@ msgid "Report Problem"
 msgstr ""
 
 #: crates/ui/src/gate.rs
+msgid "RingoMusic Is Not Installed Correctly"
+msgstr ""
+
+#: crates/ui/src/gate.rs
 msgid ""
 "RingoMusic plays your Apple Music library. You need an Apple Music "
 "subscription. You sign in on a page of Apple, and RingoMusic does not store "
@@ -115,6 +119,13 @@ msgstr ""
 
 #: crates/ui/src/gate.rs
 msgid "Starting the player…"
+msgstr ""
+
+#: crates/ui/src/gate.rs
+#, rust-format
+msgid ""
+"The app and its player have different versions (protocol {expected} and "
+"{actual}). Install RingoMusic again."
 msgstr ""
 
 #: crates/ui/src/gate.rs
@@ -668,6 +679,29 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "The narrow layout"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Release 1.1.0."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Fix: on a slow start, the Widevine module and the session could go to the "
+"wrong folder, and autoplay could be blocked."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"When Apple Music changes its web page in a way that RingoMusic cannot use, "
+"RingoMusic stops and shows a message. It does not restart the player again "
+"and again."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"If the app and its player have different versions, RingoMusic tells you to "
+"install it again."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

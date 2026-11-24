@@ -19,6 +19,13 @@ pub enum EngineEvent {
         /// Details of the failure.
         detail: String,
     },
+    /// The engine speaks another protocol version. The install is broken.
+    ProtocolMismatch {
+        /// Version that this client supports.
+        expected: u32,
+        /// Version that the engine reported.
+        actual: u32,
+    },
     /// The authorization changed.
     AuthChanged {
         /// The user authorized the app.

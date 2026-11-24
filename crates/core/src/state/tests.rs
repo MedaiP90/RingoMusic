@@ -567,6 +567,29 @@ fn sandbox_failure_sets_the_engine_status_and_allows_restart() {
 }
 
 #[test]
+fn protocol_mismatch_sets_the_engine_status_and_allows_restart() {
+    let mut state = AppState::new();
+    let _ = event(
+        &mut state,
+        EngineEvent::ProtocolMismatch {
+            expected: 1,
+            actual: 2,
+        },
+    );
+    assert_eq!(
+        state.engine,
+        EngineStatus::ProtocolMismatch {
+            expected: 1,
+            actual: 2
+        }
+    );
+
+    let commands = update(&mut state, Message::RestartEngine);
+    assert_eq!(commands, vec![Command::RestartEngine]);
+    assert_eq!(state.engine, EngineStatus::Starting);
+}
+
+#[test]
 fn sign_in_marks_the_login_as_open() {
     let mut state = AppState::new();
     let commands = update(&mut state, Message::SignIn);
