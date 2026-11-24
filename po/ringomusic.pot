@@ -706,6 +706,12 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
+"Fix: after a crash of the player, RingoMusic plays the song again from the "
+"position where it stopped. If the music was paused, it stays paused."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
 "The Flatpak package starts again. Versions 1.0.0 and 1.0.1 stopped at start "
 "because the settings schema was missing."
 msgstr ""

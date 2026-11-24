@@ -8,7 +8,7 @@ use std::time::Duration;
 
 use ringo_engine::protocol::{AuthStatus, FromEngine, RepeatMode};
 use ringo_engine::{EngineEvent, ItemId, PlaybackEngine, Result};
-use tokio::sync::broadcast;
+use tokio::sync::{broadcast, watch};
 
 /// Capacity of the event channel.
 const EVENT_CAPACITY: usize = 256;
@@ -80,6 +80,7 @@ pub struct MockEngine {
     calls: Mutex<Vec<EngineCall>>,
     auth: Mutex<AuthStatus>,
     events: broadcast::Sender<EngineEvent>,
+    lifecycle: watch::Sender<Option<EngineEvent>>,
 }
 
 impl Default for MockEngine {
@@ -101,6 +102,7 @@ impl MockEngine {
                 storefront: "us".to_owned(),
             }),
             events,
+            lifecycle: watch::channel(None).0,
         }
     }
 
@@ -117,6 +119,9 @@ impl MockEngine {
 
     /// Sends an event to all subscribers.
     pub fn emit(&self, event: EngineEvent) {
+        if event.is_lifecycle() {
+            self.lifecycle.send_replace(Some(event.clone()));
+        }
         // No subscriber is not an error for a test double.
         let _ = self.events.send(event);
     }
@@ -249,6 +254,10 @@ impl PlaybackEngine for MockEngine {
 
     fn events(&self) -> broadcast::Receiver<EngineEvent> {
         self.events.subscribe()
+    }
+
+    fn lifecycle(&self) -> watch::Receiver<Option<EngineEvent>> {
+        self.lifecycle.subscribe()
     }
 }
 

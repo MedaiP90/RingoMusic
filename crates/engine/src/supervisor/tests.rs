@@ -250,8 +250,8 @@ async fn engine_restarts_after_it_exits() {
 
     launcher.crash_latest();
 
-    assert_eq!(next_event(&mut events).await, EngineEvent::Ready);
     assert_eq!(next_event(&mut events).await, EngineEvent::Restarted);
+    assert_eq!(next_event(&mut events).await, EngineEvent::Ready);
     assert_eq!(launcher.launch_count(), 2);
     assert!(engine.auth_status().await.expect("status works").authorized);
     engine.shutdown().await.expect("shutdown works");

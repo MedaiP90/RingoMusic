@@ -80,6 +80,7 @@ impl Core {
     /// Then it calls [`Core::shutdown`].
     pub async fn run(mut self) {
         self.restore_queue().await;
+        self.apply_current_lifecycle().await;
         let mut position_timer = time::interval_at(
             Instant::now() + POSITION_SAVE_INTERVAL,
             POSITION_SAVE_INTERVAL,
@@ -115,6 +116,16 @@ impl Core {
         self.shutdown().await;
     }
 
+    /// Applies the last lifecycle event of the engine, which can come before
+    /// the runner started. The runner already listens to the events, so the same
+    /// event can come twice. The state change is the same for both.
+    async fn apply_current_lifecycle(&mut self) {
+        let current = self.engine.lifecycle().borrow().clone();
+        if let Some(event) = current {
+            self.handle(Message::Engine(event)).await;
+        }
+    }
+
     /// Saves the queue, then stops the engine.
     pub async fn shutdown(&mut self) {
         self.save_due = None;
@@ -133,6 +144,7 @@ impl Core {
         let commands = update(&mut self.state, message);
         self.snapshots.send_replace(self.state.clone());
         for command in commands {
+            debug!(?command, "sending an engine command");
             if let Err(error) = self.execute(&command).await {
                 warn!(%error, ?command, "engine command failed");
             }
@@ -159,10 +171,13 @@ impl Core {
             return;
         };
         let state = &self.state;
-        // While the engine restarts, the live position is 0. The waiting resume has the real one.
+        // While the engine restarts, the live position is 0. The waiting resume
+        // or the waiting seek has the real one.
         let position = state
             .resume
-            .map_or(state.playback.position, |resume| resume.position);
+            .map(|resume| resume.position)
+            .or(state.pending_seek)
+            .unwrap_or(state.playback.position);
         if let Err(error) = store.save(&state.queue, position).await {
             warn!(%error, "cannot save the queue");
         }

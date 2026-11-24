@@ -400,6 +400,17 @@ fn now_playing_event_moves_the_queue_and_resets_position() {
 }
 
 #[test]
+fn ready_applied_twice_gives_the_same_status() {
+    let mut state = state_with(&["a"], 0);
+    let _ = event(&mut state, EngineEvent::Ready);
+    assert_eq!(state.engine, EngineStatus::Ready);
+    let _ = event(&mut state, EngineEvent::Ready);
+    assert_eq!(state.engine, EngineStatus::Ready);
+    assert_eq!(current_id(&state), "a");
+    assert_eq!(state.resume, None);
+}
+
+#[test]
 fn ready_after_restart_sets_the_queue_again() {
     let mut state = state_with(&["a", "b"], 1);
     let _ = event(&mut state, EngineEvent::Restarted);
@@ -440,10 +451,32 @@ fn ready_after_restart_seeks_and_plays_if_playback_was_running() {
                 items: ids(&["a", "b"]),
                 start: 1
             },
-            Command::Seek(Duration::from_secs(42)),
             Command::Play,
         ]
     );
+    // The seek waits until the engine plays.
+    let commands = event(
+        &mut state,
+        EngineEvent::State {
+            state: PlaybackState::Playing,
+        },
+    );
+    assert_eq!(commands, vec![Command::Seek(Duration::from_secs(42))]);
+    let commands = event(
+        &mut state,
+        EngineEvent::State {
+            state: PlaybackState::Paused,
+        },
+    );
+    assert_eq!(commands, Vec::new());
+}
+
+#[test]
+fn new_restart_drops_a_waiting_seek() {
+    let mut state = state_with(&["a"], 0);
+    state.pending_seek = Some(Duration::from_secs(5));
+    let _ = event(&mut state, EngineEvent::Restarted);
+    assert_eq!(state.pending_seek, None);
 }
 
 #[test]

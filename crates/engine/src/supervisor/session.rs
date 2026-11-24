@@ -100,10 +100,11 @@ async fn drive<P: ChildProcess>(
     outputs
         .connection
         .send_replace(Some(Arc::clone(&connection)));
-    outputs.emit(EngineEvent::Ready);
+    // `Restarted` comes first: the core keeps the resume point, and `Ready` uses it.
     if announce_restart {
         outputs.emit(EngineEvent::Restarted);
     }
+    outputs.emit(EngineEvent::Ready);
     forward_events(process, &connection, &mut events, outputs, stop).await
 }
 

@@ -205,6 +205,17 @@ async fn engine_restart_restores_queue_position_and_playback() {
     running
         .wait_for(|state| state.engine == EngineStatus::Ready)
         .await;
+    running.wait_for_call(&EngineCall::Play).await;
+    // The seek waits until the engine plays.
+    assert!(
+        !running
+            .engine
+            .calls()
+            .contains(&EngineCall::Seek(Duration::from_secs(42)))
+    );
+    running.engine.emit(EngineEvent::State {
+        state: PlaybackState::Playing,
+    });
     running
         .wait_for_call(&EngineCall::Seek(Duration::from_secs(42)))
         .await;
@@ -219,8 +230,8 @@ async fn engine_restart_restores_queue_position_and_playback() {
             set_queue.clone(),
             EngineCall::Play,
             set_queue,
-            EngineCall::Seek(Duration::from_secs(42)),
             EngineCall::Play,
+            EngineCall::Seek(Duration::from_secs(42)),
         ]
     );
     running.shut_down().await;

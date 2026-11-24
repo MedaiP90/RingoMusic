@@ -28,6 +28,7 @@ const EVENT_CAPACITY: usize = 256;
 pub struct SidecarEngine {
     connection: watch::Receiver<Option<Arc<RpcConnection>>>,
     events: broadcast::Sender<EngineEvent>,
+    lifecycle: watch::Receiver<Option<EngineEvent>>,
     stop: Mutex<Option<oneshot::Sender<()>>>,
     restart: mpsc::Sender<()>,
     task: Mutex<Option<JoinHandle<()>>>,
@@ -54,6 +55,7 @@ impl SidecarEngine {
         let listener = supervisor::bind(&config.socket_path)?;
         let (connection_sender, connection) = watch::channel(None);
         let (events, _) = broadcast::channel(EVENT_CAPACITY);
+        let (lifecycle_sender, lifecycle) = watch::channel(None);
         let (stop_sender, stop) = oneshot::channel();
         let (restart, restart_requests) = mpsc::channel(RESTART_CAPACITY);
         let supervisor = Supervisor {
@@ -63,6 +65,7 @@ impl SidecarEngine {
             outputs: Outputs {
                 connection: connection_sender,
                 events: events.clone(),
+                lifecycle: lifecycle_sender,
             },
             stop,
             restart: restart_requests,
@@ -71,6 +74,7 @@ impl SidecarEngine {
         Ok(Self {
             connection,
             events,
+            lifecycle,
             stop: Mutex::new(Some(stop_sender)),
             restart,
             task: Mutex::new(Some(task)),
@@ -208,6 +212,10 @@ impl PlaybackEngine for SidecarEngine {
 
     fn events(&self) -> broadcast::Receiver<EngineEvent> {
         self.events.subscribe()
+    }
+
+    fn lifecycle(&self) -> watch::Receiver<Option<EngineEvent>> {
+        self.lifecycle.clone()
     }
 }
 
