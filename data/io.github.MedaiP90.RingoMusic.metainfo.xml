@@ -56,6 +56,13 @@ Copyright (C) 2026 RingoMusic contributors
     <control>pointing</control>
   </recommends>
   <releases>
+    <release version="1.1.1" date="2026-11-25">
+      <description>
+        <ul>
+          <li>A volume or position drag during a slow queue change gives only one change to the player, not one for each step of the slider.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.1.0" date="2026-11-24">
       <description>
         <p>This release adds the New page, the Made For You page, and a richer artist page. It also makes the player more stable.</p>

@@ -1,6 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
+use std::collections::HashSet;
+use std::mem;
 use std::sync::Arc;
 
 use ringo_engine::protocol::ErrorCode;
@@ -64,11 +66,17 @@ struct Runner {
 impl Runner {
     /// Runs commands until the core drops its sender. The engine stops last.
     async fn run(self, mut inbox: mpsc::UnboundedReceiver<Command>) {
-        while let Some(command) = inbox.recv().await {
-            debug!(?command, "sending an engine command");
-            let logged = command.clone();
-            if let Err(error) = self.execute(command).await {
-                warn!(%error, command = ?logged, "engine command failed");
+        while let Some(first) = inbox.recv().await {
+            let mut waiting = vec![first];
+            while let Ok(command) = inbox.try_recv() {
+                waiting.push(command);
+            }
+            for command in drop_replaced(waiting) {
+                debug!(?command, "sending an engine command");
+                let logged = command.clone();
+                if let Err(error) = self.execute(command).await {
+                    warn!(%error, command = ?logged, "engine command failed");
+                }
             }
         }
         if let Err(error) = self.engine.shutdown().await {
@@ -165,6 +173,23 @@ impl Runner {
     }
 }
 
+/// Removes each `SetVolume` and `Seek` that a later command of the same type
+/// replaces. A slider drag during a slow call then gives one engine call, not
+/// one call for each step.
+fn drop_replaced(commands: Vec<Command>) -> Vec<Command> {
+    let mut seen = HashSet::new();
+    let mut kept: Vec<Command> = commands
+        .into_iter()
+        .rev()
+        .filter(|command| {
+            let replaceable = matches!(command, Command::SetVolume(_) | Command::Seek(_));
+            !replaceable || seen.insert(mem::discriminant(command))
+        })
+        .collect();
+    kept.reverse();
+    kept
+}
+
 /// Shows the login window. Returns `false` if the login failed. A cancel by
 /// the user is not a failure.
 async fn run_sign_in(engine: &dyn PlaybackEngine) -> bool {
@@ -181,5 +206,34 @@ async fn run_sign_in(engine: &dyn PlaybackEngine) -> bool {
             warn!(%error, "sign in failed");
             false
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::time::Duration;
+
+    use super::*;
+
+    #[test]
+    fn drop_replaced_keeps_last_volume_and_seek_and_all_other_commands() {
+        let commands = vec![
+            Command::SetVolume(0.1),
+            Command::Seek(Duration::from_secs(1)),
+            Command::Pause,
+            Command::SetVolume(0.2),
+            Command::Seek(Duration::from_secs(2)),
+            Command::Play,
+            Command::SetVolume(0.3),
+        ];
+        assert_eq!(
+            drop_replaced(commands),
+            vec![
+                Command::Pause,
+                Command::Seek(Duration::from_secs(2)),
+                Command::Play,
+                Command::SetVolume(0.3),
+            ]
+        );
     }
 }
