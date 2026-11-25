@@ -60,6 +60,7 @@ Copyright (C) 2026 RingoMusic contributors
       <description>
         <ul>
           <li>A volume or position drag during a slow queue change gives only one change to the player, not one for each step of the slider.</li>
+          <li>Fix: a quit while the player page was still loading showed a JavaScript error dialog.</li>
         </ul>
       </description>
     </release>

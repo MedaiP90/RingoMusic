@@ -808,6 +808,12 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
+"Fix: a quit while the player page was still loading showed a JavaScript "
+"error dialog."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
 "This release adds the New page, the Made For You page, and a richer artist "
 "page. It also makes the player more stable."
 msgstr ""
