@@ -202,7 +202,16 @@ async function start(): Promise<void> {
   await window.loadURL(START_URL);
 }
 
+// Rust closes the stderr pipe when it stops the engine. A later write then fails with EPIPE,
+// and without a handler Electron shows an error dialog. The text has no reader, so drop it.
+process.stderr.on('error', () => {});
+
 start().catch(async (error: unknown) => {
+  if (quitting) {
+    // A quit during the start aborts the page load. This is not a failure.
+    log.debug({ err: error }, 'start stopped by the quit');
+    return;
+  }
   log.fatal({ err: error }, 'engine failed to start');
   // The log goes to the socket. Write the error to stderr too, in case the socket is down.
   process.stderr.write(`engine failed to start: ${error instanceof Error ? (error.stack ?? error.message) : String(error)}\n`);
