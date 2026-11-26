@@ -49,6 +49,8 @@ interface MusicKitInstance {
   repeatMode: number;
   // MusicKit `PlayerShuffleMode` code. 0 is off.
   shuffleMode: number;
+  developerToken: string;
+  musicUserToken: string;
   api: { music: (path: string, query?: object) => Promise<{ data: unknown }> };
   unauthorize(): Promise<unknown>;
   setQueue(options: { songs: string[]; startWith?: number }): Promise<unknown>;
