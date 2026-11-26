@@ -41,9 +41,15 @@ pub struct SongCatalog {
 
 /// The album and the artist of a song.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[expect(
+    clippy::struct_field_names,
+    reason = "each field is the ID of a linked item"
+)]
 pub struct SongLinks {
     pub album_id: Option<String>,
     pub artist_id: Option<String>,
+    /// ID of the catalog song, for a favorite.
+    pub catalog_id: Option<String>,
 }
 
 /// What the catalog keeps of a song.
@@ -77,7 +83,12 @@ impl SongCatalog {
     /// The catalog song of a song that a view showed, for a favorite. The player knows only the
     /// ID that it plays, which can be a library ID.
     pub fn catalog_item(&self, id: &str) -> Option<CatalogItem> {
-        let catalog_id = self.songs.borrow().get(id)?.catalog_id.clone()?;
+        let from_view = self
+            .songs
+            .borrow()
+            .get(id)
+            .and_then(|known| known.catalog_id.clone());
+        let catalog_id = from_view.or_else(|| self.links.borrow().get(id)?.catalog_id.clone())?;
         Some(CatalogItem::Song(catalog_id.into()))
     }
 

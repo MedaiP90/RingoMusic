@@ -18,7 +18,7 @@ pub fn init(services: AppServices, catalog: SongCatalog) -> SectionsInit {
         services,
         catalog,
         loader: load,
-        empty_icon: "starred-symbolic",
+        empty_icon: "x-office-calendar-symbolic",
         empty_title: gettext("No New Releases"),
         empty_description: gettext("Check back later."),
         error_title: gettext("Cannot Load New Releases"),

@@ -57,6 +57,9 @@ pub struct BarState {
     shuffle: bool,
     repeat: RepeatMode,
     has_queue: bool,
+    /// Storefront of the signed-in user. The bar asks the API only then, so a sign-in must wake
+    /// it up.
+    storefront: Option<String>,
 }
 
 impl BarState {
@@ -98,6 +101,7 @@ impl BarState {
             shuffle: state.queue.shuffle_enabled(),
             repeat: state.queue.repeat(),
             has_queue: !state.queue.items().is_empty(),
+            storefront: detail::storefront(state),
         }
     }
 
@@ -166,6 +170,8 @@ pub struct PlayerBar {
     artwork: ArtworkImage,
     /// The star of the current song.
     favorite: FavoriteButton,
+    /// The catalog song and the storefront that the star shows.
+    shown_favorite: (Option<CatalogItem>, Option<String>),
     /// The menu that adds the current song to a playlist or to the library.
     add_menu: ItemMenu,
     /// The user holds the seek bar. Position updates wait until the release.
@@ -477,7 +483,6 @@ impl SimpleComponent for PlayerBar {
         let artwork_widget = artwork.widget().clone();
         tint::follow_playing(&artwork_widget);
         let favorite = FavoriteButton::new();
-        favorite.control().show_item(state.catalog_song(&catalog));
         let favorite_widget = favorite.widget().clone();
         let add_menu = ItemMenu::new();
         add_menu.set_song(state.song_id.clone());
@@ -493,12 +498,14 @@ impl SimpleComponent for PlayerBar {
             asked_links: HashSet::new(),
             artwork,
             favorite,
+            shown_favorite: (None, None),
             add_menu,
             dragging: false,
             seek_target: None,
             queue_open: false,
         };
         model.ask_links(&sender);
+        model.refresh_favorite();
         let widgets = view_output!();
         show_elapsed_time(&widgets.seek_scale, &widgets.elapsed_label);
         CompactMode::install(&compact, &root, &widgets);
@@ -556,11 +563,26 @@ impl PlayerBar {
             .set_artwork(state.artwork.as_deref(), ARTWORK_SIZE);
         if state.song_id != self.state.song_id {
             self.add_menu.set_song(state.song_id.clone());
-            self.favorite
-                .control()
-                .show_item(state.catalog_song(&self.catalog));
         }
         self.state = state;
+        self.refresh_favorite();
+    }
+
+    /// Shows the star for the current song. It reads the status again only when the catalog song
+    /// or the storefront changes. The storefront is unknown until the sign-in ends, and a library
+    /// song gets its catalog ID only after its links load.
+    fn refresh_favorite(&mut self) {
+        let item = self.state.catalog_song(&self.catalog);
+        let storefront = detail::storefront(&self.core.subscribe().borrow());
+        let shown = (item, storefront);
+        if shown == self.shown_favorite {
+            return;
+        }
+        match &shown {
+            (Some(item), Some(_)) => self.favorite.control().show_item(Some(item.clone())),
+            _ => self.favorite.control().set_item(None),
+        }
+        self.shown_favorite = shown;
     }
 
     /// Runs the open action with `id`. It does nothing without an ID.
@@ -575,7 +597,7 @@ impl PlayerBar {
     }
 
     /// Asks the API for the links of the current song, once, when no view
-    /// knew them.
+    /// knew them. It waits for the sign-in.
     fn ask_links(&mut self, sender: &ComponentSender<Self>) {
         if !self.state.lacks_links() {
             return;
@@ -583,10 +605,13 @@ impl PlayerBar {
         let Some(song_id) = self.state.song_id.clone() else {
             return;
         };
+        // The storefront is unknown until the sign-in ends. Ask again after it, not before.
+        let Some(storefront) = detail::storefront(&self.core.subscribe().borrow()) else {
+            return;
+        };
         if !self.asked_links.insert(song_id.clone()) {
             return;
         }
-        let storefront = detail::storefront(&self.core.subscribe().borrow()).unwrap_or_default();
         let api = Arc::clone(&self.api);
         let input = sender.input_sender().clone();
         relm4::spawn(async move {
@@ -602,6 +627,7 @@ impl PlayerBar {
         self.catalog.remember_links(song_id, links);
         if self.state.song_id.as_deref() == Some(song_id) {
             self.state.fill_links(&self.catalog);
+            self.refresh_favorite();
         }
     }
 

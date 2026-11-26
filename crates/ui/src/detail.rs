@@ -453,19 +453,28 @@ async fn load_library_artist(api: &ApiClient, id: &str) -> ApiResult<ArtistData>
 ///
 /// Returns an error if the request fails or the song does not exist.
 pub async fn load_song_links(api: &ApiClient, storefront: &str, id: &str) -> ApiResult<SongLinks> {
-    let (albums, artists) = if is_library_id(id) {
+    let (links, catalog_id) = if is_library_id(id) {
         let song = endpoints::library_song(api, &LibrarySongId::from(id.to_owned())).await?;
-        song.relationships
-            .map(|links| (links.albums, links.artists))
+        let catalog_id = song
+            .attributes
+            .play_params
+            .and_then(|params| params.catalog_id);
+        let links = song
+            .relationships
+            .map(|links| (links.albums, links.artists));
+        (links, catalog_id)
     } else {
         let song = endpoints::song(api, storefront, &SongId::from(id.to_owned())).await?;
-        song.relationships
-            .map(|links| (links.albums, links.artists))
-    }
-    .unwrap_or_default();
+        let links = song
+            .relationships
+            .map(|links| (links.albums, links.artists));
+        (links, Some(id.to_owned()))
+    };
+    let (albums, artists) = links.unwrap_or_default();
     Ok(SongLinks {
         album_id: first_id(albums.as_ref()),
         artist_id: first_id(artists.as_ref()),
+        catalog_id,
     })
 }
 

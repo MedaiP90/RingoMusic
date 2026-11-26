@@ -79,7 +79,7 @@ impl Section {
         match self {
             Self::Home => "user-home-symbolic",
             Self::Search => "system-search-symbolic",
-            Self::New => "starred-symbolic",
+            Self::New => "x-office-calendar-symbolic",
             Self::Playlists => "view-list-bullet-symbolic",
             Self::Albums => "media-optical-symbolic",
             Self::Artists => "avatar-default-symbolic",

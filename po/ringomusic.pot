@@ -900,6 +900,18 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
+"The New page has a calendar icon, so it no longer looks like the favorites "
+"star."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Fix: after a restart, the album and artist buttons of the player bar did not "
+"open their pages until a new song played."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
 "A volume or position drag during a slow queue change gives only one change "
 "to the player, not one for each step of the slider."
 msgstr ""
