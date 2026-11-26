@@ -1,0 +1,11 @@
+{
+  "data": [
+    {
+      "id": "724514728",
+      "type": "albums",
+      "relationships": {
+        "library": { "data": [{ "id": "l.TestAlbum01", "type": "library-albums" }] }
+      }
+    }
+  ]
+}

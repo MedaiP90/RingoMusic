@@ -5,6 +5,8 @@
 
 pub mod endpoints;
 pub mod models;
+#[cfg(feature = "write")]
+pub mod write;
 
 mod artwork;
 mod error;

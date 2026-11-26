@@ -12,7 +12,7 @@ name = "ringomusic"
 path = "src/main.rs"
 
 [dependencies]
-ringo-am-api = { path = "../am-api" }
+ringo-am-api = { path = "../am-api", features = ["write"] }
 ringo-core = { path = "../core" }
 ringo-engine = { path = "../engine" }
 ringo-mpris = { path = "../mpris" }

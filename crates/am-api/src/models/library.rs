@@ -104,6 +104,9 @@ pub struct LibraryPlaylistAttributes {
     pub artwork: Option<Artwork>,
     /// Data for the player.
     pub play_params: Option<PlayParams>,
+    /// Whether the user can change the playlist. `false` if Apple does not say.
+    #[serde(default)]
+    pub can_edit: bool,
 }
 
 /// Resources that a library playlist links to.
