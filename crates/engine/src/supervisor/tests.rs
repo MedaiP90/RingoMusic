@@ -18,7 +18,9 @@ use tokio::time;
 
 use super::{ChildProcess, Launcher};
 use crate::protocol::{ErrorCode, PROTOCOL_VERSION};
-use crate::{EngineConfig, EngineEvent, Error, PlaybackEngine, SidecarEngine};
+use ringo_am_api::{ApiTransport, TransportError, WriteMethod, WriteRequest};
+
+use crate::{EngineConfig, EngineEvent, Error, PlaybackEngine, SidecarEngine, SidecarTransport};
 
 const EVENT_TIMEOUT: Duration = Duration::from_secs(10);
 
@@ -156,19 +158,33 @@ async fn serve(socket_path: &std::path::Path) {
 
     while let Ok(Some(line)) = lines.next_line().await {
         let request: Value = serde_json::from_str(&line).expect("client sends valid JSON");
-        let result = if request["method"] == "auth.status" {
-            json!({"authorized": true, "storefront": "us"})
+        let reply = if request["method"] == "auth.status" {
+            json!({"result": {"authorized": true, "storefront": "us"}})
+        } else if request["method"] == "api.write" {
+            write_reply(&request["params"])
         } else {
-            Value::Null
+            json!({"result": null})
         };
-        send(
-            &mut writer,
-            &json!({"jsonrpc": "2.0", "id": request["id"], "result": result}),
-        )
-        .await;
+        let mut message = json!({"jsonrpc": "2.0", "id": request["id"]});
+        message
+            .as_object_mut()
+            .expect("message is an object")
+            .extend(reply.as_object().expect("reply is an object").clone());
+        send(&mut writer, &message).await;
         if request["method"] == "engine.shutdown" {
             return;
         }
+    }
+}
+
+/// Answers `api.write`: the path decides the reply.
+fn write_reply(params: &Value) -> Value {
+    match params["path"].as_str() {
+        Some("/v1/me/denied") => {
+            json!({"error": {"code": -32001, "message": "not authorized"}})
+        }
+        Some("/v1/me/empty") => json!({"result": null}),
+        _ => json!({"result": {"echo": params}}),
     }
 }
 
@@ -368,5 +384,78 @@ async fn protocol_mismatch_is_not_restarted_until_requested() {
     let event = next_event(&mut events).await;
     assert!(matches!(event, EngineEvent::ProtocolMismatch { .. }));
     assert_eq!(launcher.launch_count(), 2);
+    engine.shutdown().await.expect("shutdown works");
+}
+
+/// Starts a fake engine and returns a transport that is ready to use.
+async fn ready_transport(name: &str) -> (TestDir, Arc<SidecarEngine>, SidecarTransport) {
+    let dir = TestDir::new(name);
+    let engine = Arc::new(
+        SidecarEngine::start_with(FakeLauncher::new(Behavior::Serve), dir.config())
+            .expect("engine starts"),
+    );
+    let mut events = engine.events();
+    assert_eq!(next_event(&mut events).await, EngineEvent::Ready);
+    let transport = SidecarTransport::new(Arc::clone(&engine));
+    (dir, engine, transport)
+}
+
+fn post(path: &str) -> WriteRequest<'_> {
+    WriteRequest {
+        method: WriteMethod::Post,
+        path,
+        query: &[("l", "en")],
+        body: None,
+    }
+}
+
+#[tokio::test]
+async fn transport_write_returns_the_response() {
+    let (_dir, engine, transport) = ready_transport("write-ok").await;
+
+    let response = transport.write(post("/v1/me/library")).await;
+
+    let echo = response.expect("write works").expect("response has a body");
+    assert_eq!(echo["echo"]["method"], "POST");
+    assert_eq!(echo["echo"]["path"], "/v1/me/library");
+    assert_eq!(echo["echo"]["query"]["l"], "en");
+    engine.shutdown().await.expect("shutdown works");
+}
+
+#[tokio::test]
+async fn transport_write_returns_none_for_an_empty_response() {
+    let (_dir, engine, transport) = ready_transport("write-empty").await;
+
+    let response = transport.write(post("/v1/me/empty")).await;
+
+    assert_eq!(response.expect("write works"), None);
+    engine.shutdown().await.expect("shutdown works");
+}
+
+#[tokio::test]
+async fn transport_write_maps_an_engine_error() {
+    let (_dir, engine, transport) = ready_transport("write-error").await;
+
+    let response = transport.write(post("/v1/me/denied")).await;
+
+    assert!(matches!(
+        response,
+        Err(ringo_am_api::Error::Transport(
+            TransportError::NotAuthorized
+        ))
+    ));
+    engine.shutdown().await.expect("shutdown works");
+}
+
+#[tokio::test]
+async fn transport_write_rejects_a_path_outside_me() {
+    let (_dir, engine, transport) = ready_transport("write-invalid").await;
+
+    let response = transport.write(post("/v1/catalog/us/songs")).await;
+
+    assert!(matches!(
+        response,
+        Err(ringo_am_api::Error::Transport(TransportError::Other { .. }))
+    ));
     engine.shutdown().await.expect("shutdown works");
 }

@@ -4,10 +4,10 @@
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-use ringo_am_api::{ApiTransport, TransportError};
+use ringo_am_api::{ApiTransport, TransportError, WriteMethod, WriteRequest};
 use serde_json::Value;
 
-use crate::protocol::ErrorCode;
+use crate::protocol::{self, ApiWriteRequest, ErrorCode};
 use crate::{Error, SidecarEngine};
 
 /// [`ApiTransport`] that sends the requests through the engine with `api.get`.
@@ -34,6 +34,46 @@ impl ApiTransport for SidecarTransport {
         let response = self.engine.api_get(path, query).await;
         response.map_err(|error| ringo_am_api::Error::Transport(map_error(&error)))
     }
+
+    async fn get_uncached(
+        &self,
+        path: &str,
+        query: &[(&str, &str)],
+    ) -> ringo_am_api::Result<Value> {
+        // This transport has no cache, so it is the same as `get`.
+        self.get(path, query).await
+    }
+
+    async fn write(&self, request: WriteRequest<'_>) -> ringo_am_api::Result<Option<Value>> {
+        let response = self.engine.api_write(to_engine_request(request)).await;
+        response
+            .map(non_null)
+            .map_err(|error| ringo_am_api::Error::Transport(map_error(&error)))
+    }
+}
+
+/// Converts a write request to the params of `api.write`.
+fn to_engine_request(request: WriteRequest<'_>) -> ApiWriteRequest {
+    let method = match request.method {
+        WriteMethod::Post => protocol::WriteMethod::Post,
+        WriteMethod::Put => protocol::WriteMethod::Put,
+        WriteMethod::Delete => protocol::WriteMethod::Delete,
+    };
+    ApiWriteRequest {
+        method,
+        path: request.path.to_owned(),
+        query: request
+            .query
+            .iter()
+            .map(|&(key, value)| (key.to_owned(), value.to_owned()))
+            .collect(),
+        body: request.body.cloned(),
+    }
+}
+
+/// Maps the `null` of an empty response to `None`.
+fn non_null(value: Value) -> Option<Value> {
+    (!value.is_null()).then_some(value)
 }
 
 /// Maps an engine error to a transport error.
@@ -67,6 +107,28 @@ mod tests {
             code,
             message: "failed".to_owned(),
         }
+    }
+
+    #[test]
+    fn to_engine_request_copies_every_field() {
+        let body = serde_json::json!({"a": 1});
+        let request = to_engine_request(WriteRequest {
+            method: WriteMethod::Delete,
+            path: "/v1/me/ratings/songs/1",
+            query: &[("l", "en")],
+            body: Some(&body),
+        });
+
+        assert_eq!(request.method, protocol::WriteMethod::Delete);
+        assert_eq!(request.path, "/v1/me/ratings/songs/1");
+        assert_eq!(request.query.get("l").map(String::as_str), Some("en"));
+        assert_eq!(request.body, Some(body));
+    }
+
+    #[test]
+    fn non_null_maps_an_empty_response_to_none() {
+        assert_eq!(non_null(Value::Null), None);
+        assert_eq!(non_null(serde_json::json!({})), Some(serde_json::json!({})));
     }
 
     #[test]
