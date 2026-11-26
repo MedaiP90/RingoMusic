@@ -99,6 +99,7 @@ export interface MappedError {
 const CODE_BY_HTTP_STATUS: Record<number, number> = {
   401: ErrorCode.NotAuthorized,
   403: ErrorCode.NoSubscription,
+  404: ErrorCode.NotFound,
 };
 
 function readStatus(error: unknown): number | undefined {
@@ -112,7 +113,7 @@ function readMessage(error: unknown): string {
   return typeof message === 'string' ? message : String(error);
 }
 
-// Maps a MusicKit failure to a protocol error. HTTP 401 and 403 have their own codes.
+// Maps a MusicKit failure to a protocol error. HTTP 401, 403, and 404 have their own codes.
 export function mapError(error: unknown): MappedError {
   if (error instanceof InvalidParamsError) {
     return { code: ErrorCode.InvalidParams, message: error.message };

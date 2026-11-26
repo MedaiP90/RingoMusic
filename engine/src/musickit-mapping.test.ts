@@ -87,6 +87,10 @@ void test('mapError / HTTP 403 in response / should return no_subscription', () 
   assert.equal(mapError({ response: { status: 403 } }).code, ErrorCode.NoSubscription);
 });
 
+void test('mapError / HTTP 404 / should return not_found', () => {
+  assert.equal(mapError({ status: 404 }).code, ErrorCode.NotFound);
+});
+
 void test('mapError / other failure / should return musickit_error with the message', () => {
   assert.deepEqual(mapError(new Error('boom')), { code: ErrorCode.MusicKitError, message: 'boom' });
   assert.deepEqual(mapError({ status: 500 }).code, ErrorCode.MusicKitError);

@@ -92,6 +92,12 @@ fn map_error(error: &Error) -> TransportError {
             ..
         }
         | Error::NotReady => TransportError::NotReady,
+        Error::Remote {
+            code: ErrorCode::NotFound,
+            message,
+        } => TransportError::NotFound {
+            message: message.clone(),
+        },
         other => TransportError::Other {
             message: other.to_string(),
         },
@@ -146,6 +152,12 @@ mod tests {
             TransportError::NotReady
         );
         assert_eq!(map_error(&Error::NotReady), TransportError::NotReady);
+        assert_eq!(
+            map_error(&remote(ErrorCode::NotFound)),
+            TransportError::NotFound {
+                message: "failed".to_owned()
+            }
+        );
     }
 
     #[test]
