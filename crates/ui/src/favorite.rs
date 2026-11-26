@@ -8,9 +8,11 @@
 //! A failed request changes it back. The status is read live, when the item shows, never after a
 //! write (rule R8).
 
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
+use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 use std::sync::Arc;
+use std::time::Duration;
 
 use gettextrs::gettext;
 use relm4::gtk;
@@ -23,6 +25,12 @@ use tracing::warn;
 use crate::add_to_playlist;
 use crate::detail;
 use crate::library_write;
+
+/// Time that the rows of a list wait for each other before one request reads their status.
+const BATCH_DELAY: Duration = Duration::from_millis(60);
+
+/// Most songs in one status request.
+const BATCH_SIZE: usize = 50;
 
 /// Name of the favorite action, in every group that holds it.
 pub const ACTION_NAME: &str = "favorite";
@@ -137,6 +145,11 @@ impl FavoriteState {
         current
     }
 
+    /// Tells if a status read of `generation` is still the one that the state waits for.
+    fn is_loading(&self, generation: u64) -> bool {
+        generation == self.generation && self.status == Status::Loading
+    }
+
     fn is_known(&self) -> bool {
         matches!(self.status, Status::Known(_))
     }
@@ -246,17 +259,33 @@ impl FavoriteControl {
         self.load_status();
     }
 
-    /// Shows `item` with no status request. Call [`Self::load_status`] when the user needs it.
+    /// Shows `item` with an unknown status and no request. Call [`Self::load_status`] or
+    /// [`Self::queue_status`] to read it.
     pub fn set_item(&self, item: Option<CatalogItem>) {
         self.inner.state.borrow_mut().reset(item);
         self.inner.sync();
     }
 
-    /// Reads the status if nothing read it for the shown item yet.
-    pub fn ensure_status(&self) {
-        let unknown = self.inner.state.borrow().status == Status::Unknown;
-        if unknown {
-            self.load_status();
+    /// Reads the status together with the other controls that queue in the same moment. The
+    /// rows of a list use this: they get one request for up to [`BATCH_SIZE`] songs, not one
+    /// request for each row.
+    pub fn queue_status(&self) {
+        let request = self.inner.state.borrow_mut().begin_load();
+        let Some((generation, item)) = request else {
+            return;
+        };
+        self.inner.sync();
+        let waiting = Waiting {
+            inner: Rc::downgrade(&self.inner),
+            generation,
+            item,
+        };
+        let first = WAITING.with_borrow_mut(|queue| {
+            queue.push(waiting);
+            queue.len() == 1
+        });
+        if first {
+            glib::timeout_add_local_once(BATCH_DELAY, read_waiting);
         }
     }
 
@@ -286,29 +315,117 @@ impl FavoriteControl {
     }
 }
 
+/// A control that waits for a batched status read.
+#[derive(Clone)]
+struct Waiting {
+    inner: Weak<Inner>,
+    generation: u64,
+    item: CatalogItem,
+}
+
+impl Waiting {
+    /// Tells if the control still waits for this read.
+    fn is_current(&self) -> bool {
+        self.inner
+            .upgrade()
+            .is_some_and(|inner| inner.state.borrow().is_loading(self.generation))
+    }
+}
+
+thread_local! {
+    static WAITING: RefCell<Vec<Waiting>> = const { RefCell::new(Vec::new()) };
+}
+
+/// Reads the status of the controls that queued, in requests of up to [`BATCH_SIZE`] songs. A
+/// control that got another item in the meantime does not count.
+fn read_waiting() {
+    let queue = WAITING.take();
+    let waiting: Vec<Waiting> = queue.into_iter().filter(Waiting::is_current).collect();
+    let mut items: Vec<CatalogItem> = Vec::new();
+    for entry in &waiting {
+        if !items.contains(&entry.item) {
+            items.push(entry.item.clone());
+        }
+    }
+    for chunk in items.chunks(BATCH_SIZE) {
+        let chunk = chunk.to_vec();
+        let entries: Vec<Waiting> = waiting
+            .iter()
+            .filter(|entry| chunk.contains(&entry.item))
+            .cloned()
+            .collect();
+        glib::spawn_future_local(async move {
+            let status = read_statuses(chunk).await;
+            for entry in entries {
+                let Some(inner) = entry.inner.upgrade() else {
+                    continue;
+                };
+                let favorite = status.get(&entry.item).copied().unwrap_or(false);
+                let current = inner
+                    .state
+                    .borrow_mut()
+                    .finish_load(entry.generation, favorite);
+                if current {
+                    inner.sync();
+                }
+            }
+        });
+    }
+}
+
 /// Reads if `item` is a favorite. A failure counts as "not a favorite": the star stays usable, and
 /// Apple ignores a duplicate add.
 async fn read_status(item: CatalogItem) -> bool {
+    let status = read_statuses(vec![item.clone()]).await;
+    status.get(&item).copied().unwrap_or(false)
+}
+
+/// Reads the status of `items`, live. After a failure the result is empty.
+async fn read_statuses(items: Vec<CatalogItem>) -> HashMap<CatalogItem, bool> {
     let Some(services) = add_to_playlist::services() else {
-        return false;
+        return HashMap::new();
     };
     let storefront = detail::storefront(&services.core().subscribe().borrow()).unwrap_or_default();
     let api = Arc::clone(services.api());
-    let task = relm4::spawn(async move {
-        let status =
-            write::favorite_status(api.as_ref(), &storefront, std::slice::from_ref(&item)).await;
-        status.map(|status| status.get(&item).copied().unwrap_or(false))
-    });
+    let task =
+        relm4::spawn(
+            async move { write::favorite_status(api.as_ref(), &storefront, &items).await },
+        );
     match task.await {
-        Ok(Ok(favorite)) => favorite,
+        Ok(Ok(status)) => status,
         Ok(Err(error)) => {
             warn!(%error, "cannot read the favorite status");
-            false
+            HashMap::new()
         }
         Err(join_error) => {
             warn!(%join_error, "the favorite status task did not finish");
-            false
+            HashMap::new()
         }
+    }
+}
+
+/// What decides if a star button shows.
+#[derive(Default)]
+struct Appearance {
+    look: Cell<Option<Look>>,
+    /// The pointer is over the place of the star.
+    hovered: Cell<bool>,
+    /// The star shows only while hovered, or when the item is a favorite.
+    idle_hidden: Cell<bool>,
+}
+
+impl Appearance {
+    fn set_hovered(&self, button: &glib::WeakRef<gtk::Button>, hovered: bool) {
+        self.hovered.set(hovered);
+        if let Some(button) = button.upgrade() {
+            self.apply(&button);
+        }
+    }
+
+    fn apply(&self, button: &gtk::Button) {
+        let favorite = self.look.get().is_some_and(|look| look.favorite);
+        let shown = !self.idle_hidden.get() || self.hovered.get() || favorite;
+        button.set_opacity(if shown { 1.0 } else { 0.0 });
     }
 }
 
@@ -316,6 +433,7 @@ async fn read_status(item: CatalogItem) -> bool {
 pub struct FavoriteButton {
     button: gtk::Button,
     control: FavoriteControl,
+    appearance: Rc<Appearance>,
 }
 
 impl FavoriteButton {
@@ -330,14 +448,22 @@ impl FavoriteButton {
         group.add_action(control.action());
         button.insert_action_group(BUTTON_GROUP, Some(&group));
         button.set_action_name(Some(&format!("{BUTTON_GROUP}.{ACTION_NAME}")));
-        let weak = button.downgrade();
+        let appearance = Rc::new(Appearance::default());
+        let (weak, shared) = (button.downgrade(), Rc::clone(&appearance));
         control.connect_look(move |look| {
-            if let Some(button) = weak.upgrade() {
-                button.set_icon_name(look.icon_name());
-                button.set_tooltip_text(Some(&look.tooltip()));
-            }
+            let Some(button) = weak.upgrade() else {
+                return;
+            };
+            button.set_icon_name(look.icon_name());
+            button.set_tooltip_text(Some(&look.tooltip()));
+            shared.look.set(Some(look));
+            shared.apply(&button);
         });
-        Self { button, control }
+        Self {
+            button,
+            control,
+            appearance,
+        }
     }
 
     /// The widget to put in a container.
@@ -348,6 +474,19 @@ impl FavoriteButton {
     /// The control. The menus of the same item use its action.
     pub fn control(&self) -> &FavoriteControl {
         &self.control
+    }
+
+    /// Shows the star only while the pointer is over `row`, or when the item is a favorite. The
+    /// space stays.
+    pub fn show_on_hover_of(&self, row: &impl IsA<gtk::Widget>) {
+        self.appearance.idle_hidden.set(true);
+        self.appearance.apply(&self.button);
+        let hover = gtk::EventControllerMotion::new();
+        let (weak, shared) = (self.button.downgrade(), Rc::clone(&self.appearance));
+        hover.connect_enter(move |_, _, _| shared.set_hovered(&weak, true));
+        let (weak, shared) = (self.button.downgrade(), Rc::clone(&self.appearance));
+        hover.connect_leave(move |_| shared.set_hovered(&weak, false));
+        row.add_controller(hover);
     }
 }
 

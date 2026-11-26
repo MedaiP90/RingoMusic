@@ -13,7 +13,7 @@ use relm4::gtk::pango::{EllipsizeMode, WrapMode};
 use relm4::gtk::prelude::*;
 use ringo_am_api::write::CatalogItem;
 
-use crate::favorite::{FavoriteButton, FavoriteControl};
+use crate::favorite::FavoriteButton;
 use crate::widgets::artwork_image::ArtworkImage;
 
 /// Size of the artwork in pixels.
@@ -187,9 +187,11 @@ impl DetailHeader {
         self.description.set_text(text);
     }
 
-    /// The favorite state of the item of the page. A menu of the page can use its action.
-    pub fn favorite(&self) -> &FavoriteControl {
-        self.favorite.control()
+    /// Takes the star out of the button row. The page puts it in its header bar.
+    pub fn take_favorite_button(&self) -> gtk::Button {
+        let button = self.favorite.widget();
+        self.buttons.remove(button);
+        button.clone()
     }
 
     /// Shows the star for `item` and reads its status. `None` leaves the star off.

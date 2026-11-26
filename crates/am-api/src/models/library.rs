@@ -52,6 +52,8 @@ pub struct LibraryAlbumRelationships {
     pub tracks: Option<Relationship<Resource>>,
     /// Artists of the album. Only a request that includes them has this.
     pub artists: Option<Relationship<ResourceRef>>,
+    /// The catalog album, if there is one. Only a request that includes it has this.
+    pub catalog: Option<Relationship<ResourceRef>>,
 }
 
 /// An artist in the library of the user.
@@ -114,4 +116,6 @@ pub struct LibraryPlaylistAttributes {
 pub struct LibraryPlaylistRelationships {
     /// Tracks of the playlist.
     pub tracks: Option<Relationship<Resource>>,
+    /// The catalog playlist, if there is one. Only a request that includes it has this.
+    pub catalog: Option<Relationship<ResourceRef>>,
 }

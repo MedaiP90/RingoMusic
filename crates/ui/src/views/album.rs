@@ -91,6 +91,7 @@ impl SimpleComponent for AlbumView {
                 add_top_bar = &adw::HeaderBar {
                     add_css_class: "flat",
                     pack_end = &add_menu_widget.clone() -> gtk::MenuButton {},
+                    pack_end = &favorite_widget.clone() -> gtk::Button {},
                 },
 
                 #[wrap(Some)]
@@ -110,8 +111,9 @@ impl SimpleComponent for AlbumView {
             id,
         } = init;
         let header = DetailHeader::new(ArtworkShape::Square);
-        let add_menu = ItemMenu::new(header.favorite());
+        let add_menu = ItemMenu::new();
         let add_menu_widget = add_menu.widget().clone();
+        let favorite_widget = header.take_favorite_button();
         tint::follow_viewed(header.artwork_image(), &root, &id);
         let discs = gtk::Box::new(gtk::Orientation::Vertical, 12);
         let content = build_content(&header, &discs);
@@ -200,7 +202,9 @@ impl AlbumView {
             (!is_library_id(&self.id)).then(|| CatalogItem::Album(AlbumId::from(self.id.clone()))),
         );
         self.header.show_favorite(
-            (!is_library_id(&self.id)).then(|| CatalogItem::Album(AlbumId::from(self.id.clone()))),
+            data.catalog_id
+                .clone()
+                .map(|id| CatalogItem::Album(AlbumId::from(id))),
         );
         self.header.set_artwork(data.artwork_template.as_deref());
         self.header.set_title(&data.title);

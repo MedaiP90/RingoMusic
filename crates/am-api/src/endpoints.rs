@@ -346,7 +346,7 @@ pub async fn library_album(
     id: &LibraryAlbumId,
 ) -> Result<LibraryAlbum> {
     let path = library_path("albums", id.as_str())?;
-    first(fetch(transport, &path, &[("include", "tracks,artists")]).await?)
+    first(fetch(transport, &path, &[("include", "tracks,artists,catalog")]).await?)
 }
 
 /// Gets one page of the albums of a library artist.
@@ -377,7 +377,7 @@ pub async fn library_playlist(
     id: &LibraryPlaylistId,
 ) -> Result<LibraryPlaylist> {
     let path = library_playlist_path(id)?;
-    first(fetch(transport, &path, &[("include", "tracks")]).await?)
+    first(fetch(transport, &path, &[("include", "tracks,catalog")]).await?)
 }
 
 /// Gets one page of the tracks of a library playlist.

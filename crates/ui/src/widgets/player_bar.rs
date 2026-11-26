@@ -111,11 +111,15 @@ impl BarState {
         self.artist_id = catalog.artist_id(song_id);
     }
 
-    /// The current song as a catalog item. A song of the library has none: Apple takes only
-    /// catalog IDs for a favorite.
-    fn catalog_song(&self) -> Option<CatalogItem> {
-        let id = self.song_id.as_deref().filter(|id| !is_library_id(id))?;
-        Some(CatalogItem::Song(id.to_owned().into()))
+    /// The current song as a catalog item, for a favorite. Apple takes only catalog IDs. A
+    /// library song has one if a view showed the song and Apple linked it.
+    fn catalog_song(&self, catalog: &SongCatalog) -> Option<CatalogItem> {
+        let id = self.song_id.as_deref()?;
+        if is_library_id(id) {
+            catalog.catalog_item(id)
+        } else {
+            Some(CatalogItem::Song(id.to_owned().into()))
+        }
     }
 
     /// Tells if the album or the artist of the song is still unknown.
@@ -473,9 +477,9 @@ impl SimpleComponent for PlayerBar {
         let artwork_widget = artwork.widget().clone();
         tint::follow_playing(&artwork_widget);
         let favorite = FavoriteButton::new();
-        favorite.control().show_item(state.catalog_song());
+        favorite.control().show_item(state.catalog_song(&catalog));
         let favorite_widget = favorite.widget().clone();
-        let add_menu = ItemMenu::new(favorite.control());
+        let add_menu = ItemMenu::new();
         add_menu.set_song(state.song_id.clone());
         let add_menu_widget = add_menu.widget().clone();
         let mut model = Self {
@@ -552,7 +556,9 @@ impl PlayerBar {
             .set_artwork(state.artwork.as_deref(), ARTWORK_SIZE);
         if state.song_id != self.state.song_id {
             self.add_menu.set_song(state.song_id.clone());
-            self.favorite.control().show_item(state.catalog_song());
+            self.favorite
+                .control()
+                .show_item(state.catalog_song(&self.catalog));
         }
         self.state = state;
     }

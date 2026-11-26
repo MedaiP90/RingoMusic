@@ -139,9 +139,7 @@ impl SongRowWidgets {
         menu.set_has_arrow(false);
         menu.set_halign(gtk::Align::Start);
         let favorite = FavoriteButton::new();
-        favorite.widget().set_opacity(0.0);
-        // A status request for each row would be too many: read it when the pointer enters.
-        connect_star_hover(&root, &favorite);
+        favorite.show_on_hover_of(&root);
         root.prepend(favorite.widget());
         connect_menu_triggers(&root, &menu, &more);
         let widgets = Self {
@@ -168,9 +166,9 @@ impl SongRowWidgets {
         self.explicit.set_visible(item.explicit);
         self.show_lead(queue.artwork_template.as_deref(), lead);
         self.menu.set_menu_model(Some(&build_menu(item)));
-        let catalog_song =
-            (!is_library_id(item.id())).then(|| CatalogItem::Song(item.id().to_owned().into()));
-        self.favorite.control().set_item(catalog_song);
+        let control = self.favorite.control();
+        control.set_item(item.catalog_item());
+        control.queue_status();
     }
 
     fn show_lead(&self, artwork_template: Option<&str>, lead: Lead) {
@@ -187,25 +185,6 @@ impl SongRowWidgets {
             self.artwork.set_artwork(artwork_template, ARTWORK_SIZE);
         }
     }
-}
-
-/// Shows the star of `row` while the pointer is over it, and reads the status once for the song.
-fn connect_star_hover(row: &gtk::Box, favorite: &FavoriteButton) {
-    let hover = gtk::EventControllerMotion::new();
-    let (star, control) = (favorite.widget().downgrade(), favorite.control().clone());
-    hover.connect_enter(move |_, _, _| {
-        if let Some(star) = star.upgrade() {
-            star.set_opacity(1.0);
-        }
-        control.ensure_status();
-    });
-    let star = favorite.widget().downgrade();
-    hover.connect_leave(move |_| {
-        if let Some(star) = star.upgrade() {
-            star.set_opacity(0.0);
-        }
-    });
-    row.add_controller(hover);
 }
 
 /// Puts a play button over `lead`. It shows while the pointer is over `row`.

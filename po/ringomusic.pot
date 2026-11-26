@@ -89,10 +89,6 @@ msgstr ""
 msgid "Could not load your playlists."
 msgstr ""
 
-#: crates/ui/src/add_to_playlist.rs
-msgid "Favorite"
-msgstr ""
-
 #: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
 msgid "More"
 msgstr ""
@@ -898,7 +894,8 @@ msgstr ""
 msgid ""
 "Add songs, albums, artists, and playlists to your favorites, and remove them "
 "again, with the star button. In a song list, the star shows at the start of "
-"a row when the pointer is over it."
+"a row: always for a favorite song, and when the pointer is over the row for "
+"other songs."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

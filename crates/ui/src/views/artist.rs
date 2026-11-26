@@ -99,6 +99,7 @@ impl SimpleComponent for ArtistView {
                 add_css_class: "album-tint",
                 add_top_bar = &adw::HeaderBar {
                     add_css_class: "flat",
+                    pack_end = &favorite_widget.clone() -> gtk::Button {},
                 },
 
                 #[wrap(Some)]
@@ -119,6 +120,7 @@ impl SimpleComponent for ArtistView {
         } = init;
         let header = DetailHeader::new(ArtworkShape::Round);
         header.set_shuffle_visible(false);
+        let favorite_widget = header.take_favorite_button();
         tint::follow_viewed(header.artwork_image(), &root, &id);
         let info_button = build_info_button();
         let input = sender.input_sender().clone();

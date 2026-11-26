@@ -26,7 +26,6 @@ use tracing::warn;
 
 use crate::add_to_library;
 use crate::detail::is_library_id;
-use crate::favorite::{ACTION_NAME as FAVORITE_ACTION, FavoriteControl};
 use crate::library_write;
 use crate::name_filter::NameFilter;
 use crate::services::{ApiClient, AppServices};
@@ -380,8 +379,7 @@ fn load(picker: &Rc<Picker>, services: &AppServices) {
 
 /// A menu button for a header or a bar. It has the items "Add to Playlist…" (set the songs with
 /// [`Self::set_songs`]) and "Add to Library" (set the item with [`Self::set_library_item`]).
-/// These items are hidden while they are off. The button is hidden while both are off. The
-/// "Favorite" item toggles the action of a [`FavoriteControl`]. It is dimmed while that is off.
+/// An item is hidden while it is off. The button is hidden while both are off.
 pub struct ItemMenu {
     button: gtk::MenuButton,
     action: SimpleAction,
@@ -393,16 +391,11 @@ pub struct ItemMenu {
 }
 
 impl ItemMenu {
-    /// Makes the button. It has no songs and no library item yet, so it is hidden. `favorite` is
-    /// the control of the same item.
-    pub fn new(favorite: &FavoriteControl) -> Self {
+    /// Makes the button. It has no songs and no library item yet, so it is hidden.
+    pub fn new() -> Self {
         let menu = Menu::new();
         menu.append_item(&hidden_when_off(&gettext("Add to Playlist…"), MENU_ACTION));
         menu.append_item(&hidden_when_off(&gettext("Add to Library"), LIBRARY_ACTION));
-        menu.append_item(&MenuItem::new(
-            Some(&gettext("Favorite")),
-            Some(&format!("{MENU_GROUP}.{FAVORITE_ACTION}")),
-        ));
         let button = gtk::MenuButton::builder()
             .icon_name("view-more-symbolic")
             .tooltip_text(gettext("More"))
@@ -436,7 +429,6 @@ impl ItemMenu {
         let group = SimpleActionGroup::new();
         group.add_action(&action);
         group.add_action(&library_action);
-        group.add_action(favorite.action());
         button.insert_action_group(MENU_GROUP, Some(&group));
         Self {
             button,
