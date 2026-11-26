@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/me/ratings/albums/724514728",
+    "body": null
+  },
+  "response": {
+    "status": 400,
+    "body": {
+      "errors": [
+        {
+          "id": "TESTERRORID0000000000000004",
+          "title": "Invalid Path Value",
+          "detail": "Ratings not allowed for resource type 'albums'",
+          "status": "400",
+          "code": "40008"
+        }
+      ]
+    }
+  }
+}

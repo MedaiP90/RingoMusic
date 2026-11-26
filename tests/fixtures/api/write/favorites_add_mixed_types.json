@@ -1,0 +1,22 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/me/favorites?ids[songs]=724515236&ids[albums]=724514728",
+    "body": null
+  },
+  "response": {
+    "status": 400,
+    "body": {
+      "errors": [
+        {
+          "id": "TESTERRORID0000000000000001",
+          "title": "Invalid Parameter Value",
+          "detail": "Please provide a single (1) resource type",
+          "status": "400",
+          "code": "40005",
+          "source": { "parameter": "ids" }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/me/ratings/songs/724515236",
+    "body": null
+  },
+  "response": {
+    "status": 200,
+    "body": {
+      "data": [
+        {
+          "id": "724515236",
+          "type": "ratings",
+          "href": "/v1/me/ratings/songs/724515236",
+          "attributes": { "value": -1 }
+        }
+      ]
+    }
+  }
+}
