@@ -6,6 +6,7 @@
 use std::io;
 
 use protocol::ErrorCode;
+use serde_json::Value;
 
 pub mod protocol;
 pub mod rpc;
@@ -68,6 +69,8 @@ pub enum Error {
         code: ErrorCode,
         /// Error message of the engine.
         message: String,
+        /// Extra data of the error, for example the HTTP status of a write.
+        data: Option<Value>,
     },
 
     /// The engine did not answer a request in time.

@@ -78,6 +78,9 @@ fn non_null(value: Value) -> Option<Value> {
 
 /// Maps an engine error to a transport error.
 fn map_error(error: &Error) -> TransportError {
+    if let Some(rejected) = rejection(error) {
+        return rejected;
+    }
     match error {
         Error::Remote {
             code: ErrorCode::NotAuthorized,
@@ -95,6 +98,7 @@ fn map_error(error: &Error) -> TransportError {
         Error::Remote {
             code: ErrorCode::NotFound,
             message,
+            ..
         } => TransportError::NotFound {
             message: message.clone(),
         },
@@ -102,6 +106,22 @@ fn map_error(error: &Error) -> TransportError {
             message: other.to_string(),
         },
     }
+}
+
+/// Reads the HTTP status and the Apple error code that the engine adds to a failed write.
+fn rejection(error: &Error) -> Option<TransportError> {
+    let Error::Remote {
+        data: Some(data), ..
+    } = error
+    else {
+        return None;
+    };
+    let status = u16::try_from(data.get("status")?.as_u64()?).ok()?;
+    let apple_code = data
+        .get("apple_code")
+        .and_then(Value::as_str)
+        .map(str::to_owned);
+    Some(TransportError::Rejected { status, apple_code })
 }
 
 #[cfg(test)]
@@ -112,6 +132,7 @@ mod tests {
         Error::Remote {
             code,
             message: "failed".to_owned(),
+            data: None,
         }
     }
 
@@ -156,6 +177,22 @@ mod tests {
             map_error(&remote(ErrorCode::NotFound)),
             TransportError::NotFound {
                 message: "failed".to_owned()
+            }
+        );
+    }
+
+    #[test]
+    fn map_error_keeps_the_status_and_the_apple_code_of_a_rejected_write() {
+        let error = Error::Remote {
+            code: ErrorCode::NoSubscription,
+            message: "failed".to_owned(),
+            data: Some(serde_json::json!({"status": 403, "apple_code": "40300"})),
+        };
+        assert_eq!(
+            map_error(&error),
+            TransportError::Rejected {
+                status: 403,
+                apple_code: Some("40300".to_owned())
             }
         );
     }

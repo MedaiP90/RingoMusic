@@ -159,7 +159,7 @@ async fn remote_error_becomes_error_remote() {
     );
 
     match result {
-        Err(Error::Remote { code, message }) => {
+        Err(Error::Remote { code, message, .. }) => {
             assert_eq!(code, ErrorCode::NotAuthorized);
             assert_eq!(message, "not signed in");
         }

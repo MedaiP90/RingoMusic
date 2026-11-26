@@ -44,6 +44,15 @@ pub enum TransportError {
     #[error("transport is not ready")]
     NotReady,
 
+    /// The server rejected a write. The status and the Apple error code are for the log.
+    #[error("request rejected with HTTP status {status}")]
+    Rejected {
+        /// HTTP status of the response.
+        status: u16,
+        /// Error code in the body of the response, if Apple sent one.
+        apple_code: Option<String>,
+    },
+
     /// The transport has no response for the request.
     #[error("not found: {message}")]
     NotFound {

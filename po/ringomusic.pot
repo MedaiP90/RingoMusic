@@ -212,6 +212,14 @@ msgstr ""
 msgid "Welcome to RingoMusic"
 msgstr ""
 
+#: crates/ui/src/library_write.rs
+msgid "Could not change your library. Try again later."
+msgstr ""
+
+#: crates/ui/src/library_write.rs
+msgid "Sign in to change your library."
+msgstr ""
+
 #: crates/ui/src/menu.rs
 msgid "Main menu"
 msgstr ""

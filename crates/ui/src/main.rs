@@ -14,6 +14,11 @@ mod detail_pages;
 mod gate;
 mod item;
 mod item_actions;
+#[expect(
+    dead_code,
+    reason = "the library write views call the helper from the next prompts"
+)]
+mod library_write;
 mod menu;
 mod name_filter;
 mod network_banner;

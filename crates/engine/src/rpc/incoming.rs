@@ -35,6 +35,7 @@ impl Incoming {
                 outcome: Err(Error::Remote {
                     code: response.error.code,
                     message: response.error.message,
+                    data: response.error.data,
                 }),
             })
         } else {
