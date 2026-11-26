@@ -13,11 +13,14 @@ use relm4::gtk;
 use relm4::prelude::*;
 use relm4::typed_view::list::TypedListView;
 use ringo_am_api::Page;
+use ringo_am_api::models::PlaylistId;
+use ringo_am_api::write::CatalogItem;
 use ringo_core::runner::CoreHandle;
 use tokio::task::JoinHandle;
 use tracing::warn;
 
-use crate::detail::{self, PlaylistData};
+use crate::add_to_playlist::ItemMenu;
+use crate::detail::{self, PlaylistData, is_library_id};
 use crate::item::SongItem;
 use crate::item_actions::{self, SongCatalog};
 use crate::paged::{self, PageCursor};
@@ -73,6 +76,8 @@ pub struct PlaylistView {
     cursor: PageCursor,
     songs: Vec<SongItem>,
     header: DetailHeader,
+    /// The menu of the page header bar. It adds a catalog playlist to the library.
+    add_menu: ItemMenu,
     frame: DetailFrame,
     actions: PlayActions,
     list: TypedListView<SongRow, gtk::SingleSelection>,
@@ -94,7 +99,9 @@ impl SimpleComponent for PlaylistView {
 
             #[wrap(Some)]
             set_child = &adw::ToolbarView {
-                add_top_bar = &adw::HeaderBar {},
+                add_top_bar = &adw::HeaderBar {
+                    pack_end = &add_menu_widget.clone() -> gtk::MenuButton {},
+                },
 
                 #[wrap(Some)]
                 set_content = &frame_widget.clone() -> gtk::Stack {},
@@ -113,6 +120,8 @@ impl SimpleComponent for PlaylistView {
             id,
         } = init;
         let header = DetailHeader::new(ArtworkShape::Square);
+        let add_menu = ItemMenu::new();
+        let add_menu_widget = add_menu.widget().clone();
         let list = build_list(&sender);
         let scrolled = gtk::ScrolledWindow::builder()
             .hscrollbar_policy(gtk::PolicyType::Never)
@@ -149,6 +158,7 @@ impl SimpleComponent for PlaylistView {
             cursor: PageCursor::default(),
             songs: Vec::new(),
             header,
+            add_menu,
             frame,
             actions,
             list,
@@ -230,6 +240,10 @@ impl PlaylistView {
             return;
         }
         self.title.clone_from(&data.title);
+        self.add_menu.set_library_item(
+            (!is_library_id(&self.id))
+                .then(|| CatalogItem::Playlist(PlaylistId::from(self.id.clone()))),
+        );
         self.header.set_artwork(data.artwork_template.as_deref());
         self.header.set_title(&data.title);
         self.header.set_byline(&data.curator, None);

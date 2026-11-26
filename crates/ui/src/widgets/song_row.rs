@@ -15,8 +15,11 @@ use relm4::gtk::glib::{self, Propagation, Variant, VariantTy};
 use relm4::gtk::pango::EllipsizeMode;
 use relm4::gtk::prelude::*;
 use relm4::typed_view::list::RelmListItem;
+use ringo_am_api::write::CatalogItem;
 
+use crate::add_to_library;
 use crate::add_to_playlist;
+use crate::detail::is_library_id;
 use crate::item::SongItem;
 use crate::item_actions::{ADD_TO_QUEUE, OPEN_ALBUM, OPEN_ARTIST, PLAY_ITEM, PLAY_NEXT};
 use crate::name_filter::NameFilter;
@@ -30,6 +33,7 @@ const ARTWORK_SIZE: i32 = 40;
 const ROW_GROUP: &str = "row";
 const POPUP_ACTION: &str = "popup";
 const ADD_TO_PLAYLIST_ACTION: &str = "add-to-playlist";
+const ADD_TO_LIBRARY_ACTION: &str = "add-to-library";
 
 /// What a row shows before the title.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -316,6 +320,7 @@ fn connect_menu_triggers(root: &gtk::Box, menu: &gtk::PopoverMenu, more: &gtk::B
     group.add_action(&action);
     connect_more_button(root, menu, more, &point);
     group.add_action(&add_to_playlist_action(root, &point));
+    group.add_action(&add_to_library_action(root));
     root.insert_action_group(ROW_GROUP, Some(&group));
 
     // The popover is a child of the row. It must go before the row does.
@@ -375,6 +380,19 @@ fn add_to_playlist_action(root: &gtk::Box, point: &Rc<RefCell<Option<Rectangle>>
     action
 }
 
+/// Creates the row action that adds the catalog song of the ID to the library.
+fn add_to_library_action(root: &gtk::Box) -> SimpleAction {
+    let action = SimpleAction::new(ADD_TO_LIBRARY_ACTION, Some(VariantTy::STRING));
+    let row = root.downgrade();
+    action.connect_activate(move |_, parameter| {
+        let (Some(row), Some(id)) = (row.upgrade(), parameter.and_then(Variant::str)) else {
+            return;
+        };
+        add_to_library::add(&row, CatalogItem::Song(id.to_owned().into()));
+    });
+    action
+}
+
 #[expect(
     clippy::cast_possible_truncation,
     reason = "a pointer position fits in i32"
@@ -409,6 +427,14 @@ fn build_menu(item: &SongItem) -> Menu {
         &format!("{ROW_GROUP}.{ADD_TO_PLAYLIST_ACTION}"),
         Some(&id),
     ));
+    // Apple ignores a duplicate, so a catalog song always shows the item (decision L17).
+    if !is_library_id(item.id()) {
+        library.append_item(&entry(
+            &gettext("Add to Library"),
+            &format!("{ROW_GROUP}.{ADD_TO_LIBRARY_ACTION}"),
+            Some(&id),
+        ));
+    }
     let menu = Menu::new();
     menu.append_section(None, &playback);
     menu.append_section(None, &library);

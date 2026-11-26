@@ -5,6 +5,7 @@
 
 mod about;
 mod accent;
+mod add_to_library;
 mod add_to_playlist;
 mod app;
 mod artwork;

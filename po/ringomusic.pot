@@ -68,6 +68,14 @@ msgstr ""
 msgid "Yellow"
 msgstr ""
 
+#: crates/ui/src/add_to_library.rs
+msgid "Added to your library"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
+msgid "Add to Library"
+msgstr ""
+
 #: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
 msgid "Add to Playlist…"
 msgstr ""
@@ -81,7 +89,7 @@ msgstr ""
 msgid "Could not load your playlists."
 msgstr ""
 
-#: crates/ui/src/add_to_playlist.rs
+#: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
 msgid "More"
 msgstr ""
 
@@ -864,6 +872,10 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "Add songs and albums to your playlists."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Add songs, albums, and playlists to your library."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

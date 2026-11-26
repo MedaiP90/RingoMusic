@@ -1,5 +1,6 @@
 crates/ui/src/about.rs
 crates/ui/src/accent.rs
+crates/ui/src/add_to_library.rs
 crates/ui/src/add_to_playlist.rs
 crates/ui/src/app.rs
 crates/ui/src/background.rs

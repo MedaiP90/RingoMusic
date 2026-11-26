@@ -21,6 +21,7 @@ use ringo_core::update_checker::Release;
 use ringo_mpris::Callbacks;
 use tracing::{debug, warn};
 
+use crate::add_to_library;
 use crate::add_to_playlist;
 use crate::background::{self, BackgroundPlayback, CloseAction};
 use crate::detail_pages::{self, PageSources};
@@ -30,7 +31,7 @@ use crate::new_playlist;
 use crate::preferences::{Preferences, PreferencesInit};
 use crate::section::Section;
 use crate::services::AppServices;
-use crate::views::library::{LibraryInit, LibraryKind, LibraryView};
+use crate::views::library::{LibraryInit, LibraryInput, LibraryKind, LibraryView};
 use crate::views::queue::{QueueInit, QueueView};
 use crate::views::search::{SearchInit, SearchInput, SearchView};
 use crate::views::section_page;
@@ -262,8 +263,10 @@ impl SimpleComponent for App {
         ]
         .map(launch_sections);
         register_refresh(&root, sender.input_sender());
-        let library_pages =
-            LibraryKind::ALL.map(|kind| launch_library(kind, &root, &services, &catalog));
+        let mut library_senders = Vec::new();
+        let library_pages = LibraryKind::ALL
+            .map(|kind| launch_library(kind, &root, &services, &catalog, &mut library_senders));
+        add_to_library::register(&root, library_senders);
         let mut queue = QueueView::builder().launch(QueueInit {
             core: core.clone(),
             window: root.clone(),
@@ -529,6 +532,7 @@ fn launch_library(
     window: &adw::ApplicationWindow,
     services: &AppServices,
     catalog: &SongCatalog,
+    senders: &mut Vec<relm4::Sender<LibraryInput>>,
 ) -> (LibraryKind, adw::ToolbarView) {
     let mut view = LibraryView::builder().launch(LibraryInit {
         kind,
@@ -539,6 +543,7 @@ fn launch_library(
     if kind == LibraryKind::Playlists {
         new_playlist::register(window, services.clone(), view.sender().clone());
     }
+    senders.push(view.sender().clone());
     view.detach_runtime();
     (kind, page)
 }

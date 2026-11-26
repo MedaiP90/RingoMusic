@@ -6,7 +6,7 @@
 //! The popover lists the library playlists that the user can edit. It loads them each time it
 //! opens, because `/v1/me/` is never cached (decision L5).
 
-use std::cell::RefCell;
+use std::cell::{Cell, RefCell};
 use std::rc::Rc;
 use std::sync::Arc;
 
@@ -14,16 +14,17 @@ use gettextrs::gettext;
 use relm4::adw;
 use relm4::gtk;
 use relm4::gtk::gdk::Rectangle;
-use relm4::gtk::gio::{Menu, SimpleAction, SimpleActionGroup};
+use relm4::gtk::gio::{Menu, MenuItem, SimpleAction, SimpleActionGroup};
 use relm4::gtk::glib;
 use relm4::gtk::prelude::*;
 use relm4::typed_view::list::{RelmListItem, TypedListView};
 use ringo_am_api::Page;
 use ringo_am_api::endpoints;
 use ringo_am_api::models::{LibraryPlaylist, LibraryPlaylistId};
-use ringo_am_api::write::{self, Track};
+use ringo_am_api::write::{self, CatalogItem, Track};
 use tracing::warn;
 
+use crate::add_to_library;
 use crate::detail::is_library_id;
 use crate::library_write;
 use crate::name_filter::NameFilter;
@@ -53,18 +54,25 @@ const NEW_PLAYLIST_ACTION: &str = "win.new-playlist-with-songs";
 /// Name of the window action that loads an open playlist page again.
 pub const RELOAD_PLAYLIST_ACTION: &str = "win.reload-playlist";
 
-/// Name of the action group of the menu button, and of its action.
-const MENU_GROUP: &str = "playlist-menu";
+/// Name of the action group of the menu button, and of its actions.
+const MENU_GROUP: &str = "item-menu";
 const MENU_ACTION: &str = "add";
+const LIBRARY_ACTION: &str = "add-to-library";
 
 thread_local! {
     // A song row is set up without any context, so the popover gets the services here.
     static SERVICES: RefCell<Option<AppServices>> = const { RefCell::new(None) };
 }
 
-/// Sets the services that [`present`] uses. Call it once, at start-up, on the main thread.
+/// Sets the services that [`present`] and the library items use. Call it once, at start-up, on
+/// the main thread.
 pub fn install(services: AppServices) {
     SERVICES.with_borrow_mut(|installed| *installed = Some(services));
+}
+
+/// The services that [`install`] set. `None` before the start-up ends.
+pub fn services() -> Option<AppServices> {
+    SERVICES.with_borrow(Clone::clone)
 }
 
 /// Makes the tracks of songs. A library ID gives a library song. Any other ID gives a catalog
@@ -218,7 +226,7 @@ pub fn present(
     pointing_to: Option<&Rectangle>,
     song_ids: Vec<String>,
 ) {
-    let Some(services) = SERVICES.with_borrow(Clone::clone) else {
+    let Some(services) = services() else {
         warn!("the add to playlist popover has no services");
         return;
     };
@@ -369,26 +377,32 @@ fn load(picker: &Rc<Picker>, services: &AppServices) {
     });
 }
 
-/// A menu button with one item, "Add to Playlist…", for a header or a bar. Set the songs with
-/// [`Self::set_songs`]. The item is off while there are no songs.
-pub struct AddToPlaylistMenu {
+/// A menu button for a header or a bar. It has the items "Add to Playlist…" (set the songs with
+/// [`Self::set_songs`]) and "Add to Library" (set the item with [`Self::set_library_item`]).
+/// An item is hidden while it is off. The button is hidden while both are off.
+pub struct ItemMenu {
     button: gtk::MenuButton,
     action: SimpleAction,
     song_ids: Rc<RefCell<Vec<String>>>,
+    library_action: SimpleAction,
+    library_item: Rc<RefCell<Option<CatalogItem>>>,
+    /// Counts the calls of [`Self::set_library_item`]. A status result of an older call is dropped.
+    library_generation: Rc<Cell<u64>>,
 }
 
-impl AddToPlaylistMenu {
-    /// Makes the button. It has no songs yet.
+impl ItemMenu {
+    /// Makes the button. It has no songs and no library item yet, so it is hidden.
     pub fn new() -> Self {
-        let item_action = format!("{MENU_GROUP}.{MENU_ACTION}");
         let menu = Menu::new();
-        menu.append(Some(&gettext("Add to Playlist…")), Some(&item_action));
+        menu.append_item(&hidden_when_off(&gettext("Add to Playlist…"), MENU_ACTION));
+        menu.append_item(&hidden_when_off(&gettext("Add to Library"), LIBRARY_ACTION));
         let button = gtk::MenuButton::builder()
             .icon_name("view-more-symbolic")
             .tooltip_text(gettext("More"))
             .menu_model(&menu)
             .css_classes(["flat"])
             .valign(gtk::Align::Center)
+            .visible(false)
             .build();
 
         let song_ids = Rc::new(RefCell::new(Vec::new()));
@@ -400,13 +414,29 @@ impl AddToPlaylistMenu {
                 present(&button, None, ids.borrow().clone());
             }
         });
+
+        let library_item = Rc::new(RefCell::new(None));
+        let library_action = SimpleAction::new(LIBRARY_ACTION, None);
+        library_action.set_enabled(false);
+        let (weak_button, item) = (button.downgrade(), Rc::clone(&library_item));
+        library_action.connect_activate(move |_, _| {
+            let item: Option<CatalogItem> = item.borrow().clone();
+            if let (Some(button), Some(item)) = (weak_button.upgrade(), item) {
+                add_to_library::add(&button, item);
+            }
+        });
+
         let group = SimpleActionGroup::new();
         group.add_action(&action);
+        group.add_action(&library_action);
         button.insert_action_group(MENU_GROUP, Some(&group));
         Self {
             button,
             action,
             song_ids,
+            library_action,
+            library_item,
+            library_generation: Rc::new(Cell::new(0)),
         }
     }
 
@@ -419,7 +449,65 @@ impl AddToPlaylistMenu {
     pub fn set_songs(&self, song_ids: Vec<String>) {
         self.action.set_enabled(!song_ids.is_empty());
         *self.song_ids.borrow_mut() = song_ids;
+        self.refresh_button();
     }
+
+    /// Sets the catalog item that "Add to Library" adds. `None` hides the item, for an item of
+    /// the library. The item stays hidden while a live request reads if the item is already in
+    /// the library, and stays hidden if it is. After a failed request the item shows (decision
+    /// L17). The result of an older call, or of a page that is gone, is dropped.
+    pub fn set_library_item(&self, item: Option<CatalogItem>) {
+        let generation = self.library_generation.get() + 1;
+        self.library_generation.set(generation);
+        self.library_action.set_enabled(false);
+        self.refresh_button();
+        self.library_item.borrow_mut().clone_from(&item);
+        let Some(item) = item else {
+            return;
+        };
+        let (button, action) = (self.button.downgrade(), self.library_action.clone());
+        let (current, other) = (Rc::clone(&self.library_generation), self.action.clone());
+        glib::spawn_future_local(async move {
+            let in_library = add_to_library::is_in_library(item).await;
+            let Some(button) = button.upgrade() else {
+                return;
+            };
+            if current.get() != generation {
+                return;
+            }
+            action.set_enabled(!in_library);
+            button.set_visible(action.is_enabled() || other.is_enabled());
+        });
+    }
+
+    /// Sets the song of a player bar, or `None` for no song. A catalog song shows both items. The
+    /// library item shows with no status request, like a song row (decision L17): a request for
+    /// each track change would be too many.
+    pub fn set_song(&self, song_id: Option<String>) {
+        self.set_songs(song_id.iter().cloned().collect());
+        let item = song_id
+            .filter(|id| !is_library_id(id))
+            .map(|id| CatalogItem::Song(id.into()));
+        // A status request of an earlier call must not change the item now.
+        self.library_generation
+            .set(self.library_generation.get() + 1);
+        self.library_action.set_enabled(item.is_some());
+        *self.library_item.borrow_mut() = item;
+        self.refresh_button();
+    }
+
+    /// Shows the button while one of its items shows.
+    fn refresh_button(&self) {
+        self.button
+            .set_visible(self.action.is_enabled() || self.library_action.is_enabled());
+    }
+}
+
+/// An item of the menu button. It is hidden while its action is off.
+fn hidden_when_off(label: &str, action: &str) -> MenuItem {
+    let item = MenuItem::new(Some(label), Some(&format!("{MENU_GROUP}.{action}")));
+    item.set_attribute_value("hidden-when", Some(&"action-disabled".to_variant()));
+    item
 }
 
 #[cfg(test)]

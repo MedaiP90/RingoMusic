@@ -11,12 +11,14 @@ use relm4::adw;
 use relm4::adw::prelude::*;
 use relm4::gtk;
 use relm4::prelude::*;
+use ringo_am_api::models::AlbumId;
+use ringo_am_api::write::CatalogItem;
 use ringo_core::runner::CoreHandle;
 use tokio::task::JoinHandle;
 use tracing::warn;
 
-use crate::add_to_playlist::AddToPlaylistMenu;
-use crate::detail::{self, AlbumData};
+use crate::add_to_playlist::ItemMenu;
+use crate::detail::{self, AlbumData, is_library_id};
 use crate::item::SongItem;
 use crate::item_actions::{self, OPEN_ARTIST, SongCatalog};
 use crate::services::{ApiClient, AppServices};
@@ -61,8 +63,8 @@ pub struct AlbumView {
     phase: Phase,
     songs: Vec<SongItem>,
     header: DetailHeader,
-    /// The menu of the page header bar. It adds all songs of the album to a playlist.
-    add_menu: AddToPlaylistMenu,
+    /// The menu of the page header bar. It adds the album to a playlist or to the library.
+    add_menu: ItemMenu,
     frame: DetailFrame,
     actions: PlayActions,
     /// The box that holds the disc headings and the song lists.
@@ -108,7 +110,7 @@ impl SimpleComponent for AlbumView {
             id,
         } = init;
         let header = DetailHeader::new(ArtworkShape::Square);
-        let add_menu = AddToPlaylistMenu::new();
+        let add_menu = ItemMenu::new();
         let add_menu_widget = add_menu.widget().clone();
         tint::follow_viewed(header.artwork_image(), &root, &id);
         let discs = gtk::Box::new(gtk::Orientation::Vertical, 12);
@@ -194,6 +196,9 @@ impl AlbumView {
         self.catalog.remember(&self.songs);
         self.add_menu
             .set_songs(self.songs.iter().map(|song| song.id().to_owned()).collect());
+        self.add_menu.set_library_item(
+            (!is_library_id(&self.id)).then(|| CatalogItem::Album(AlbumId::from(self.id.clone()))),
+        );
         self.header.set_artwork(data.artwork_template.as_deref());
         self.header.set_title(&data.title);
         let link = data.artist_id.as_deref().map(|target| BylineLink {
