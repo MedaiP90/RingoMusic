@@ -43,6 +43,35 @@
     "auth_status"
   ],
   "$defs": {
+    "ApiWriteRequest": {
+      "description": "Params of `api.write`.",
+      "type": "object",
+      "properties": {
+        "body": {
+          "description": "JSON body, or none."
+        },
+        "method": {
+          "description": "HTTP method of the request.",
+          "$ref": "#/$defs/WriteMethod"
+        },
+        "path": {
+          "description": "API path. It starts with `/v1/me/`.",
+          "type": "string"
+        },
+        "query": {
+          "description": "Query parameters.",
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "method",
+        "path",
+        "query"
+      ]
+    },
     "AuthStatus": {
       "description": "Result of `auth.status`.",
       "type": "object",
@@ -1212,6 +1241,23 @@
           ]
         },
         {
+          "description": "Runs a write request on the Apple Music API. Returns the raw JSON response,\nor `null` for an empty response. Rust checks the request with\n[`ApiWriteRequest::validate`] before it sends it.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "api.write"
+            },
+            "params": {
+              "$ref": "#/$defs/ApiWriteRequest"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
           "description": "Asks the engine to quit.",
           "type": "object",
           "properties": {
@@ -1615,6 +1661,23 @@
           ]
         },
         {
+          "description": "Runs a write request on the Apple Music API. Returns the raw JSON response,\nor `null` for an empty response. Rust checks the request with\n[`ApiWriteRequest::validate`] before it sends it.",
+          "type": "object",
+          "properties": {
+            "method": {
+              "type": "string",
+              "const": "api.write"
+            },
+            "params": {
+              "$ref": "#/$defs/ApiWriteRequest"
+            }
+          },
+          "required": [
+            "method",
+            "params"
+          ]
+        },
+        {
           "description": "Asks the engine to quit.",
           "type": "object",
           "properties": {
@@ -1626,6 +1689,26 @@
           "required": [
             "method"
           ]
+        }
+      ]
+    },
+    "WriteMethod": {
+      "description": "HTTP method of a write request.",
+      "oneOf": [
+        {
+          "description": "Creates a resource or adds items.",
+          "type": "string",
+          "const": "POST"
+        },
+        {
+          "description": "Sets a rating.",
+          "type": "string",
+          "const": "PUT"
+        },
+        {
+          "description": "Removes a rating.",
+          "type": "string",
+          "const": "DELETE"
         }
       ]
     }

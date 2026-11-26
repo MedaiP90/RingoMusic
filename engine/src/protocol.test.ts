@@ -28,6 +28,7 @@ const requestMethods: Record<Request['method'], true> = {
   'player.setVolume': true,
   'player.setRepeat': true,
   'api.get': true,
+  'api.write': true,
   'engine.shutdown': true,
 };
 

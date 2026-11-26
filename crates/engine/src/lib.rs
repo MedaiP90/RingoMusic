@@ -54,6 +54,13 @@ pub enum Error {
         detail: String,
     },
 
+    /// Rust refused a request before it called the engine.
+    #[error("invalid request params: {detail}")]
+    InvalidParams {
+        /// What is wrong with the params.
+        detail: String,
+    },
+
     /// The engine answered a request with an error.
     #[error("engine returned error {code:?}: {message}")]
     Remote {

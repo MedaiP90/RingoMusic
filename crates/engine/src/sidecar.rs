@@ -10,7 +10,7 @@ use tokio::sync::{broadcast, mpsc, oneshot, watch};
 use tokio::task::JoinHandle;
 use tracing::warn;
 
-use crate::protocol::{AuthStatus, QueueKind, RepeatMode, ToEngine};
+use crate::protocol::{ApiWriteRequest, AuthStatus, QueueKind, RepeatMode, ToEngine};
 use crate::supervisor::{self, Launcher, Outputs, Supervisor, SystemLauncher};
 use crate::{EngineConfig, EngineEvent, Error, ItemId, PlaybackEngine, Result, RpcConnection};
 
@@ -92,6 +92,19 @@ impl SidecarEngine {
             query,
         };
         self.call(request, CALL_TIMEOUT).await
+    }
+
+    /// Runs a write request on the Apple Music API. Returns the raw JSON response,
+    /// or `null` for an empty response.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::InvalidParams`], without a call to the engine, if the
+    /// request is not allowed (see [`ApiWriteRequest::validate`]). Also returns
+    /// an error if the engine is not ready, does not answer, or the API call fails.
+    pub async fn api_write(&self, request: ApiWriteRequest) -> Result<Value> {
+        request.validate()?;
+        self.call(ToEngine::ApiWrite(request), CALL_TIMEOUT).await
     }
 
     async fn call(&self, request: ToEngine, timeout: Duration) -> Result<Value> {

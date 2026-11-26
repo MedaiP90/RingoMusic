@@ -202,7 +202,7 @@ async fn report_wrong_protocol(socket_path: &std::path::Path) {
 }
 
 fn hello() -> Value {
-    hello_with_protocol(1)
+    hello_with_protocol(PROTOCOL_VERSION)
 }
 
 fn hello_with_protocol(proto: u32) -> Value {

@@ -278,6 +278,10 @@ export type Request = {
       };
     }
   | {
+      method: "api.write";
+      params: ApiWriteRequest;
+    }
+  | {
       method: "engine.shutdown";
     }
 );
@@ -552,6 +556,10 @@ export interface ProtocolSchema {
         };
       }
     | {
+        method: "api.write";
+        params: ApiWriteRequest;
+      }
+    | {
         method: "engine.shutdown";
       };
 }
@@ -598,6 +606,31 @@ export interface ErrorObject {
    * Error message.
    */
   message: string;
+}
+/**
+ * Params of `api.write`.
+ */
+export interface ApiWriteRequest {
+  /**
+   * JSON body, or none.
+   */
+  body?: {
+    [k: string]: unknown;
+  };
+  /**
+   * HTTP method of the request.
+   */
+  method: "POST" | "PUT" | "DELETE";
+  /**
+   * API path. It starts with `/v1/me/`.
+   */
+  path: string;
+  /**
+   * Query parameters.
+   */
+  query: {
+    [k: string]: string;
+  };
 }
 /**
  * Success answer envelope.

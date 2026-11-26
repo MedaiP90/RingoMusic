@@ -32,7 +32,7 @@ The protocol does not use stdio. Chromium writes to stdout and stderr.
 The engine sends `engine.hello` first. Rust does not send a request before it gets this message.
 
 ```json
-{"jsonrpc":"2.0","method":"engine.hello","params":{"proto":1,"engine_version":"0.1.0","electron":"41.0.0"}}
+{"jsonrpc":"2.0","method":"engine.hello","params":{"proto":2,"engine_version":"0.1.0","electron":"41.0.0"}}
 ```
 
 If `proto` is not `PROTOCOL_VERSION` (currently `1`), Rust stops the engine and shows an error. Any change that breaks compatibility increases the version.
@@ -64,7 +64,12 @@ A notification has no `id` and gets no response.
 | `player.setVolume` | `{ volume }` (0.0 to 1.0) | `null` |
 | `player.setRepeat` | `{ mode }` (`none`, `one`, `all`) | `null` |
 | `api.get` | `{ path, query }` | Raw JSON from `api.music()` |
+| `api.write` | `{ method, path, query, body? }` | Raw JSON from the response, or `null` for an empty response. `method` is `POST`, `PUT`, or `DELETE`. |
 | `engine.shutdown` | none | `null`. The engine answers, then quits. |
+
+**`api.write` validation:** Rust checks each request before it calls the engine, and fails with a local `InvalidParams` error, without a call to the engine, if a check fails. The path must start with `/v1/me/` and must have no empty, `.`, or `..` segment. `DELETE` is allowed only for `/v1/me/ratings/{type}/{id}`, where `{type}` is `songs`, `albums`, `playlists`, `music-videos`, `stations`, `library-songs`, `library-albums`, `library-playlists`, or `library-music-videos`. The permitted patterns are in `plan/04_library-management/apple-music-writes.md`. The engine handler is not part of version 2 yet: until it exists, the engine answers `method_not_found`.
+
+**Version 2:** `PROTOCOL_VERSION` changed from 1 to 2 for the new method `api.write`. An engine and a client with different versions do not connect.
 
 **Sign-in note:** MusicKit `authorize()` does not work on music.apple.com. The site resets the token from its own storage right after the pop-up closes (status 3, then 0). Sign-in through the site's own button stays authorized. Checked with a real account. The `/login` route opens the same dialog as the button. Checked with a real account: the login stays after a restart, and a sign-in after a sign-out opens the dialog again. A MusicKit session that starts on `/login` plays only 90-second previews until the page loads again. For this reason the engine loads the home page after the login.
 

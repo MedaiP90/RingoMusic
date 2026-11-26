@@ -19,10 +19,10 @@ pub use envelope::{
 pub use error_code::{ErrorCode, UnknownErrorCode};
 pub use from_engine::{FromEngine, LogLevel, PlaybackState};
 pub use schema::ProtocolSchema;
-pub use to_engine::{AuthStatus, QueueKind, RepeatMode, ToEngine};
+pub use to_engine::{ApiWriteRequest, AuthStatus, QueueKind, RepeatMode, ToEngine, WriteMethod};
 
 /// Protocol version that the engine sends in `engine.hello`.
-pub const PROTOCOL_VERSION: u32 = 1;
+pub const PROTOCOL_VERSION: u32 = 2;
 
 #[cfg(test)]
 mod tests;
