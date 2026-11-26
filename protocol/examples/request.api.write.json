@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 14,
+  "method": "api.write",
+  "params": {
+    "method": "POST",
+    "path": "/v1/me/library",
+    "query": {
+      "ids[albums]": "1577502911"
+    }
+  }
+}

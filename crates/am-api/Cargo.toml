@@ -9,6 +9,10 @@ rust-version.workspace = true
 [lints]
 workspace = true
 
+[features]
+# Write functions. Only the UI crate enables them (decision L4).
+write = []
+
 [dependencies]
 async-trait.workspace = true
 serde.workspace = true

@@ -65,6 +65,9 @@ pub struct AlbumData {
     pub year: Option<String>,
     pub artwork_template: Option<String>,
     pub tracks: Vec<Track>,
+    /// ID of the catalog album, for the favorite star. A library album has one only if Apple
+    /// links it.
+    pub catalog_id: Option<String>,
 }
 
 impl AlbumData {
@@ -87,6 +90,7 @@ impl AlbumData {
             artwork_template: attributes.artwork.as_ref().map(|art| art.url.clone()),
             tracks: tracks_of(tracks, album.id.as_str(), artist_id.as_deref()),
             artist_id,
+            catalog_id: Some(album.id.as_str().to_owned()),
         }
     }
 
@@ -109,6 +113,10 @@ impl AlbumData {
             artwork_template: attributes.artwork.as_ref().map(|art| art.url.clone()),
             tracks: tracks_of(tracks, album.id.as_str(), artist_id.as_deref()),
             artist_id,
+            catalog_id: album
+                .relationships
+                .as_ref()
+                .and_then(|links| first_id(links.catalog.as_ref())),
         }
     }
 
@@ -320,6 +328,9 @@ pub struct PlaylistData {
     pub artwork_template: Option<String>,
     /// The first songs. Later songs come from [`load_playlist_songs`].
     pub first_page: Page<SongItem>,
+    /// ID of the catalog playlist, for the favorite star. A library playlist has one only if
+    /// Apple links it.
+    pub catalog_id: Option<String>,
 }
 
 impl PlaylistData {
@@ -335,6 +346,7 @@ impl PlaylistData {
             description: description_of(attributes.description.as_ref()),
             artwork_template: attributes.artwork.as_ref().map(|art| art.url.clone()),
             first_page: songs_page(tracks),
+            catalog_id: Some(playlist.id.as_str().to_owned()),
         }
     }
 
@@ -350,6 +362,10 @@ impl PlaylistData {
             description: description_of(attributes.description.as_ref()),
             artwork_template: attributes.artwork.as_ref().map(|art| art.url.clone()),
             first_page: songs_page(tracks),
+            catalog_id: playlist
+                .relationships
+                .as_ref()
+                .and_then(|links| first_id(links.catalog.as_ref())),
         }
     }
 }
@@ -437,19 +453,28 @@ async fn load_library_artist(api: &ApiClient, id: &str) -> ApiResult<ArtistData>
 ///
 /// Returns an error if the request fails or the song does not exist.
 pub async fn load_song_links(api: &ApiClient, storefront: &str, id: &str) -> ApiResult<SongLinks> {
-    let (albums, artists) = if is_library_id(id) {
+    let (links, catalog_id) = if is_library_id(id) {
         let song = endpoints::library_song(api, &LibrarySongId::from(id.to_owned())).await?;
-        song.relationships
-            .map(|links| (links.albums, links.artists))
+        let catalog_id = song
+            .attributes
+            .play_params
+            .and_then(|params| params.catalog_id);
+        let links = song
+            .relationships
+            .map(|links| (links.albums, links.artists));
+        (links, catalog_id)
     } else {
         let song = endpoints::song(api, storefront, &SongId::from(id.to_owned())).await?;
-        song.relationships
-            .map(|links| (links.albums, links.artists))
-    }
-    .unwrap_or_default();
+        let links = song
+            .relationships
+            .map(|links| (links.albums, links.artists));
+        (links, Some(id.to_owned()))
+    };
+    let (albums, artists) = links.unwrap_or_default();
     Ok(SongLinks {
         album_id: first_id(albums.as_ref()),
         artist_id: first_id(artists.as_ref()),
+        catalog_id,
     })
 }
 

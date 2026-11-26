@@ -350,7 +350,7 @@ async fn library_songs_sends_the_offset() {
 async fn library_playlist_returns_the_playlist_with_tracks() {
     let transport = FixtureTransport::new().with(
         "/v1/me/library/playlists/p.example1",
-        &[("include", "tracks")],
+        &[("include", "tracks,catalog")],
         "library_playlist.json",
     );
 
@@ -369,7 +369,7 @@ async fn library_playlist_returns_the_playlist_with_tracks() {
 async fn library_playlist_returns_empty_response_without_data() {
     let transport = FixtureTransport::new().with(
         "/v1/me/library/playlists/p.example1",
-        &[("include", "tracks")],
+        &[("include", "tracks,catalog")],
         "empty_data.json",
     );
 
@@ -407,7 +407,7 @@ async fn library_playlist_tracks_returns_a_page_with_the_next_offset() {
 async fn library_album_returns_the_album_with_tracks() {
     let transport = FixtureTransport::new().with(
         "/v1/me/library/albums/l.example1",
-        &[("include", "tracks,artists")],
+        &[("include", "tracks,artists,catalog")],
         "library_album.json",
     );
 

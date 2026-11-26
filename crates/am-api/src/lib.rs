@@ -5,6 +5,8 @@
 
 pub mod endpoints;
 pub mod models;
+#[cfg(feature = "write")]
+pub mod write;
 
 mod artwork;
 mod error;
@@ -14,6 +16,6 @@ mod transport;
 
 pub use artwork::artwork_url;
 pub use error::{Error, Result, TransportError};
-pub use fixture_transport::FixtureTransport;
+pub use fixture_transport::{FixtureTransport, RecordedWrite};
 pub use page::{PAGE_SIZE, Page};
-pub use transport::ApiTransport;
+pub use transport::{ApiTransport, WriteMethod, WriteRequest};

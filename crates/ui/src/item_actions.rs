@@ -12,6 +12,7 @@ use relm4::adw;
 use relm4::gtk::gio::SimpleAction;
 use relm4::gtk::glib::{Variant, VariantTy};
 use relm4::gtk::prelude::*;
+use ringo_am_api::write::CatalogItem;
 use ringo_core::queue::QueueItem;
 use ringo_core::runner::CoreHandle;
 use ringo_core::state::Message;
@@ -40,9 +41,15 @@ pub struct SongCatalog {
 
 /// The album and the artist of a song.
 #[derive(Clone, Debug, Default, Eq, PartialEq)]
+#[expect(
+    clippy::struct_field_names,
+    reason = "each field is the ID of a linked item"
+)]
 pub struct SongLinks {
     pub album_id: Option<String>,
     pub artist_id: Option<String>,
+    /// ID of the catalog song, for a favorite.
+    pub catalog_id: Option<String>,
 }
 
 /// What the catalog keeps of a song.
@@ -51,6 +58,7 @@ struct KnownSong {
     queue: QueueItem,
     album_id: Option<String>,
     artist_id: Option<String>,
+    catalog_id: Option<String>,
 }
 
 impl SongCatalog {
@@ -62,6 +70,7 @@ impl SongCatalog {
                 queue: song.queue.clone(),
                 album_id: song.album_id.clone(),
                 artist_id: song.artist_id.clone(),
+                catalog_id: song.catalog_id.clone(),
             };
             known.insert(song.id().to_owned(), entry);
         }
@@ -69,6 +78,18 @@ impl SongCatalog {
 
     fn find(&self, id: &str) -> Option<QueueItem> {
         self.songs.borrow().get(id).map(|known| known.queue.clone())
+    }
+
+    /// The catalog song of a song that a view showed, for a favorite. The player knows only the
+    /// ID that it plays, which can be a library ID.
+    pub fn catalog_item(&self, id: &str) -> Option<CatalogItem> {
+        let from_view = self
+            .songs
+            .borrow()
+            .get(id)
+            .and_then(|known| known.catalog_id.clone());
+        let catalog_id = from_view.or_else(|| self.links.borrow().get(id)?.catalog_id.clone())?;
+        Some(CatalogItem::Song(catalog_id.into()))
     }
 
     /// Remembers the links that the API gave for the song of `id`.
@@ -235,6 +256,7 @@ mod tests {
             explicit: false,
             album_id: None,
             artist_id: None,
+            catalog_id: None,
         }
     }
 

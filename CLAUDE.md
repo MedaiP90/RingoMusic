@@ -5,6 +5,7 @@
 - Ask me whenever the situation involves a key implementation decision.
 - DO NOT commit code by yourself in any case (unless explicitly authorized).
 - Always update the `<description>` of the newest `<release>` in `data/io.github.MedaiP90.RingoMusic.metainfo.xml` so it holds the right release notes for the changes. The release workflow publishes this text (`scripts/release-notes.py`). Use only `<p>` and `<ul><li>` elements.
+- Run `po/update-pot.sh` whenever you add or change a translatable string: `gettext()` in Rust code, or text in the metainfo or desktop file (release notes too). Commit the updated `po/ringomusic.pot` with the change. Add new Rust files with translatable strings to `po/POTFILES.in`.
 
 # Plugins
 

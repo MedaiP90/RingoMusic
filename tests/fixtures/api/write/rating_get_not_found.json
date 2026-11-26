@@ -1,0 +1,21 @@
+{
+  "request": {
+    "method": "GET",
+    "path": "/v1/me/ratings/songs/724515236",
+    "body": null
+  },
+  "response": {
+    "status": 404,
+    "body": {
+      "errors": [
+        {
+          "id": "TESTERRORID0000000000000003",
+          "title": "Resource Not Found",
+          "detail": "Resource with requested id was not found",
+          "status": "404",
+          "code": "40400"
+        }
+      ]
+    }
+  }
+}

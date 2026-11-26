@@ -3,6 +3,8 @@
 
 use std::collections::BTreeMap;
 
+use crate::{Error, Result};
+
 /// Method that Rust sends to the engine, with typed params.
 #[derive(Clone, Debug, PartialEq, schemars::JsonSchema, serde::Deserialize, serde::Serialize)]
 #[serde(tag = "method", content = "params")]
@@ -89,6 +91,11 @@ pub enum ToEngine {
         /// Query parameters.
         query: BTreeMap<String, String>,
     },
+    /// Runs a write request on the Apple Music API. Returns the raw JSON response,
+    /// or `null` for an empty response. Rust checks the request with
+    /// [`ApiWriteRequest::validate`] before it sends it.
+    #[serde(rename = "api.write")]
+    ApiWrite(ApiWriteRequest),
     /// Asks the engine to quit.
     #[serde(rename = "engine.shutdown")]
     EngineShutdown,
@@ -127,4 +134,156 @@ pub struct AuthStatus {
     pub authorized: bool,
     /// Storefront ID, for example `us`.
     pub storefront: String,
+}
+
+/// Documented `DELETE` path patterns. A pattern is `(prefix, types)`: the path is
+/// `prefix`, one of `types`, and an ID. Source:
+/// `plan/04_library-management/apple-music-writes.md` (the ratings table).
+const DELETE_PATTERNS: &[(&str, &[&str])] = &[(
+    "/v1/me/ratings/",
+    &[
+        "songs",
+        "albums",
+        "playlists",
+        "music-videos",
+        "stations",
+        "library-songs",
+        "library-albums",
+        "library-playlists",
+        "library-music-videos",
+    ],
+)];
+
+/// Path prefix that every write request must have.
+const WRITE_PREFIX: &str = "/v1/me/";
+
+/// HTTP method of a write request.
+#[derive(
+    Copy, Clone, Debug, Eq, PartialEq, schemars::JsonSchema, serde::Deserialize, serde::Serialize,
+)]
+pub enum WriteMethod {
+    /// Creates a resource or adds items.
+    #[serde(rename = "POST")]
+    Post,
+    /// Sets a rating.
+    #[serde(rename = "PUT")]
+    Put,
+    /// Removes a rating.
+    #[serde(rename = "DELETE")]
+    Delete,
+}
+
+/// Params of `api.write`.
+#[derive(Clone, Debug, PartialEq, schemars::JsonSchema, serde::Deserialize, serde::Serialize)]
+pub struct ApiWriteRequest {
+    /// HTTP method of the request.
+    pub method: WriteMethod,
+    /// API path. It starts with `/v1/me/`.
+    pub path: String,
+    /// Query parameters.
+    pub query: BTreeMap<String, String>,
+    /// JSON body, or none.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub body: Option<serde_json::Value>,
+}
+
+impl ApiWriteRequest {
+    /// Checks the request before it goes to the engine.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`Error::InvalidParams`] if the path is not under `/v1/me/`,
+    /// if it has a `.` or `..` segment, or if the method is `DELETE` and the
+    /// path is not a documented delete path.
+    pub fn validate(&self) -> Result<()> {
+        let invalid = |detail: &str| Error::InvalidParams {
+            detail: detail.to_owned(),
+        };
+        let Some(rest) = self.path.strip_prefix(WRITE_PREFIX) else {
+            return Err(invalid("api.write path must start with /v1/me/"));
+        };
+        if rest.is_empty() || rest.split('/').any(|part| matches!(part, "" | "." | "..")) {
+            return Err(invalid("api.write path has an empty or relative segment"));
+        }
+        if self.method == WriteMethod::Delete && !is_documented_delete(&self.path) {
+            return Err(invalid("api.write DELETE is not allowed for this path"));
+        }
+        Ok(())
+    }
+}
+
+/// Returns whether `path` matches a pattern of [`DELETE_PATTERNS`].
+fn is_documented_delete(path: &str) -> bool {
+    DELETE_PATTERNS.iter().any(|(prefix, types)| {
+        path.strip_prefix(prefix)
+            .and_then(|rest| rest.split_once('/'))
+            .is_some_and(|(kind, id)| types.contains(&kind) && !id.contains('/'))
+    })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn request(method: WriteMethod, path: &str) -> ApiWriteRequest {
+        ApiWriteRequest {
+            method,
+            path: path.to_owned(),
+            query: BTreeMap::new(),
+            body: None,
+        }
+    }
+
+    fn is_invalid_params(result: &Result<()>) -> bool {
+        matches!(*result, Err(Error::InvalidParams { .. }))
+    }
+
+    #[test]
+    fn validate_accepts_post_on_a_me_path() {
+        assert!(
+            request(WriteMethod::Post, "/v1/me/library")
+                .validate()
+                .is_ok()
+        );
+    }
+
+    #[test]
+    fn validate_accepts_put_on_a_rating_path() {
+        let put = request(WriteMethod::Put, "/v1/me/ratings/songs/123");
+        assert!(put.validate().is_ok());
+    }
+
+    #[test]
+    fn validate_accepts_delete_on_a_rating_path() {
+        let delete = request(WriteMethod::Delete, "/v1/me/ratings/library-albums/l.abc");
+        assert!(delete.validate().is_ok());
+    }
+
+    #[test]
+    fn validate_rejects_a_path_outside_me() {
+        let result = request(WriteMethod::Post, "/v1/catalog/us/songs").validate();
+        assert!(is_invalid_params(&result));
+        assert!(is_invalid_params(
+            &request(WriteMethod::Post, "/v1/me").validate()
+        ));
+    }
+
+    #[test]
+    fn validate_rejects_a_relative_segment() {
+        let result = request(WriteMethod::Post, "/v1/me/../catalog/us").validate();
+        assert!(is_invalid_params(&result));
+    }
+
+    #[test]
+    fn validate_rejects_delete_on_an_undocumented_path() {
+        for path in [
+            "/v1/me/library/playlists/p.1",
+            "/v1/me/ratings/artists/1",
+            "/v1/me/ratings/songs",
+            "/v1/me/ratings/songs/1/extra",
+        ] {
+            let result = request(WriteMethod::Delete, path).validate();
+            assert!(is_invalid_params(&result), "{path}");
+        }
+    }
 }

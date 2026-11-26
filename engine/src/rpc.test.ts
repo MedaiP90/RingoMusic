@@ -9,7 +9,7 @@ import path from 'node:path';
 import { test } from 'node:test';
 
 import { LineFramer } from './framer.ts';
-import { ErrorCode, RpcClient, RpcError } from './rpc.ts';
+import { ErrorCode, PROTOCOL_VERSION, RpcClient, RpcError } from './rpc.ts';
 
 interface Harness {
   client: RpcClient;
@@ -71,7 +71,7 @@ void test('rpc / after connect / should send engine.hello as the first line', as
   assert.deepEqual(first, {
     jsonrpc: '2.0',
     method: 'engine.hello',
-    params: { proto: 1, engine_version: '1.2.3', electron: '9.9.9' },
+    params: { proto: PROTOCOL_VERSION, engine_version: '1.2.3', electron: '9.9.9' },
   });
   client.close();
   server.close();

@@ -9,7 +9,7 @@ use tokio::net::UnixStream;
 use tokio::net::unix::{OwnedReadHalf, OwnedWriteHalf};
 
 use super::RpcConnection;
-use crate::protocol::{ErrorCode, FromEngine, PlaybackState, ToEngine};
+use crate::protocol::{ErrorCode, FromEngine, PROTOCOL_VERSION, PlaybackState, ToEngine};
 use crate::{Error, Result};
 
 const CALL_TIMEOUT: Duration = Duration::from_secs(5);
@@ -61,7 +61,7 @@ fn hello(proto: u32) -> Value {
 
 async fn connect() -> (RpcConnection, FakeEngine) {
     let (client, mut engine) = FakeEngine::pair();
-    engine.send_hello(1).await;
+    engine.send_hello(PROTOCOL_VERSION).await;
     let connection = RpcConnection::handshake(client)
         .await
         .expect("handshake succeeds");
@@ -75,16 +75,17 @@ async fn handshake_succeeds_for_matching_protocol() {
 
 #[tokio::test]
 async fn handshake_rejects_other_protocol_version() {
+    const WRONG_VERSION: u32 = PROTOCOL_VERSION + 1;
     let (client, mut engine) = FakeEngine::pair();
-    engine.send_hello(2).await;
+    engine.send_hello(WRONG_VERSION).await;
 
     let result = RpcConnection::handshake(client).await;
 
     assert!(matches!(
         result,
         Err(Error::ProtocolMismatch {
-            expected: 1,
-            actual: 2
+            expected: PROTOCOL_VERSION,
+            actual: WRONG_VERSION
         })
     ));
 }
@@ -158,7 +159,7 @@ async fn remote_error_becomes_error_remote() {
     );
 
     match result {
-        Err(Error::Remote { code, message }) => {
+        Err(Error::Remote { code, message, .. }) => {
             assert_eq!(code, ErrorCode::NotAuthorized);
             assert_eq!(message, "not signed in");
         }

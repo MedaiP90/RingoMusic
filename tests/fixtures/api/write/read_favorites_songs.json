@@ -1,0 +1,6 @@
+{
+  "data": [
+    { "id": "724515236", "type": "songs", "attributes": { "inFavorites": true } },
+    { "id": "724515237", "type": "songs", "attributes": { "inFavorites": false } }
+  ]
+}

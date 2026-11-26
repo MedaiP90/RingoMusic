@@ -21,6 +21,7 @@ export const PAGE_METHODS = [
   'player.setVolume',
   'player.setRepeat',
   'api.get',
+  'api.write',
 ] as const satisfies readonly Request['method'][];
 
 export type PageMethod = (typeof PAGE_METHODS)[number];

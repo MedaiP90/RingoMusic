@@ -22,7 +22,7 @@ use crate::services::AppServices;
 use crate::views::album::{AlbumInit, AlbumView};
 use crate::views::artist::{ArtistInit, ArtistView};
 use crate::views::more::{MoreInit, MoreKind, MoreView};
-use crate::views::playlist::{PlaylistInit, PlaylistView};
+use crate::views::playlist::{PlaylistInit, PlaylistInput, PlaylistView};
 use crate::views::search::{Scope, SearchSection};
 
 /// What the pages need to open.
@@ -40,6 +40,8 @@ pub struct PageSources {
 struct OpenPage {
     page: adw::NavigationPage,
     _component: Box<dyn Any>,
+    /// The ID of the playlist and the input of its page, if the page shows a playlist.
+    playlist: Option<(String, relm4::Sender<PlaylistInput>)>,
 }
 
 /// Opens the detail pages. Clones share the list of open pages.
@@ -51,6 +53,7 @@ struct Opener {
 
 /// Adds the actions `win.open-album`, `win.open-artist`, and
 /// `win.open-playlist` to `window`. Each takes the ID of the item. Also adds
+/// `win.reload-playlist`, which loads the open pages of a playlist again, and
 /// the actions that open all items of an artist list or of a search section.
 pub fn register(window: &adw::ApplicationWindow, sources: PageSources) {
     let opener = Opener {
@@ -73,6 +76,14 @@ pub fn register(window: &adw::ApplicationWindow, sources: PageSources) {
         });
         window.add_action(&action);
     }
+    let reload = item_actions::item_action("reload-playlist");
+    let reloader = opener.clone();
+    reload.connect_activate(move |_, parameter| {
+        if let Some(id) = parameter.and_then(Variant::str) {
+            reloader.reload_playlist(id);
+        }
+    });
+    window.add_action(&reload);
     let tile_pages = ArtistList::ALL.into_iter().map(|list| {
         (
             item_actions::open_artist_list_name(list),
@@ -153,6 +164,7 @@ impl Opener {
         let open_page = OpenPage {
             page: view.widget().clone(),
             _component: Box::new(view),
+            playlist: None,
         };
         navigation.push(&open_page.page);
         self.open_pages.borrow_mut().push(open_page);
@@ -171,6 +183,7 @@ impl Opener {
                 OpenPage {
                     page: view.widget().clone(),
                     _component: Box::new(view),
+                    playlist: None,
                 }
             }
             TileKind::Artist => {
@@ -182,18 +195,31 @@ impl Opener {
                 OpenPage {
                     page: view.widget().clone(),
                     _component: Box::new(view),
+                    playlist: None,
                 }
             }
             TileKind::Playlist => {
                 let view = PlaylistView::builder().launch(PlaylistInit {
                     services,
                     catalog,
-                    id,
+                    id: id.clone(),
                 });
                 OpenPage {
                     page: view.widget().clone(),
+                    playlist: Some((id, view.sender().clone())),
                     _component: Box::new(view),
                 }
+            }
+        }
+    }
+
+    /// Loads the open pages of the library playlist `id` again.
+    fn reload_playlist(&self, id: &str) {
+        for open in self.open_pages.borrow().iter() {
+            if let Some((page_id, input)) = &open.playlist
+                && page_id == id
+            {
+                input.emit(PlaylistInput::Retry);
             }
         }
     }

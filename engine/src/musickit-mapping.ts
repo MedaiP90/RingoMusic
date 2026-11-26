@@ -3,6 +3,7 @@
 
 // Pure mapping from MusicKit values to protocol values. It has no page access.
 
+import { InvalidParamsError, WriteHttpError } from './api-write.ts';
 import { ErrorCode } from './error-code.ts';
 import type { Notification } from './protocol.ts';
 
@@ -91,11 +92,14 @@ export function mapRepeatMode(mode: RepeatMode): number {
 export interface MappedError {
   code: number;
   message: string;
+  // HTTP status and Apple error code of a failed write, for the log.
+  data?: { status: number; apple_code?: string };
 }
 
 const CODE_BY_HTTP_STATUS: Record<number, number> = {
   401: ErrorCode.NotAuthorized,
   403: ErrorCode.NoSubscription,
+  404: ErrorCode.NotFound,
 };
 
 function readStatus(error: unknown): number | undefined {
@@ -109,9 +113,19 @@ function readMessage(error: unknown): string {
   return typeof message === 'string' ? message : String(error);
 }
 
-// Maps a MusicKit failure to a protocol error. HTTP 401 and 403 have their own codes.
+// Maps a MusicKit failure to a protocol error. HTTP 401, 403, and 404 have their own codes.
 export function mapError(error: unknown): MappedError {
+  if (error instanceof InvalidParamsError) {
+    return { code: ErrorCode.InvalidParams, message: error.message };
+  }
   const status = readStatus(error);
   const code = (status === undefined ? undefined : CODE_BY_HTTP_STATUS[status]) ?? ErrorCode.MusicKitError;
-  return { code, message: readMessage(error) };
+  const mapped: MappedError = { code, message: readMessage(error) };
+  if (error instanceof WriteHttpError) {
+    mapped.data = { status: error.status };
+    if (error.appleCode !== undefined) {
+      mapped.data.apple_code = error.appleCode;
+    }
+  }
+  return mapped;
 }

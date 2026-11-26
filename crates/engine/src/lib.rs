@@ -6,6 +6,7 @@
 use std::io;
 
 use protocol::ErrorCode;
+use serde_json::Value;
 
 pub mod protocol;
 pub mod rpc;
@@ -54,6 +55,13 @@ pub enum Error {
         detail: String,
     },
 
+    /// Rust refused a request before it called the engine.
+    #[error("invalid request params: {detail}")]
+    InvalidParams {
+        /// What is wrong with the params.
+        detail: String,
+    },
+
     /// The engine answered a request with an error.
     #[error("engine returned error {code:?}: {message}")]
     Remote {
@@ -61,6 +69,8 @@ pub enum Error {
         code: ErrorCode,
         /// Error message of the engine.
         message: String,
+        /// Extra data of the error, for example the HTTP status of a write.
+        data: Option<Value>,
     },
 
     /// The engine did not answer a request in time.

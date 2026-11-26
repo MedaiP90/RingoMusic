@@ -56,6 +56,21 @@ Copyright (C) 2026 RingoMusic contributors
     <control>pointing</control>
   </recommends>
   <releases>
+    <release version="1.2.0" date="2026-11-26">
+      <description>
+        <p>This release adds library management: create playlists, add songs to playlists and to your library, and mark favorites and dislikes.</p>
+        <ul>
+          <li>Create playlists in your library.</li>
+          <li>Add songs and albums to your playlists.</li>
+          <li>Add songs, albums, and playlists to your library.</li>
+          <li>Add songs, albums, artists, and playlists to your favorites, and remove them again, with the star button. In a song list, the star shows before the duration: always for a favorite song, and when the pointer is over the row for other songs.</li>
+          <li>Dislike songs. A disliked song shows dimmed in song lists, also after a restart.</li>
+          <li>A message tells which library functions are only available in Apple's apps. The Account page in Preferences shows it again.</li>
+          <li>The New page has a calendar icon, so it no longer looks like the favorites star.</li>
+          <li>Fix: after a restart, the album and artist buttons of the player bar did not open their pages until a new song played.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.1.1" date="2026-11-25">
       <description>
         <ul>

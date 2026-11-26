@@ -5,18 +5,25 @@
 
 mod about;
 mod accent;
+mod add_to_library;
+mod add_to_playlist;
 mod app;
 mod artwork;
 mod background;
 mod debug_play;
 mod detail;
 mod detail_pages;
+mod disclaimer;
+mod dislike;
+mod favorite;
 mod gate;
 mod item;
 mod item_actions;
+mod library_write;
 mod menu;
 mod name_filter;
 mod network_banner;
+mod new_playlist;
 mod notification;
 mod paged;
 mod playback_actions;

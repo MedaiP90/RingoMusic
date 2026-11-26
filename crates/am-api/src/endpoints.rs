@@ -346,7 +346,7 @@ pub async fn library_album(
     id: &LibraryAlbumId,
 ) -> Result<LibraryAlbum> {
     let path = library_path("albums", id.as_str())?;
-    first(fetch(transport, &path, &[("include", "tracks,artists")]).await?)
+    first(fetch(transport, &path, &[("include", "tracks,artists,catalog")]).await?)
 }
 
 /// Gets one page of the albums of a library artist.
@@ -377,7 +377,7 @@ pub async fn library_playlist(
     id: &LibraryPlaylistId,
 ) -> Result<LibraryPlaylist> {
     let path = library_playlist_path(id)?;
-    first(fetch(transport, &path, &[("include", "tracks")]).await?)
+    first(fetch(transport, &path, &[("include", "tracks,catalog")]).await?)
 }
 
 /// Gets one page of the tracks of a library playlist.
@@ -501,11 +501,11 @@ async fn fetch_page_with<T: DeserializeOwned>(
 }
 
 /// Takes the one resource of a detail response.
-fn first<T>(page: ApiPage<T>) -> Result<T> {
+pub(crate) fn first<T>(page: ApiPage<T>) -> Result<T> {
     page.data.into_iter().next().ok_or(Error::EmptyResponse)
 }
 
-fn catalog_path(storefront: &str, kind: &str, id: &str) -> Result<String> {
+pub(crate) fn catalog_path(storefront: &str, kind: &str, id: &str) -> Result<String> {
     let storefront = segment("storefront", storefront)?;
     let id = segment("ID", id)?;
     Ok(format!("/v1/catalog/{storefront}/{kind}/{id}"))
@@ -527,7 +527,7 @@ fn library_path(kind: &str, id: &str) -> Result<String> {
 
 /// Checks a value that goes into the path. It must not be empty or change the
 /// structure of the path.
-fn segment<'a>(name: &str, value: &'a str) -> Result<&'a str> {
+pub(crate) fn segment<'a>(name: &str, value: &'a str) -> Result<&'a str> {
     if value.is_empty() || value.contains(['/', '?', '#']) {
         return Err(invalid(format!(
             "the {name} is empty or has a bad character"
@@ -554,6 +554,6 @@ fn join_types<'a>(types: impl Iterator<Item = &'a str>) -> Result<String> {
     Ok(types.join(","))
 }
 
-fn invalid(message: String) -> Error {
+pub(crate) fn invalid(message: String) -> Error {
     Error::InvalidInput { message }
 }

@@ -68,6 +68,47 @@ msgstr ""
 msgid "Yellow"
 msgstr ""
 
+#: crates/ui/src/add_to_library.rs
+msgid "Added to your library"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
+msgid "Add to Library"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
+msgid "Add to Playlist…"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs
+#, rust-format
+msgid "Added to {name}"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs
+msgid "Could not load your playlists."
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
+msgid "Dislike"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
+msgid "More"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs crates/ui/src/views/library.rs
+msgid "New Playlist…"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs
+msgid "Search playlists"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs
+msgid "You have no playlist that you can add songs to."
+msgstr ""
+
 #: crates/ui/src/app.rs
 msgid "Sign in failed. Try again."
 msgstr ""
@@ -114,6 +155,77 @@ msgstr ""
 
 #: crates/ui/src/detail.rs
 msgid "Singles & EPs"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "Change the order of songs in a playlist"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "Delete a playlist"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "I _Understand"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs crates/ui/src/preferences.rs
+msgid "Open music.apple.com"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "Remove items from your library"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "Remove songs from a playlist"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid ""
+"Removing an artist from your favorites uses a function that Apple does not "
+"document. It can stop working without notice, and it also marks the artist "
+"as disliked."
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "Rename a playlist or change its description"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "RingoMusic is not affiliated with Apple."
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid ""
+"RingoMusic respects Apple's terms of use. It uses the functions that Apple "
+"makes available to other apps, with one exception that is described below."
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "Some Library Functions Are Not Available"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "These functions are not available in RingoMusic:"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid ""
+"To do these actions, use the Apple Music app or music.apple.com. RingoMusic "
+"shows the changes the next time it loads your library."
+msgstr ""
+
+#: crates/ui/src/favorite.rs
+msgid "Add to favorites"
+msgstr ""
+
+#: crates/ui/src/favorite.rs
+msgid "Remove from favorites"
+msgstr ""
+
+#: crates/ui/src/favorite.rs
+msgid "Remove from favorites (marks the artist as disliked)"
 msgstr ""
 
 #: crates/ui/src/gate.rs
@@ -212,6 +324,14 @@ msgstr ""
 msgid "Welcome to RingoMusic"
 msgstr ""
 
+#: crates/ui/src/library_write.rs
+msgid "Could not change your library. Try again later."
+msgstr ""
+
+#: crates/ui/src/library_write.rs
+msgid "Sign in to change your library."
+msgstr ""
+
 #: crates/ui/src/menu.rs
 msgid "Main menu"
 msgstr ""
@@ -230,6 +350,27 @@ msgstr ""
 
 #: crates/ui/src/network_banner.rs
 msgid "No network connection. Some content is not available."
+msgstr ""
+
+#: crates/ui/src/new_playlist.rs
+msgid "New Playlist"
+msgstr ""
+
+#: crates/ui/src/new_playlist.rs crates/ui/src/preferences.rs
+#: crates/ui/src/views/queue.rs
+msgid "_Cancel"
+msgstr ""
+
+#: crates/ui/src/new_playlist.rs
+msgid "_Create"
+msgstr ""
+
+#: crates/ui/src/new_playlist.rs
+msgid "_Description"
+msgstr ""
+
+#: crates/ui/src/new_playlist.rs
+msgid "_Name"
 msgstr ""
 
 #: crates/ui/src/notification.rs
@@ -284,6 +425,10 @@ msgid "In use"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
+msgid "Library Functions"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
 msgid "Look for a new version when the application starts"
 msgstr ""
 
@@ -334,10 +479,6 @@ msgstr ""
 
 #: crates/ui/src/preferences.rs
 msgid "Theme"
-msgstr ""
-
-#: crates/ui/src/preferences.rs crates/ui/src/views/queue.rs
-msgid "_Cancel"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
@@ -798,6 +939,56 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "The narrow layout"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"This release adds library management: create playlists, add songs to "
+"playlists and to your library, and mark favorites and dislikes."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Create playlists in your library."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Add songs and albums to your playlists."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Add songs, albums, and playlists to your library."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Add songs, albums, artists, and playlists to your favorites, and remove them "
+"again, with the star button. In a song list, the star shows before the "
+"duration: always for a favorite song, and when the pointer is over the row "
+"for other songs."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Dislike songs. A disliked song shows dimmed in song lists, also after a "
+"restart."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"A message tells which library functions are only available in Apple's apps. "
+"The Account page in Preferences shows it again."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The New page has a calendar icon, so it no longer looks like the favorites "
+"star."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Fix: after a restart, the album and artist buttons of the player bar did not "
+"open their pages until a new song played."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

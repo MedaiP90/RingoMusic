@@ -6,7 +6,7 @@
 use std::sync::Arc;
 use std::time::{Duration, SystemTime};
 
-use ringo_am_api::{ApiTransport, Result};
+use ringo_am_api::{ApiTransport, Result, WriteRequest};
 use rusqlite::{Connection, OptionalExtension};
 use serde_json::Value;
 use tokio::task::JoinHandle;
@@ -208,6 +208,15 @@ impl<T: ApiTransport, C: Clock + 'static> ApiTransport for CachingTransport<T, C
         self.write_cache(key, &value, lifetime).await;
         Ok(value)
     }
+
+    async fn get_uncached(&self, path: &str, query: &[(&str, &str)]) -> Result<Value> {
+        self.inner.get_uncached(path, query).await
+    }
+
+    async fn write(&self, request: WriteRequest<'_>) -> Result<Option<Value>> {
+        // `/v1/me/` responses are never cached, so a write needs no invalidation.
+        self.inner.write(request).await
+    }
 }
 
 /// Deletes the expired rows of the cache with one database call.
@@ -273,7 +282,7 @@ fn cache_key(path: &str, query: &[(&str, &str)]) -> String {
 mod tests {
     use std::sync::atomic::{AtomicU64, AtomicUsize, Ordering};
 
-    use ringo_am_api::{Error, TransportError};
+    use ringo_am_api::{Error, TransportError, WriteMethod};
     use serde_json::json;
 
     use super::*;
@@ -289,6 +298,15 @@ mod tests {
         async fn get(&self, _path: &str, _query: &[(&str, &str)]) -> Result<Value> {
             let call = self.calls.fetch_add(1, Ordering::SeqCst) + 1;
             Ok(json!({ "call": call }))
+        }
+
+        async fn get_uncached(&self, path: &str, query: &[(&str, &str)]) -> Result<Value> {
+            self.get(path, query).await
+        }
+
+        async fn write(&self, _request: WriteRequest<'_>) -> Result<Option<Value>> {
+            let call = self.calls.fetch_add(1, Ordering::SeqCst) + 1;
+            Ok(Some(json!({ "call": call })))
         }
     }
 
@@ -450,6 +468,14 @@ mod tests {
             async fn get(&self, _path: &str, _query: &[(&str, &str)]) -> Result<Value> {
                 Err(Error::Transport(TransportError::NotReady))
             }
+
+            async fn get_uncached(&self, _path: &str, _query: &[(&str, &str)]) -> Result<Value> {
+                Err(Error::Transport(TransportError::NotReady))
+            }
+
+            async fn write(&self, _request: WriteRequest<'_>) -> Result<Option<Value>> {
+                Err(Error::Transport(TransportError::NotReady))
+            }
         }
         let database = Database::open_in_memory().expect("database can be opened");
         let transport = CachingTransport::new(Failing, database.clone());
@@ -521,6 +547,48 @@ mod tests {
         sweeper.abort();
 
         assert_eq!(row_count(&fixture.database).await, 0);
+    }
+
+    #[tokio::test]
+    async fn write_calls_the_inner_transport_every_time_and_stores_nothing() {
+        let fixture = fixture();
+        let request = WriteRequest {
+            method: WriteMethod::Post,
+            path: "/v1/me/library",
+            query: &[],
+            body: None,
+        };
+
+        let first = fixture.transport.write(request).await;
+        let second = fixture.transport.write(request).await;
+
+        assert_eq!(first.expect("write works"), Some(json!({ "call": 1 })));
+        assert_eq!(second.expect("write works"), Some(json!({ "call": 2 })));
+        assert_eq!(row_count(&fixture.database).await, 0);
+    }
+
+    #[tokio::test]
+    async fn get_uncached_calls_the_inner_transport_every_time_and_stores_nothing() {
+        let fixture = fixture();
+        let path = "/v1/catalog/us/songs/1";
+
+        let first = fixture.transport.get_uncached(path, &[]).await;
+        let second = fixture.transport.get_uncached(path, &[]).await;
+
+        assert_eq!(first.expect("read works"), json!({ "call": 1 }));
+        assert_eq!(second.expect("read works"), json!({ "call": 2 }));
+        assert_eq!(row_count(&fixture.database).await, 0);
+    }
+
+    #[tokio::test]
+    async fn get_uncached_ignores_a_cached_value() {
+        let fixture = fixture();
+        let path = "/v1/catalog/us/songs/1";
+        fixture.transport.get(path, &[]).await.expect("read works");
+
+        let value = fixture.transport.get_uncached(path, &[]).await;
+
+        assert_eq!(value.expect("read works"), json!({ "call": 2 }));
     }
 
     async fn row_count(database: &Database) -> i64 {

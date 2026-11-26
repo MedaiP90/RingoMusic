@@ -21,14 +21,17 @@ use ringo_core::update_checker::Release;
 use ringo_mpris::Callbacks;
 use tracing::{debug, warn};
 
+use crate::add_to_library;
+use crate::add_to_playlist;
 use crate::background::{self, BackgroundPlayback, CloseAction};
 use crate::detail_pages::{self, PageSources};
 use crate::gate::{self, Gate};
 use crate::item_actions::{self, SongCatalog};
+use crate::new_playlist;
 use crate::preferences::{Preferences, PreferencesInit};
 use crate::section::Section;
 use crate::services::AppServices;
-use crate::views::library::{LibraryInit, LibraryKind, LibraryView};
+use crate::views::library::{LibraryInit, LibraryInput, LibraryKind, LibraryView};
 use crate::views::queue::{QueueInit, QueueView};
 use crate::views::search::{SearchInit, SearchInput, SearchView};
 use crate::views::section_page;
@@ -36,8 +39,8 @@ use crate::views::sections::{SectionsInit, SectionsInput, SectionsView};
 use crate::views::{home, made_for_you, new_releases};
 use crate::widgets::player_bar::{PlayerBar, PlayerBarInit, PlayerBarInput, TOGGLE_QUEUE};
 use crate::{
-    about, accent, artwork, menu, network_banner, notification, sidebar, subscription, theme,
-    update_notice,
+    about, accent, artwork, disclaimer, menu, network_banner, notification, sidebar, subscription,
+    theme, update_notice,
 };
 
 /// Window width in sp below which the sidebar and the queue panel collapse.
@@ -88,6 +91,8 @@ pub struct App {
     settings: Settings,
     background: BackgroundPlayback,
     sign_in_failed: bool,
+    /// True after the disclaimer check of this run.
+    disclaimer_checked: bool,
 }
 
 /// Input of the main window.
@@ -211,9 +216,7 @@ impl SimpleComponent for App {
     ) -> ComponentParts<Self> {
         let Init { services, package } = init;
         let core = services.core();
-        artwork::install_store(services.artwork().clone());
-        accent::install(services.settings());
-        theme::install(services.settings());
+        install_shared_state(&services);
         forward_state(core, &sender);
         forward_track_changes(core, &sender);
         publish_mpris(core, services.artwork(), &sender);
@@ -262,15 +265,11 @@ impl SimpleComponent for App {
         ]
         .map(launch_sections);
         register_refresh(&root, sender.input_sender());
-        let library_pages = LibraryKind::ALL.map(|kind| launch_library(kind, &services, &catalog));
-        let mut queue = QueueView::builder().launch(QueueInit {
-            core: core.clone(),
-            window: root.clone(),
-        });
-        let queue_page = queue.widget().clone();
-        close_queue_on_escape(&queue_page, &sender);
-        // The queue view also lives as long as its widget.
-        queue.detach_runtime();
+        let mut library_senders = Vec::new();
+        let library_pages = LibraryKind::ALL
+            .map(|kind| launch_library(kind, &root, &services, &catalog, &mut library_senders));
+        add_to_library::register(&root, library_senders);
+        let queue_page = launch_queue(core, &root, &sender);
         let content_stack = build_content_stack(
             &home_page,
             &search_page,
@@ -307,6 +306,7 @@ impl SimpleComponent for App {
             settings,
             background,
             sign_in_failed: false,
+            disclaimer_checked: false,
         };
         let widgets = view_output!();
         // A window applies one breakpoint at a time, the last one that matches.
@@ -356,6 +356,11 @@ impl App {
             self.toast_overlay.add_toast(adw::Toast::new(&message));
         }
         self.sign_in_failed = summary.sign_in_failed;
+        // Wait for the sign-in, so the dialog does not cover the first-run screen.
+        if !self.disclaimer_checked && matches!(summary.auth, AuthState::SignedIn { .. }) {
+            self.disclaimer_checked = true;
+            disclaimer::present_if_new(&self.window, &self.settings);
+        }
     }
 
     /// Makes `section` the current one. The refresh action works on the pages
@@ -480,6 +485,15 @@ fn register_actions(sender: &ComponentSender<App>) {
     app.set_accels_for_action("app.preferences", &["<Ctrl>comma"]);
 }
 
+/// Sets what widgets without context read: the artwork store, the accent, the theme, and the
+/// services of the add to playlist popover.
+fn install_shared_state(services: &AppServices) {
+    artwork::install_store(services.artwork().clone());
+    add_to_playlist::install(services.clone());
+    accent::install(services.settings());
+    theme::install(services.settings());
+}
+
 /// Adds the window actions: the search shortcut and the item actions.
 fn register_window_actions(
     window: &adw::ApplicationWindow,
@@ -516,8 +530,10 @@ fn register_refresh(window: &adw::ApplicationWindow, input: &relm4::Sender<Input
 /// as its widget.
 fn launch_library(
     kind: LibraryKind,
+    window: &adw::ApplicationWindow,
     services: &AppServices,
     catalog: &SongCatalog,
+    senders: &mut Vec<relm4::Sender<LibraryInput>>,
 ) -> (LibraryKind, adw::ToolbarView) {
     let mut view = LibraryView::builder().launch(LibraryInit {
         kind,
@@ -525,8 +541,28 @@ fn launch_library(
         catalog: catalog.clone(),
     });
     let page = view.widget().clone();
+    if kind == LibraryKind::Playlists {
+        new_playlist::register(window, services.clone(), view.sender().clone());
+    }
+    senders.push(view.sender().clone());
     view.detach_runtime();
     (kind, page)
+}
+
+/// Starts the queue view. Like the gate, it lives as long as its widget.
+fn launch_queue(
+    core: &CoreHandle,
+    window: &adw::ApplicationWindow,
+    sender: &ComponentSender<App>,
+) -> adw::ToolbarView {
+    let mut queue = QueueView::builder().launch(QueueInit {
+        core: core.clone(),
+        window: window.clone(),
+    });
+    let page = queue.widget().clone();
+    close_queue_on_escape(&page, sender);
+    queue.detach_runtime();
+    page
 }
 
 /// Launches the search view. Returns its page and its input sender.

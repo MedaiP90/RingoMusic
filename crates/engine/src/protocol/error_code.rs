@@ -35,6 +35,8 @@ pub enum ErrorCode {
     MusicKitError,
     /// The Chromium sandbox of the engine cannot start (-32006).
     SandboxFailed,
+    /// The Apple Music API has no resource for the request, HTTP 404 (-32007).
+    NotFound,
 }
 
 impl ErrorCode {
@@ -53,6 +55,7 @@ impl ErrorCode {
             Self::Cancelled => -32004,
             Self::MusicKitError => -32005,
             Self::SandboxFailed => -32006,
+            Self::NotFound => -32007,
         }
     }
 }
@@ -91,6 +94,7 @@ impl TryFrom<i32> for ErrorCode {
             -32004 => Ok(Self::Cancelled),
             -32005 => Ok(Self::MusicKitError),
             -32006 => Ok(Self::SandboxFailed),
+            -32007 => Ok(Self::NotFound),
             other => Err(UnknownErrorCode(other)),
         }
     }

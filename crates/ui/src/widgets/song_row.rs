@@ -4,15 +4,24 @@
 //! Row of a song list: artwork or track number, title, artist, duration, and
 //! a context menu.
 
+use std::cell::RefCell;
+use std::rc::Rc;
+
 use gettextrs::gettext;
 use relm4::gtk;
 use relm4::gtk::gdk::{Key, ModifierType, Rectangle};
 use relm4::gtk::gio::{Menu, MenuItem, SimpleAction, SimpleActionGroup};
-use relm4::gtk::glib::{self, Propagation, Variant};
+use relm4::gtk::glib::{self, Propagation, Variant, VariantTy};
 use relm4::gtk::pango::EllipsizeMode;
 use relm4::gtk::prelude::*;
 use relm4::typed_view::list::RelmListItem;
+use ringo_am_api::write::CatalogItem;
 
+use crate::add_to_library;
+use crate::add_to_playlist;
+use crate::detail::is_library_id;
+use crate::dislike::{self, DislikeControl};
+use crate::favorite::FavoriteButton;
 use crate::item::SongItem;
 use crate::item_actions::{ADD_TO_QUEUE, OPEN_ALBUM, OPEN_ARTIST, PLAY_ITEM, PLAY_NEXT};
 use crate::name_filter::NameFilter;
@@ -25,6 +34,8 @@ const ARTWORK_SIZE: i32 = 40;
 /// Name of the action group of a row, and of its menu action.
 const ROW_GROUP: &str = "row";
 const POPUP_ACTION: &str = "popup";
+const ADD_TO_PLAYLIST_ACTION: &str = "add-to-playlist";
+const ADD_TO_LIBRARY_ACTION: &str = "add-to-library";
 
 /// What a row shows before the title.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
@@ -62,6 +73,10 @@ pub struct SongRowWidgets {
     duration: gtk::Label,
     explicit: gtk::Label,
     menu: gtk::PopoverMenu,
+    /// The star before the duration. It shows for a favorite, and while the pointer is over the row.
+    favorite: FavoriteButton,
+    /// The "Dislike" item of the menu. It reads its status when the menu opens.
+    dislike: DislikeControl,
 }
 
 impl RelmListItem for SongRow {
@@ -119,12 +134,30 @@ impl SongRowWidgets {
             .build();
         root.append(&explicit);
         root.append(&duration);
+        let more = build_more_button();
+        root.append(&more);
 
         let menu = gtk::PopoverMenu::from_model(None::<&Menu>);
         menu.set_parent(&root);
         menu.set_has_arrow(false);
         menu.set_halign(gtk::Align::Start);
-        connect_menu_triggers(&root, &menu);
+        let favorite = FavoriteButton::new();
+        favorite.show_on_hover_of(&root);
+        root.insert_child_after(favorite.widget(), Some(&explicit));
+        let dislike = DislikeControl::new(&root, favorite.control());
+        let weak_root = root.downgrade();
+        dislike.connect_change(move |disliked| {
+            if let Some(root) = weak_root.upgrade() {
+                if disliked {
+                    root.add_css_class("disliked-song");
+                } else {
+                    root.remove_css_class("disliked-song");
+                }
+            }
+        });
+        let on_open = dislike.clone();
+        menu.connect_map(move |_| on_open.load_status());
+        connect_menu_triggers(&root, &menu, &more, dislike.action());
         let widgets = Self {
             badge,
             number,
@@ -134,6 +167,8 @@ impl SongRowWidgets {
             duration,
             explicit,
             menu,
+            favorite,
+            dislike,
         };
         (root, widgets)
     }
@@ -148,6 +183,11 @@ impl SongRowWidgets {
         self.explicit.set_visible(item.explicit);
         self.show_lead(queue.artwork_template.as_deref(), lead);
         self.menu.set_menu_model(Some(&build_menu(item)));
+        let control = self.favorite.control();
+        control.set_item(item.catalog_item());
+        control.queue_status();
+        self.dislike.set_item(item.catalog_item());
+        self.dislike.queue_status();
     }
 
     fn show_lead(&self, artwork_template: Option<&str>, lead: Lead) {
@@ -284,26 +324,38 @@ fn text_label(css_classes: &[&str]) -> gtk::Label {
         .build()
 }
 
-/// Opens the menu with a right click, a long press, and the row action.
-fn connect_menu_triggers(root: &gtk::Box, menu: &gtk::PopoverMenu) {
+/// Opens the menu with a right click, a long press, and the row action. The row action of the
+/// add to playlist item opens its popover at the place of the menu.
+fn connect_menu_triggers(
+    root: &gtk::Box,
+    menu: &gtk::PopoverMenu,
+    more: &gtk::Button,
+    dislike: &SimpleAction,
+) {
+    let point: Rc<RefCell<Option<Rectangle>>> = Rc::default();
     let click = gtk::GestureClick::builder().button(3).build();
-    let at_point = menu.clone();
-    click.connect_pressed(move |_, _, x, y| popup_at(&at_point, x, y));
+    let (at_point, last_point) = (menu.clone(), Rc::clone(&point));
+    click.connect_pressed(move |_, _, x, y| popup_at(&at_point, &last_point, x, y));
     root.add_controller(click);
 
     let press = gtk::GestureLongPress::builder().touch_only(true).build();
-    let at_point = menu.clone();
-    press.connect_pressed(move |_, x, y| popup_at(&at_point, x, y));
+    let (at_point, last_point) = (menu.clone(), Rc::clone(&point));
+    press.connect_pressed(move |_, x, y| popup_at(&at_point, &last_point, x, y));
     root.add_controller(press);
 
     let group = SimpleActionGroup::new();
     let action = SimpleAction::new(POPUP_ACTION, None);
-    let whole_row = menu.clone();
+    let (whole_row, last_point) = (menu.clone(), Rc::clone(&point));
     action.connect_activate(move |_, _| {
+        *last_point.borrow_mut() = None;
         whole_row.set_pointing_to(None::<&Rectangle>);
         whole_row.popup();
     });
     group.add_action(&action);
+    connect_more_button(root, menu, more, &point);
+    group.add_action(&add_to_playlist_action(root, &point));
+    group.add_action(&add_to_library_action(root));
+    group.add_action(dislike);
     root.insert_action_group(ROW_GROUP, Some(&group));
 
     // The popover is a child of the row. It must go before the row does.
@@ -311,12 +363,79 @@ fn connect_menu_triggers(root: &gtk::Box, menu: &gtk::PopoverMenu) {
     root.connect_destroy(move |_| menu.unparent());
 }
 
+/// Builds the button that opens the menu.
+fn build_more_button() -> gtk::Button {
+    gtk::Button::builder()
+        .icon_name("view-more-symbolic")
+        .tooltip_text(gettext("More"))
+        .valign(gtk::Align::Center)
+        .css_classes(["flat", "circular"])
+        .build()
+}
+
+/// Makes `more` open `menu` below the button. The add to playlist popover uses the same place.
+#[expect(
+    clippy::cast_possible_truncation,
+    reason = "a widget position fits in i32"
+)]
+fn connect_more_button(
+    root: &gtk::Box,
+    menu: &gtk::PopoverMenu,
+    more: &gtk::Button,
+    point: &Rc<RefCell<Option<Rectangle>>>,
+) {
+    let (row, menu, point) = (root.downgrade(), menu.clone(), Rc::clone(point));
+    more.connect_clicked(move |button| {
+        let Some(bounds) = row.upgrade().and_then(|row| button.compute_bounds(&row)) else {
+            return;
+        };
+        let place = Rectangle::new(
+            bounds.x() as i32,
+            bounds.y() as i32,
+            bounds.width() as i32,
+            bounds.height() as i32,
+        );
+        *point.borrow_mut() = Some(place);
+        menu.set_pointing_to(Some(&place));
+        menu.popup();
+    });
+}
+
+/// Creates the row action that opens the add to playlist popover for the song of the ID. The
+/// popover points to `point`, where the menu was.
+fn add_to_playlist_action(root: &gtk::Box, point: &Rc<RefCell<Option<Rectangle>>>) -> SimpleAction {
+    let action = SimpleAction::new(ADD_TO_PLAYLIST_ACTION, Some(VariantTy::STRING));
+    let (row, point) = (root.downgrade(), Rc::clone(point));
+    action.connect_activate(move |_, parameter| {
+        let (Some(row), Some(id)) = (row.upgrade(), parameter.and_then(Variant::str)) else {
+            return;
+        };
+        add_to_playlist::present(&row, point.borrow().as_ref(), vec![id.to_owned()]);
+    });
+    action
+}
+
+/// Creates the row action that adds the catalog song of the ID to the library.
+fn add_to_library_action(root: &gtk::Box) -> SimpleAction {
+    let action = SimpleAction::new(ADD_TO_LIBRARY_ACTION, Some(VariantTy::STRING));
+    let row = root.downgrade();
+    action.connect_activate(move |_, parameter| {
+        let (Some(row), Some(id)) = (row.upgrade(), parameter.and_then(Variant::str)) else {
+            return;
+        };
+        add_to_library::add(&row, CatalogItem::Song(id.to_owned().into()));
+    });
+    action
+}
+
 #[expect(
     clippy::cast_possible_truncation,
     reason = "a pointer position fits in i32"
 )]
-fn popup_at(menu: &gtk::PopoverMenu, x: f64, y: f64) {
-    menu.set_pointing_to(Some(&Rectangle::new(x as i32, y as i32, 1, 1)));
+fn popup_at(menu: &gtk::PopoverMenu, last_point: &RefCell<Option<Rectangle>>, x: f64, y: f64) {
+    let point = Rectangle::new(x as i32, y as i32, 1, 1);
+    *last_point.borrow_mut() = Some(point);
+    menu.set_pointing_to(Some(&point));
     menu.popup();
 }
 
@@ -337,8 +456,30 @@ fn build_menu(item: &SongItem) -> Menu {
         OPEN_ARTIST,
         artist.as_ref(),
     ));
+    let library = Menu::new();
+    library.append_item(&entry(
+        &gettext("Add to Playlist…"),
+        &format!("{ROW_GROUP}.{ADD_TO_PLAYLIST_ACTION}"),
+        Some(&id),
+    ));
+    // Apple ignores a duplicate, so a catalog song always shows the item (decision L17).
+    if !is_library_id(item.id()) {
+        library.append_item(&entry(
+            &gettext("Add to Library"),
+            &format!("{ROW_GROUP}.{ADD_TO_LIBRARY_ACTION}"),
+            Some(&id),
+        ));
+    }
+    let rating = Menu::new();
+    rating.append_item(&entry(
+        &gettext("Dislike"),
+        &format!("{ROW_GROUP}.{}", dislike::ACTION_NAME),
+        None,
+    ));
     let menu = Menu::new();
     menu.append_section(None, &playback);
+    menu.append_section(None, &library);
+    menu.append_section(None, &rating);
     menu.append_section(None, &links);
     menu
 }

@@ -19,7 +19,7 @@ void test('handlers / every request example / should have a handler', () => {
   const methods = readdirSync(examples)
     .filter((name) => name.startsWith('request.'))
     .map((name) => name.slice('request.'.length, -'.json'.length))
-    .filter((method) => method !== 'engine.shutdown' && method !== 'auth.signIn');
+    .filter((method) => !['engine.shutdown', 'auth.signIn'].includes(method));
   const handlers = Object.keys(createHandlers(fakeMusic()));
   assert.deepEqual([...methods].sort(), [...handlers].sort());
   assert.deepEqual([...PAGE_METHODS].sort(), [...handlers].sort());
@@ -118,4 +118,119 @@ void test('api.get / response / should return only the data', async () => {
     params: { path: '/v1/me/library/songs', query: {} },
   });
   assert.deepEqual(response, { jsonrpc: '2.0', id: 5, result: { x: 1 } });
+});
+
+interface FetchCall {
+  url: string;
+  init: RequestInit;
+}
+
+// A fetch stub that records its calls and answers with one fixed response.
+function stubFetch(status: number, body: string): { fetchFn: typeof fetch; calls: FetchCall[] } {
+  const calls: FetchCall[] = [];
+  const fetchFn = ((url: URL, init: RequestInit) => {
+    calls.push({ url: url.toString(), init });
+    return Promise.resolve(new Response(body === '' ? null : body, { status }));
+  }) as typeof fetch;
+  return { fetchFn, calls };
+}
+
+const TOKENS = { developerToken: 'dev', musicUserToken: 'user' };
+
+function writeRequest(id: number, params: unknown): { id: number; method: string; params: unknown } {
+  return { id, method: 'api.write', params };
+}
+
+void test('api.write / body and JSON response / should send the request and return the JSON', async () => {
+  const { fetchFn, calls } = stubFetch(200, '{"data":[{"id":"1"}]}');
+  const handlers = createHandlers(fakeMusic(TOKENS), fetchFn);
+  const body = { type: 'rating', attributes: { value: 1 } };
+  const response = await dispatchRequest(
+    handlers,
+    writeRequest(6, { method: 'PUT', path: '/v1/me/ratings/songs/1', query: {}, body }),
+  );
+  assert.deepEqual(response, { jsonrpc: '2.0', id: 6, result: { data: [{ id: '1' }] } });
+  assert.equal(calls[0]?.url, 'https://api.music.apple.com/v1/me/ratings/songs/1');
+  assert.equal(calls[0]?.init.method, 'PUT');
+  assert.equal(calls[0]?.init.body, JSON.stringify(body));
+  assert.deepEqual(calls[0]?.init.headers, {
+    Authorization: 'Bearer dev',
+    'Music-User-Token': 'user',
+    'Content-Type': 'application/json',
+  });
+});
+
+void test('api.write / empty response body / should return null', async () => {
+  const { fetchFn, calls } = stubFetch(202, '');
+  const handlers = createHandlers(fakeMusic(TOKENS), fetchFn);
+  const response = await dispatchRequest(
+    handlers,
+    writeRequest(7, { method: 'POST', path: '/v1/me/favorites', query: { 'ids[songs]': '1' } }),
+  );
+  assert.deepEqual(response, { jsonrpc: '2.0', id: 7, result: null });
+  assert.equal(calls[0]?.init.body, undefined);
+});
+
+void test('api.write / path outside /v1/me/ / should return invalid_params without a request', async () => {
+  const { fetchFn, calls } = stubFetch(200, '{}');
+  const handlers = createHandlers(fakeMusic(TOKENS), fetchFn);
+  const paths = ['/v1/catalog/it/songs', '/v1/me', '/v1/me/../catalog/it', '/v1/me/library?x=1'];
+  for (const path of paths) {
+    const response = await dispatchRequest(handlers, writeRequest(8, { method: 'POST', path, query: {} }));
+    assert.ok('error' in response && response.error.code === ErrorCode.InvalidParams, path);
+  }
+  assert.equal(calls.length, 0);
+});
+
+void test('api.write / DELETE on an undocumented path / should return invalid_params without a request', async () => {
+  const { fetchFn, calls } = stubFetch(204, '');
+  const handlers = createHandlers(fakeMusic(TOKENS), fetchFn);
+  const paths = ['/v1/me/library/playlists/p.1', '/v1/me/ratings/artists/1', '/v1/me/ratings/songs'];
+  for (const path of paths) {
+    const response = await dispatchRequest(handlers, writeRequest(9, { method: 'DELETE', path, query: {} }));
+    assert.ok('error' in response && response.error.code === ErrorCode.InvalidParams, path);
+  }
+  assert.equal(calls.length, 0);
+});
+
+void test('api.write / DELETE on a rating path / should send the request', async () => {
+  const { fetchFn, calls } = stubFetch(204, '');
+  const handlers = createHandlers(fakeMusic(TOKENS), fetchFn);
+  const response = await dispatchRequest(
+    handlers,
+    writeRequest(10, { method: 'DELETE', path: '/v1/me/ratings/songs/1', query: {} }),
+  );
+  assert.deepEqual(response, { jsonrpc: '2.0', id: 10, result: null });
+  assert.equal(calls[0]?.init.method, 'DELETE');
+});
+
+void test('api.write / HTTP error with Apple code / should keep the status and code in the data', async () => {
+  const errorBody = '{"errors":[{"code":"40005","title":"Invalid Parameter Value"}]}';
+  const { fetchFn } = stubFetch(400, errorBody);
+  const handlers = createHandlers(fakeMusic(TOKENS), fetchFn);
+  const response = await dispatchRequest(
+    handlers,
+    writeRequest(11, { method: 'POST', path: '/v1/me/favorites', query: { 'ids[albums]': 'l.x' } }),
+  );
+  assert.deepEqual(response, {
+    jsonrpc: '2.0',
+    id: 11,
+    error: {
+      code: ErrorCode.MusicKitError,
+      message: 'api.write failed with HTTP 400',
+      data: { status: 400, apple_code: '40005' },
+    },
+  });
+});
+
+void test('api.write / HTTP 401 without error body / should map to not_authorized', async () => {
+  const { fetchFn } = stubFetch(401, '');
+  const handlers = createHandlers(fakeMusic(TOKENS), fetchFn);
+  const response = await dispatchRequest(
+    handlers,
+    writeRequest(12, { method: 'POST', path: '/v1/me/library', query: {} }),
+  );
+  assert.ok('error' in response);
+  assert.equal(response.error.code, ErrorCode.NotAuthorized);
+  assert.deepEqual(response.error.data, { status: 401 });
 });

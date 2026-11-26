@@ -11,9 +11,11 @@ use ringo_am_api::models::{
     LibraryPlaylist, LibrarySong, PlayParams, Playlist, Relationship, ResourceRef, Song,
     SongAttributes,
 };
+use ringo_am_api::write::CatalogItem;
 use ringo_core::queue::QueueItem;
 use ringo_engine::ItemId;
 
+use crate::detail::is_library_id;
 use crate::name_filter::NameFilter;
 
 /// A song for a song row.
@@ -27,12 +29,21 @@ pub struct SongItem {
     pub album_id: Option<String>,
     /// ID of the main artist, if the API sent it.
     pub artist_id: Option<String>,
+    /// ID of the catalog song. A library song has one only if Apple links it. The favorite star
+    /// needs it, because Apple takes only catalog IDs for a favorite.
+    pub catalog_id: Option<String>,
 }
 
 impl SongItem {
     /// The ID of the song.
     pub fn id(&self) -> &str {
         self.queue.id.as_str()
+    }
+
+    /// The catalog song, for a favorite.
+    pub fn catalog_item(&self) -> Option<CatalogItem> {
+        let id = self.catalog_id.clone()?;
+        Some(CatalogItem::Song(id.into()))
     }
 
     /// Tells if the title or the artist matches `filter`.
@@ -49,9 +60,18 @@ impl SongItem {
         album_id: Option<String>,
         artist_id: Option<String>,
     ) -> Self {
+        let playable = playable_id(attributes.play_params.as_ref(), id);
+        let catalog_id = if is_library_id(&playable) {
+            attributes
+                .play_params
+                .as_ref()
+                .and_then(|params| params.catalog_id.clone())
+        } else {
+            Some(playable.clone())
+        };
         Self {
             queue: QueueItem {
-                id: ItemId::new(playable_id(attributes.play_params.as_ref(), id)),
+                id: ItemId::new(playable),
                 title: attributes.name.clone(),
                 artist: attributes.artist_name.clone().unwrap_or_default(),
                 album: attributes.album_name.clone().unwrap_or_default(),
@@ -63,6 +83,7 @@ impl SongItem {
             explicit: attributes.content_rating == Some(ContentRating::Explicit),
             album_id,
             artist_id,
+            catalog_id,
         }
     }
 }

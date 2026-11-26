@@ -1,0 +1,16 @@
+{
+  "data": [
+    {
+      "id": "724515236",
+      "type": "ratings",
+      "href": "/v1/me/ratings/songs/724515236",
+      "attributes": { "value": -1 }
+    },
+    {
+      "id": "724515237",
+      "type": "ratings",
+      "href": "/v1/me/ratings/songs/724515237",
+      "attributes": { "value": 1 }
+    }
+  ]
+}

@@ -16,4 +16,5 @@ export const ErrorCode = {
   Cancelled: -32004,
   MusicKitError: -32005,
   SandboxFailed: -32006,
+  NotFound: -32007,
 } as const;

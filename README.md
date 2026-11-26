@@ -93,6 +93,24 @@ The player is a Chromium engine with several processes, so it uses more memory t
 
 RSS counts shared pages more than one time for each process, so PSS is the real cost. RSS stayed flat over 75 minutes (2588 to 2591 MB), so there is no sign of a leak. No 8-hour measurement exists, and the memory of the `ringomusic` process was not measured.
 
+## Library functions
+
+RingoMusic respects Apple's terms of use. It uses the functions that Apple makes available to other apps, with one exception that is described below.
+
+These functions are not available in RingoMusic:
+
+- Rename a playlist or change its description
+- Delete a playlist
+- Remove songs from a playlist
+- Change the order of songs in a playlist
+- Remove items from your library
+
+To do these actions, use the Apple Music app or [music.apple.com](https://music.apple.com). RingoMusic shows the changes the next time it loads your library.
+
+Removing an artist from your favorites uses a function that Apple does not document. It can stop working without notice, and it also marks the artist as disliked.
+
+RingoMusic shows this list after the first sign-in. The Account page in Preferences shows it again.
+
 ## Non-goals
 
 - RingoMusic is not published on Flathub or in distribution repositories.

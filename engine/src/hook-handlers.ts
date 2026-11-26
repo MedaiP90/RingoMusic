@@ -3,6 +3,7 @@
 
 // Page-side request handlers: one MusicKit call for each protocol method.
 
+import { sendWrite } from './api-write.ts';
 import { ErrorCode } from './error-code.ts';
 import { mapError, mapRepeatMode } from './musickit-mapping.ts';
 import type { PageMethod } from './page-methods.ts';
@@ -19,7 +20,7 @@ export type HandlerMap = {
 
 const SHUFFLE_OFF = 0;
 
-export function createHandlers(music: MusicKitInstance): HandlerMap {
+export function createHandlers(music: MusicKitInstance, fetchFn: typeof fetch = fetch): HandlerMap {
   return {
     'auth.status': (): AuthStatus => ({
       authorized: music.isAuthorized,
@@ -83,6 +84,11 @@ export function createHandlers(music: MusicKitInstance): HandlerMap {
       const response = await music.api.music(path, query);
       return response.data;
     },
+    'api.write': (request) =>
+      sendWrite(
+        { developerToken: music.developerToken, musicUserToken: music.musicUserToken, fetch: fetchFn },
+        request,
+      ),
   };
 }
 

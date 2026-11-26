@@ -1,0 +1,8 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/me/library/playlists/p.TestPlaylist0001/tracks",
+    "body": { "data": [{ "id": "724515236", "type": "songs" }] }
+  },
+  "response": { "status": 204, "body": null }
+}

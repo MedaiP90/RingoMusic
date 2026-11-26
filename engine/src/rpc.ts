@@ -10,7 +10,7 @@ import { LineFramer } from './framer.ts';
 import { log } from './log.ts';
 import type { ErrorResponse, Notification, SuccessResponse } from './protocol.ts';
 
-export const PROTOCOL_VERSION = 1;
+export const PROTOCOL_VERSION = 2;
 
 export { ErrorCode };
 

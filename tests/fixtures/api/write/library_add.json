@@ -1,0 +1,8 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/me/library?ids[songs]=724515236",
+    "body": null
+  },
+  "response": { "status": 202, "body": null }
+}

@@ -1,0 +1,28 @@
+{
+  "request": {
+    "method": "POST",
+    "path": "/v1/me/library/playlists",
+    "body": { "attributes": { "name": "RingoMusic Test" } }
+  },
+  "response": {
+    "status": 201,
+    "body": {
+      "data": [
+        {
+          "id": "p.TestPlaylist0001",
+          "type": "library-playlists",
+          "href": "/v1/me/library/playlists/p.TestPlaylist0001",
+          "attributes": {
+            "canEdit": true,
+            "dateAdded": "2026-01-01T00:00:00Z",
+            "hasCatalog": false,
+            "isPublic": false,
+            "lastModifiedDate": "2026-01-01T00:00:00Z",
+            "name": "RingoMusic Test",
+            "playParams": { "id": "p.TestPlaylist0001", "isLibrary": true, "kind": "playlist" }
+          }
+        }
+      ]
+    }
+  }
+}
