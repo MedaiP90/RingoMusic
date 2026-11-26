@@ -893,9 +893,9 @@ msgstr ""
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
 "Add songs, albums, artists, and playlists to your favorites, and remove them "
-"again, with the star button. In a song list, the star shows at the start of "
-"a row: always for a favorite song, and when the pointer is over the row for "
-"other songs."
+"again, with the star button. In a song list, the star shows before the "
+"duration: always for a favorite song, and when the pointer is over the row "
+"for other songs."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

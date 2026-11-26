@@ -72,7 +72,7 @@ pub struct SongRowWidgets {
     duration: gtk::Label,
     explicit: gtk::Label,
     menu: gtk::PopoverMenu,
-    /// The star at the start of the row. It shows while the pointer is over the row.
+    /// The star before the duration. It shows for a favorite, and while the pointer is over the row.
     favorite: FavoriteButton,
 }
 
@@ -140,7 +140,7 @@ impl SongRowWidgets {
         menu.set_halign(gtk::Align::Start);
         let favorite = FavoriteButton::new();
         favorite.show_on_hover_of(&root);
-        root.prepend(favorite.widget());
+        root.insert_child_after(favorite.widget(), Some(&explicit));
         connect_menu_triggers(&root, &menu, &more);
         let widgets = Self {
             badge,

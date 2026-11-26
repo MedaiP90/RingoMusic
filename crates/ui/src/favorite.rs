@@ -425,7 +425,7 @@ impl Appearance {
     fn apply(&self, button: &gtk::Button) {
         let favorite = self.look.get().is_some_and(|look| look.favorite);
         let shown = !self.idle_hidden.get() || self.hovered.get() || favorite;
-        button.set_opacity(if shown { 1.0 } else { 0.0 });
+        button.set_visible(shown);
     }
 }
 
@@ -476,8 +476,8 @@ impl FavoriteButton {
         &self.control
     }
 
-    /// Shows the star only while the pointer is over `row`, or when the item is a favorite. The
-    /// space stays.
+    /// Shows the star only while the pointer is over `row`, or when the item is a favorite. A
+    /// hidden star takes no space.
     pub fn show_on_hover_of(&self, row: &impl IsA<gtk::Widget>) {
         self.appearance.idle_hidden.set(true);
         self.appearance.apply(&self.button);
