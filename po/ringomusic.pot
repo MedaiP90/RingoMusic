@@ -90,6 +90,10 @@ msgid "Could not load your playlists."
 msgstr ""
 
 #: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
+msgid "Dislike"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
 msgid "More"
 msgstr ""
 
@@ -896,6 +900,12 @@ msgid ""
 "again, with the star button. In a song list, the star shows before the "
 "duration: always for a favorite song, and when the pointer is over the row "
 "for other songs."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Dislike songs. A disliked song shows dimmed in song lists, also after a "
+"restart."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

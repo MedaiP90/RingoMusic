@@ -329,6 +329,29 @@ async fn favorite_status_reads_uncached_and_covers_every_item() {
 }
 
 #[tokio::test]
+async fn dislike_status_marks_only_the_songs_with_a_dislike() {
+    let unrated = CatalogItem::Song(SongId::from("1".to_owned()));
+    let loved = CatalogItem::Song(SongId::from("724515237".to_owned()));
+    let transport = FixtureTransport::new().with(
+        "/v1/me/ratings/songs",
+        &[("ids", "724515236,724515237,1")],
+        "write/read_ratings_songs.json",
+    );
+
+    let status = write::dislike_status(
+        &transport,
+        &[song(), loved.clone(), unrated.clone(), album()],
+    )
+    .await
+    .unwrap();
+
+    assert_eq!(status.len(), 3);
+    assert!(status[&song()]);
+    assert!(!status[&loved]);
+    assert!(!status[&unrated]);
+}
+
+#[tokio::test]
 async fn rating_reads_the_value() {
     let transport = FixtureTransport::new().with(
         &format!("/v1/me/ratings/songs/{SONG}"),

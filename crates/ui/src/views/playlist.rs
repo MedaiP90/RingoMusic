@@ -121,7 +121,7 @@ impl SimpleComponent for PlaylistView {
             id,
         } = init;
         let header = DetailHeader::new(ArtworkShape::Square);
-        let add_menu = ItemMenu::new();
+        let add_menu = ItemMenu::new(None);
         let add_menu_widget = add_menu.widget().clone();
         let favorite_widget = header.take_favorite_button();
         let list = build_list(&sender);

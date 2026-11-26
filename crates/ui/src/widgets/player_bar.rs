@@ -484,7 +484,7 @@ impl SimpleComponent for PlayerBar {
         tint::follow_playing(&artwork_widget);
         let favorite = FavoriteButton::new();
         let favorite_widget = favorite.widget().clone();
-        let add_menu = ItemMenu::new();
+        let add_menu = ItemMenu::new(Some(favorite.control()));
         add_menu.set_song(state.song_id.clone());
         let add_menu_widget = add_menu.widget().clone();
         let mut model = Self {
@@ -578,9 +578,12 @@ impl PlayerBar {
         if shown == self.shown_favorite {
             return;
         }
-        match &shown {
-            (Some(item), Some(_)) => self.favorite.control().show_item(Some(item.clone())),
-            _ => self.favorite.control().set_item(None),
+        if let (Some(item), Some(_)) = &shown {
+            self.favorite.control().show_item(Some(item.clone()));
+            self.add_menu.set_dislike_item(Some(item.clone()));
+        } else {
+            self.favorite.control().set_item(None);
+            self.add_menu.set_dislike_item(None);
         }
         self.shown_favorite = shown;
     }

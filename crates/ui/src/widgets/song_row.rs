@@ -20,6 +20,7 @@ use ringo_am_api::write::CatalogItem;
 use crate::add_to_library;
 use crate::add_to_playlist;
 use crate::detail::is_library_id;
+use crate::dislike::{self, DislikeControl};
 use crate::favorite::FavoriteButton;
 use crate::item::SongItem;
 use crate::item_actions::{ADD_TO_QUEUE, OPEN_ALBUM, OPEN_ARTIST, PLAY_ITEM, PLAY_NEXT};
@@ -74,6 +75,8 @@ pub struct SongRowWidgets {
     menu: gtk::PopoverMenu,
     /// The star before the duration. It shows for a favorite, and while the pointer is over the row.
     favorite: FavoriteButton,
+    /// The "Dislike" item of the menu. It reads its status when the menu opens.
+    dislike: DislikeControl,
 }
 
 impl RelmListItem for SongRow {
@@ -141,7 +144,20 @@ impl SongRowWidgets {
         let favorite = FavoriteButton::new();
         favorite.show_on_hover_of(&root);
         root.insert_child_after(favorite.widget(), Some(&explicit));
-        connect_menu_triggers(&root, &menu, &more);
+        let dislike = DislikeControl::new(&root, favorite.control());
+        let weak_root = root.downgrade();
+        dislike.connect_change(move |disliked| {
+            if let Some(root) = weak_root.upgrade() {
+                if disliked {
+                    root.add_css_class("disliked-song");
+                } else {
+                    root.remove_css_class("disliked-song");
+                }
+            }
+        });
+        let on_open = dislike.clone();
+        menu.connect_map(move |_| on_open.load_status());
+        connect_menu_triggers(&root, &menu, &more, dislike.action());
         let widgets = Self {
             badge,
             number,
@@ -152,6 +168,7 @@ impl SongRowWidgets {
             explicit,
             menu,
             favorite,
+            dislike,
         };
         (root, widgets)
     }
@@ -169,6 +186,8 @@ impl SongRowWidgets {
         let control = self.favorite.control();
         control.set_item(item.catalog_item());
         control.queue_status();
+        self.dislike.set_item(item.catalog_item());
+        self.dislike.queue_status();
     }
 
     fn show_lead(&self, artwork_template: Option<&str>, lead: Lead) {
@@ -307,7 +326,12 @@ fn text_label(css_classes: &[&str]) -> gtk::Label {
 
 /// Opens the menu with a right click, a long press, and the row action. The row action of the
 /// add to playlist item opens its popover at the place of the menu.
-fn connect_menu_triggers(root: &gtk::Box, menu: &gtk::PopoverMenu, more: &gtk::Button) {
+fn connect_menu_triggers(
+    root: &gtk::Box,
+    menu: &gtk::PopoverMenu,
+    more: &gtk::Button,
+    dislike: &SimpleAction,
+) {
     let point: Rc<RefCell<Option<Rectangle>>> = Rc::default();
     let click = gtk::GestureClick::builder().button(3).build();
     let (at_point, last_point) = (menu.clone(), Rc::clone(&point));
@@ -331,6 +355,7 @@ fn connect_menu_triggers(root: &gtk::Box, menu: &gtk::PopoverMenu, more: &gtk::B
     connect_more_button(root, menu, more, &point);
     group.add_action(&add_to_playlist_action(root, &point));
     group.add_action(&add_to_library_action(root));
+    group.add_action(dislike);
     root.insert_action_group(ROW_GROUP, Some(&group));
 
     // The popover is a child of the row. It must go before the row does.
@@ -445,9 +470,16 @@ fn build_menu(item: &SongItem) -> Menu {
             Some(&id),
         ));
     }
+    let rating = Menu::new();
+    rating.append_item(&entry(
+        &gettext("Dislike"),
+        &format!("{ROW_GROUP}.{}", dislike::ACTION_NAME),
+        None,
+    ));
     let menu = Menu::new();
     menu.append_section(None, &playback);
     menu.append_section(None, &library);
+    menu.append_section(None, &rating);
     menu.append_section(None, &links);
     menu
 }

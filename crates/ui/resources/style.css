@@ -70,6 +70,8 @@ button.artwork-button { padding: 0; min-height: 0; min-width: 0; background: non
 }
 
 /* The track number of an album sits in a squircle with the album color. */
+.disliked-song { opacity: 0.5; }
+
 .track-badge {
   background-color: color-mix(in srgb, var(--album-tint, var(--card-bg-color)) 55%, var(--card-bg-color));
   transition: background-color 600ms ease-in-out;

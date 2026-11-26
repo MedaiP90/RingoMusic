@@ -79,16 +79,26 @@ enum Status {
 
 /// One click that changed the status and sent a request.
 #[derive(Clone, Debug, Eq, PartialEq)]
-struct Toggle {
+pub(crate) struct Toggle {
     generation: u64,
-    item: CatalogItem,
-    target: bool,
+    pub(crate) item: CatalogItem,
+    pub(crate) target: bool,
+}
+
+/// A change of the star that a linked control must know (see [`FavoriteControl::connect_change`]).
+#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+pub(crate) enum Change {
+    /// A click set the star to this value and sent a request.
+    Toggled(bool),
+    /// The request of a click failed, so the star went back from this value.
+    Undone(bool),
 }
 
 /// The state logic of the star, with no widget. A generation number drops the result of a request
-/// for an item that is no longer shown.
+/// for an item that is no longer shown. The dislike control of `dislike.rs` reuses it for a
+/// boolean status.
 #[derive(Debug, Default)]
-struct FavoriteState {
+pub(crate) struct FavoriteState {
     item: Option<CatalogItem>,
     status: Status,
     generation: u64,
@@ -96,14 +106,14 @@ struct FavoriteState {
 
 impl FavoriteState {
     /// Shows `item` with an unknown status. Results of earlier requests are dropped.
-    fn reset(&mut self, item: Option<CatalogItem>) {
+    pub(crate) fn reset(&mut self, item: Option<CatalogItem>) {
         self.generation += 1;
         self.item = item;
         self.status = Status::Unknown;
     }
 
     /// Starts a status read. Returns the request, or `None` without an item.
-    fn begin_load(&mut self) -> Option<(u64, CatalogItem)> {
+    pub(crate) fn begin_load(&mut self) -> Option<(u64, CatalogItem)> {
         let item = self.item.clone()?;
         self.generation += 1;
         self.status = Status::Loading;
@@ -111,7 +121,7 @@ impl FavoriteState {
     }
 
     /// Takes the result of a status read. Returns `false` if the result is out of date.
-    fn finish_load(&mut self, generation: u64, favorite: bool) -> bool {
+    pub(crate) fn finish_load(&mut self, generation: u64, favorite: bool) -> bool {
         let current = generation == self.generation && self.status == Status::Loading;
         if current {
             self.status = Status::Known(favorite);
@@ -121,7 +131,7 @@ impl FavoriteState {
 
     /// Changes the status to `target` before the request. Returns `None` if the status is not
     /// known or already has this value.
-    fn begin_toggle(&mut self, target: bool) -> Option<Toggle> {
+    pub(crate) fn begin_toggle(&mut self, target: bool) -> Option<Toggle> {
         let item = self.item.clone()?;
         if self.status != Status::Known(!target) {
             return None;
@@ -136,7 +146,7 @@ impl FavoriteState {
 
     /// Changes the status back after a failed request. Returns `false` if the item changed, or a
     /// newer click already changed the status again.
-    fn undo(&mut self, toggle: &Toggle) -> bool {
+    pub(crate) fn undo(&mut self, toggle: &Toggle) -> bool {
         let current =
             toggle.generation == self.generation && self.status == Status::Known(toggle.target);
         if current {
@@ -146,12 +156,25 @@ impl FavoriteState {
     }
 
     /// Tells if a status read of `generation` is still the one that the state waits for.
-    fn is_loading(&self, generation: u64) -> bool {
+    pub(crate) fn is_loading(&self, generation: u64) -> bool {
         generation == self.generation && self.status == Status::Loading
     }
 
-    fn is_known(&self) -> bool {
+    pub(crate) fn is_known(&self) -> bool {
         matches!(self.status, Status::Known(_))
+    }
+
+    /// Tells if the status is known and on.
+    pub(crate) fn is_on(&self) -> bool {
+        self.status == Status::Known(true)
+    }
+
+    /// Sets a known status with no request, because another control decided it. Does nothing
+    /// while the status is not known.
+    pub(crate) fn force(&mut self, value: bool) {
+        if self.is_known() {
+            self.status = Status::Known(value);
+        }
     }
 
     fn look(&self) -> Look {
@@ -165,12 +188,16 @@ impl FavoriteState {
 /// Callback that shows a [`Look`].
 type LookHandler = Box<dyn Fn(Look)>;
 
+/// Callback that learns a [`Change`].
+type ChangeHandler = Box<dyn Fn(Change)>;
+
 struct Inner {
     action: SimpleAction,
     state: RefCell<FavoriteState>,
     /// A widget of the view. The toast of a failed write appears over its window.
     anchor: glib::WeakRef<gtk::Widget>,
     on_look: RefCell<Option<LookHandler>>,
+    on_change: RefCell<Option<ChangeHandler>>,
 }
 
 impl Inner {
@@ -193,6 +220,7 @@ impl Inner {
             return;
         };
         self.sync();
+        self.notify(Change::Toggled(target));
         let (Some(anchor), Some(services)) = (self.anchor.upgrade(), add_to_playlist::services())
         else {
             warn!("the favorite has no widget or no services");
@@ -216,6 +244,13 @@ impl Inner {
         let changed = self.state.borrow_mut().undo(toggle);
         if changed {
             self.sync();
+            self.notify(Change::Undone(toggle.target));
+        }
+    }
+
+    fn notify(&self, change: Change) {
+        if let Some(on_change) = self.on_change.borrow().as_ref() {
+            on_change(change);
         }
     }
 }
@@ -236,6 +271,7 @@ impl FavoriteControl {
             state: RefCell::default(),
             anchor: anchor.as_ref().downgrade(),
             on_look: RefCell::default(),
+            on_change: RefCell::default(),
         });
         let weak: Weak<Inner> = Rc::downgrade(&inner);
         inner.action.connect_change_state(move |_, value| {
@@ -307,6 +343,23 @@ impl FavoriteControl {
                 inner.sync();
             }
         });
+    }
+
+    /// Tells if the status is known and on.
+    pub(crate) fn is_on(&self) -> bool {
+        self.inner.state.borrow().is_on()
+    }
+
+    /// Sets a known status with no request. Use it when another control already sent the request
+    /// that changes the favorite (a dislike clears it).
+    pub(crate) fn set_on_quietly(&self, value: bool) {
+        self.inner.state.borrow_mut().force(value);
+        self.inner.sync();
+    }
+
+    /// Calls `on_change` for each click and each undo of a click. One handler at a time.
+    pub(crate) fn connect_change(&self, on_change: impl Fn(Change) + 'static) {
+        *self.inner.on_change.borrow_mut() = Some(Box::new(on_change));
     }
 
     fn connect_look(&self, on_look: impl Fn(Look) + 'static) {

@@ -26,6 +26,8 @@ use tracing::warn;
 
 use crate::add_to_library;
 use crate::detail::is_library_id;
+use crate::dislike::{self, DislikeControl};
+use crate::favorite::FavoriteControl;
 use crate::library_write;
 use crate::name_filter::NameFilter;
 use crate::services::{ApiClient, AppServices};
@@ -379,7 +381,9 @@ fn load(picker: &Rc<Picker>, services: &AppServices) {
 
 /// A menu button for a header or a bar. It has the items "Add to Playlist…" (set the songs with
 /// [`Self::set_songs`]) and "Add to Library" (set the item with [`Self::set_library_item`]).
-/// An item is hidden while it is off. The button is hidden while both are off.
+/// An item is hidden while it is off. The button is hidden while both are off. The "Dislike"
+/// item (set the item with [`Self::set_dislike_item`]) is off until the rating is known, and it
+/// also shows the button.
 pub struct ItemMenu {
     button: gtk::MenuButton,
     action: SimpleAction,
@@ -388,14 +392,26 @@ pub struct ItemMenu {
     library_item: Rc<RefCell<Option<CatalogItem>>>,
     /// Counts the calls of [`Self::set_library_item`]. A status result of an older call is dropped.
     library_generation: Rc<Cell<u64>>,
+    /// Only a menu with a star has the dislike item.
+    dislike: Option<DislikeControl>,
+    /// The menu has a dislike item. The button shows for it.
+    has_dislike: Rc<Cell<bool>>,
 }
 
 impl ItemMenu {
-    /// Makes the button. It has no songs and no library item yet, so it is hidden.
-    pub fn new() -> Self {
+    /// Makes the button. It has no songs and no library item yet, so it is hidden. With
+    /// `favorite`, the star of the same song, the menu also has a "Dislike" item. The item and the
+    /// star exclude each other.
+    pub fn new(favorite: Option<&FavoriteControl>) -> Self {
         let menu = Menu::new();
         menu.append_item(&hidden_when_off(&gettext("Add to Playlist…"), MENU_ACTION));
         menu.append_item(&hidden_when_off(&gettext("Add to Library"), LIBRARY_ACTION));
+        if favorite.is_some() {
+            menu.append_item(&MenuItem::new(
+                Some(&gettext("Dislike")),
+                Some(&format!("{MENU_GROUP}.{}", dislike::ACTION_NAME)),
+            ));
+        }
         let button = gtk::MenuButton::builder()
             .icon_name("view-more-symbolic")
             .tooltip_text(gettext("More"))
@@ -426,9 +442,21 @@ impl ItemMenu {
             }
         });
 
+        let dislike = favorite.map(|favorite| DislikeControl::new(&button, favorite));
+        if let Some(dislike) = dislike.clone() {
+            button.connect_active_notify(move |button| {
+                if button.is_active() {
+                    dislike.load_status();
+                }
+            });
+        }
+
         let group = SimpleActionGroup::new();
         group.add_action(&action);
         group.add_action(&library_action);
+        if let Some(dislike) = &dislike {
+            group.add_action(dislike.action());
+        }
         button.insert_action_group(MENU_GROUP, Some(&group));
         Self {
             button,
@@ -437,7 +465,20 @@ impl ItemMenu {
             library_action,
             library_item,
             library_generation: Rc::new(Cell::new(0)),
+            dislike,
+            has_dislike: Rc::new(Cell::new(false)),
         }
+    }
+
+    /// Sets the catalog item that "Dislike" rates. `None` turns the item off. The rating is read
+    /// when the menu opens.
+    pub fn set_dislike_item(&self, item: Option<CatalogItem>) {
+        let Some(dislike) = &self.dislike else {
+            return;
+        };
+        self.has_dislike.set(item.is_some());
+        dislike.set_item(item);
+        self.refresh_button();
     }
 
     /// The widget to put in a container.
@@ -467,6 +508,7 @@ impl ItemMenu {
         };
         let (button, action) = (self.button.downgrade(), self.library_action.clone());
         let (current, other) = (Rc::clone(&self.library_generation), self.action.clone());
+        let has_dislike = Rc::clone(&self.has_dislike);
         glib::spawn_future_local(async move {
             let in_library = add_to_library::is_in_library(item).await;
             let Some(button) = button.upgrade() else {
@@ -476,7 +518,7 @@ impl ItemMenu {
                 return;
             }
             action.set_enabled(!in_library);
-            button.set_visible(action.is_enabled() || other.is_enabled());
+            button.set_visible(action.is_enabled() || other.is_enabled() || has_dislike.get());
         });
     }
 
@@ -498,8 +540,9 @@ impl ItemMenu {
 
     /// Shows the button while one of its items shows.
     fn refresh_button(&self) {
-        self.button
-            .set_visible(self.action.is_enabled() || self.library_action.is_enabled());
+        self.button.set_visible(
+            self.action.is_enabled() || self.library_action.is_enabled() || self.has_dislike.get(),
+        );
     }
 }
 

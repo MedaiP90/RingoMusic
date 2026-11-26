@@ -313,6 +313,49 @@ pub async fn rating(transport: &impl ApiTransport, item: &CatalogItem) -> Result
     })
 }
 
+/// Reads which songs have a dislike. The request is live and never uses the cache. The result has
+/// one entry for each song. A song that Apple does not return has no rating, so it is not
+/// disliked. Items that are not songs are ignored.
+///
+/// Documentation:
+/// <https://developer.apple.com/documentation/applemusicapi/get-multiple-personal-content-ratings-6wab5>
+///
+/// # Errors
+///
+/// Returns an error if the request fails or the response is not valid.
+pub async fn dislike_status(
+    transport: &impl ApiTransport,
+    items: &[CatalogItem],
+) -> Result<HashMap<CatalogItem, bool>> {
+    let songs: Vec<&CatalogItem> = items
+        .iter()
+        .filter(|item| matches!(item, CatalogItem::Song(_)))
+        .collect();
+    let mut status = HashMap::new();
+    if songs.is_empty() {
+        return Ok(status);
+    }
+    for item in &songs {
+        segment("ID", item.id())?;
+    }
+    let ids = join_ids(&songs);
+    let page: ApiPage<RatingEntry> = parse(
+        transport
+            .get_uncached("/v1/me/ratings/songs", &[("ids", ids.as_str())])
+            .await?,
+    )?;
+    let disliked: Vec<String> = page
+        .data
+        .into_iter()
+        .filter(|entry| entry.attributes.value == i64::from(Rating::Dislike.value()))
+        .map(|entry| entry.id)
+        .collect();
+    for item in songs {
+        status.insert(item.clone(), disliked.iter().any(|id| id == item.id()));
+    }
+    Ok(status)
+}
+
 /// Sets the rating of a song, an album, or a playlist. A new rating replaces the old one.
 ///
 /// `Love` is the same state as a favorite (decision L7).
@@ -404,6 +447,8 @@ struct FavoriteAttributes {
 /// One resource of a rating response.
 #[derive(Deserialize)]
 struct RatingEntry {
+    #[serde(default)]
+    id: String,
     attributes: RatingAttributes,
 }
 
