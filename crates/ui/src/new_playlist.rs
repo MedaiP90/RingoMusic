@@ -12,9 +12,11 @@ use relm4::adw;
 use relm4::adw::prelude::*;
 use relm4::gtk;
 use relm4::gtk::gio::ActionEntry;
+use relm4::gtk::glib::{Variant, VariantTy};
 use ringo_am_api::models::{LibraryPlaylist, LibraryPlaylistId};
 use ringo_am_api::write::{self, Track};
 
+use crate::add_to_playlist;
 use crate::library_write;
 use crate::services::AppServices;
 use crate::views::library::LibraryInput;
@@ -25,24 +27,55 @@ const DIALOG_WIDTH: i32 = 400;
 /// Name of the action that opens the dialog with no songs.
 const NEW_PLAYLIST_ACTION: &str = "new-playlist";
 
-/// Adds the window action `win.new-playlist`. After a playlist is created, the action marks the
-/// library playlists as out of date through `playlists` and opens the new playlist page.
+/// Name of the action that opens the dialog with songs. Its parameter is the list of song IDs.
+const NEW_PLAYLIST_WITH_SONGS_ACTION: &str = "new-playlist-with-songs";
+
+/// Adds the window actions `win.new-playlist` and `win.new-playlist-with-songs`. After a playlist
+/// is created, the actions mark the library playlists as out of date through `playlists` and open
+/// the new playlist page.
 pub fn register(
     window: &adw::ApplicationWindow,
     services: AppServices,
     playlists: relm4::Sender<LibraryInput>,
 ) {
-    let action = ActionEntry::builder(NEW_PLAYLIST_ACTION)
-        .activate(move |window: &adw::ApplicationWindow, _, _| {
-            let (window_for_open, playlists) = (window.clone(), playlists.clone());
-            NewPlaylistDialog::present(window, &services, Vec::new(), move |playlist| {
-                let id = playlist.id.clone();
-                playlists.emit(LibraryInput::Invalidate);
-                open_playlist(&window_for_open, &id);
-            });
+    let empty = {
+        let (services, playlists) = (services.clone(), playlists.clone());
+        ActionEntry::builder(NEW_PLAYLIST_ACTION)
+            .activate(move |window: &adw::ApplicationWindow, _, _| {
+                present_dialog(window, &services, &playlists, Vec::new());
+            })
+            .build()
+    };
+    let with_songs = ActionEntry::builder(NEW_PLAYLIST_WITH_SONGS_ACTION)
+        .parameter_type(Some(VariantTy::STRING_ARRAY))
+        .activate(move |window: &adw::ApplicationWindow, _, parameter| {
+            let song_ids = parameter
+                .and_then(Variant::get::<Vec<String>>)
+                .unwrap_or_default();
+            present_dialog(
+                window,
+                &services,
+                &playlists,
+                add_to_playlist::tracks_of(&song_ids),
+            );
         })
         .build();
-    window.add_action_entries([action]);
+    window.add_action_entries([empty, with_songs]);
+}
+
+/// Shows the dialog. `tracks` go in the new playlist.
+fn present_dialog(
+    window: &adw::ApplicationWindow,
+    services: &AppServices,
+    playlists: &relm4::Sender<LibraryInput>,
+    tracks: Vec<Track>,
+) {
+    let (window_for_open, playlists) = (window.clone(), playlists.clone());
+    NewPlaylistDialog::present(window, services, tracks, move |playlist| {
+        let id = playlist.id.clone();
+        playlists.emit(LibraryInput::Invalidate);
+        open_playlist(&window_for_open, &id);
+    });
 }
 
 /// Opens the page of a library playlist with the window action.

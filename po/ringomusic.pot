@@ -68,6 +68,35 @@ msgstr ""
 msgid "Yellow"
 msgstr ""
 
+#: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
+msgid "Add to Playlist…"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs
+#, rust-format
+msgid "Added to {name}"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs
+msgid "Could not load your playlists."
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs
+msgid "More"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs crates/ui/src/views/library.rs
+msgid "New Playlist…"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs
+msgid "Search playlists"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs
+msgid "You have no playlist that you can add songs to."
+msgstr ""
+
 #: crates/ui/src/app.rs
 msgid "Sign in failed. Try again."
 msgstr ""
@@ -570,10 +599,6 @@ msgid "Filter by name"
 msgstr ""
 
 #: crates/ui/src/views/library.rs
-msgid "New Playlist…"
-msgstr ""
-
-#: crates/ui/src/views/library.rs
 msgid "No Matches"
 msgstr ""
 
@@ -835,6 +860,10 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "Create playlists in your library."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Add songs and albums to your playlists."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

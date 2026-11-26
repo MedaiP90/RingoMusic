@@ -21,6 +21,7 @@ use ringo_core::update_checker::Release;
 use ringo_mpris::Callbacks;
 use tracing::{debug, warn};
 
+use crate::add_to_playlist;
 use crate::background::{self, BackgroundPlayback, CloseAction};
 use crate::detail_pages::{self, PageSources};
 use crate::gate::{self, Gate};
@@ -212,9 +213,7 @@ impl SimpleComponent for App {
     ) -> ComponentParts<Self> {
         let Init { services, package } = init;
         let core = services.core();
-        artwork::install_store(services.artwork().clone());
-        accent::install(services.settings());
-        theme::install(services.settings());
+        install_shared_state(&services);
         forward_state(core, &sender);
         forward_track_changes(core, &sender);
         publish_mpris(core, services.artwork(), &sender);
@@ -480,6 +479,15 @@ fn register_actions(sender: &ComponentSender<App>) {
     app.add_action_entries([quit, about, preferences]);
     app.set_accels_for_action("app.quit", &["<Ctrl>q"]);
     app.set_accels_for_action("app.preferences", &["<Ctrl>comma"]);
+}
+
+/// Sets what widgets without context read: the artwork store, the accent, the theme, and the
+/// services of the add to playlist popover.
+fn install_shared_state(services: &AppServices) {
+    artwork::install_store(services.artwork().clone());
+    add_to_playlist::install(services.clone());
+    accent::install(services.settings());
+    theme::install(services.settings());
 }
 
 /// Adds the window actions: the search shortcut and the item actions.

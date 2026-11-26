@@ -47,6 +47,14 @@ pub fn run<T, W>(
     });
 }
 
+/// Shows `text` in a toast. `anchor` is a widget of the view, like for [`run`].
+pub fn notify(anchor: &impl IsA<gtk::Widget>, text: &str) {
+    let toasts = toast_overlay(anchor);
+    if let Some(toasts) = toasts {
+        toasts.add_toast(adw::Toast::new(text));
+    }
+}
+
 /// Handles a failed write: log, undo, toast.
 fn fail(error: &Error, on_failure: impl FnOnce(), toasts: Option<&adw::ToastOverlay>) {
     let LogFields { status, apple_code } = LogFields::of(error);

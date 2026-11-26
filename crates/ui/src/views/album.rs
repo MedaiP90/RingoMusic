@@ -15,6 +15,7 @@ use ringo_core::runner::CoreHandle;
 use tokio::task::JoinHandle;
 use tracing::warn;
 
+use crate::add_to_playlist::AddToPlaylistMenu;
 use crate::detail::{self, AlbumData};
 use crate::item::SongItem;
 use crate::item_actions::{self, OPEN_ARTIST, SongCatalog};
@@ -60,6 +61,8 @@ pub struct AlbumView {
     phase: Phase,
     songs: Vec<SongItem>,
     header: DetailHeader,
+    /// The menu of the page header bar. It adds all songs of the album to a playlist.
+    add_menu: AddToPlaylistMenu,
     frame: DetailFrame,
     actions: PlayActions,
     /// The box that holds the disc headings and the song lists.
@@ -85,6 +88,7 @@ impl SimpleComponent for AlbumView {
                 add_css_class: "album-tint",
                 add_top_bar = &adw::HeaderBar {
                     add_css_class: "flat",
+                    pack_end = &add_menu_widget.clone() -> gtk::MenuButton {},
                 },
 
                 #[wrap(Some)]
@@ -104,6 +108,8 @@ impl SimpleComponent for AlbumView {
             id,
         } = init;
         let header = DetailHeader::new(ArtworkShape::Square);
+        let add_menu = AddToPlaylistMenu::new();
+        let add_menu_widget = add_menu.widget().clone();
         tint::follow_viewed(header.artwork_image(), &root, &id);
         let discs = gtk::Box::new(gtk::Orientation::Vertical, 12);
         let content = build_content(&header, &discs);
@@ -128,6 +134,7 @@ impl SimpleComponent for AlbumView {
             phase: Phase::Idle,
             songs: Vec::new(),
             header,
+            add_menu,
             frame,
             actions,
             discs,
@@ -185,6 +192,8 @@ impl AlbumView {
         self.title.clone_from(&data.title);
         self.songs = data.songs();
         self.catalog.remember(&self.songs);
+        self.add_menu
+            .set_songs(self.songs.iter().map(|song| song.id().to_owned()).collect());
         self.header.set_artwork(data.artwork_template.as_deref());
         self.header.set_title(&data.title);
         let link = data.artist_id.as_deref().map(|target| BylineLink {

@@ -23,6 +23,7 @@ use ringo_core::state::{AppState, Message};
 use ringo_engine::protocol::{PlaybackState, RepeatMode};
 use tracing::warn;
 
+use crate::add_to_playlist::AddToPlaylistMenu;
 use crate::detail;
 use crate::item_actions::{OPEN_ALBUM, OPEN_ARTIST, SongCatalog, SongLinks};
 use crate::playback_actions::{self as shortcuts, ActionState, PlaybackActions};
@@ -150,6 +151,8 @@ pub struct PlayerBar {
     /// IDs of the songs whose links were asked for. Each song is asked once.
     asked_links: HashSet<String>,
     artwork: ArtworkImage,
+    /// The menu that adds the current song to a playlist.
+    add_menu: AddToPlaylistMenu,
     /// The user holds the seek bar. Position updates wait until the release.
     dragging: bool,
     /// The last position that the user chose while the seek bar was held.
@@ -422,6 +425,9 @@ impl SimpleComponent for PlayerBar {
                         },
                     },
                 },
+
+                #[local_ref]
+                add_menu_widget -> gtk::MenuButton {},
             },
             },
         }
@@ -452,6 +458,9 @@ impl SimpleComponent for PlayerBar {
         artwork.set_artwork(state.artwork.as_deref(), ARTWORK_SIZE);
         let artwork_widget = artwork.widget().clone();
         tint::follow_playing(&artwork_widget);
+        let add_menu = AddToPlaylistMenu::new();
+        add_menu.set_songs(state.song_id.iter().cloned().collect());
+        let add_menu_widget = add_menu.widget().clone();
         let mut model = Self {
             state,
             actions,
@@ -462,6 +471,7 @@ impl SimpleComponent for PlayerBar {
             window,
             asked_links: HashSet::new(),
             artwork,
+            add_menu,
             dragging: false,
             seek_target: None,
             queue_open: false,
@@ -522,6 +532,10 @@ impl PlayerBar {
         }
         self.artwork
             .set_artwork(state.artwork.as_deref(), ARTWORK_SIZE);
+        if state.song_id != self.state.song_id {
+            self.add_menu
+                .set_songs(state.song_id.iter().cloned().collect());
+        }
         self.state = state;
     }
 
