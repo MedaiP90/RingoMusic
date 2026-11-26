@@ -341,6 +341,8 @@ pub enum LibraryInput {
     Activated(u32),
     /// The user changed the text of the filter entry.
     FilterChanged(String),
+    /// The list is out of date. It loads again the next time the page shows.
+    Invalidate,
 }
 
 /// A library page.
@@ -350,6 +352,8 @@ pub struct LibraryView {
     core: CoreHandle,
     catalog: SongCatalog,
     phase: Phase,
+    /// The list changed on the server. The next show loads it again.
+    stale: bool,
     filter: NameFilter,
     cursor: PageCursor,
     pending: Option<JoinHandle<()>>,
@@ -366,6 +370,7 @@ impl SimpleComponent for LibraryView {
 
     view! {
         adw::ToolbarView {
+            #[name = "header"]
             add_top_bar = &adw::HeaderBar {
                 #[wrap(Some)]
                 set_title_widget = &adw::Clamp {
@@ -437,6 +442,7 @@ impl SimpleComponent for LibraryView {
             core: services.core().clone(),
             catalog,
             phase: Phase::Idle,
+            stale: false,
             filter,
             cursor: PageCursor::default(),
             pending: None,
@@ -448,13 +454,16 @@ impl SimpleComponent for LibraryView {
             input.emit(LibraryInput::Retry);
         });
         let widgets = view_output!();
+        if kind == LibraryKind::Playlists {
+            widgets.header.pack_end(&build_new_playlist_button());
+        }
         ComponentParts { model, widgets }
     }
 
     fn update(&mut self, message: Self::Input, sender: ComponentSender<Self>) {
         match message {
             LibraryInput::Shown => {
-                if self.phase == Phase::Idle {
+                if self.phase == Phase::Idle || self.stale {
                     self.reload(&sender);
                 }
             }
@@ -468,6 +477,7 @@ impl SimpleComponent for LibraryView {
             LibraryInput::Activated(position) => {
                 self.content.activate(position, &self.filter, &self.core);
             }
+            LibraryInput::Invalidate => self.stale = true,
             LibraryInput::FilterChanged(term) => {
                 self.filter.set(&term);
                 self.content.refilter();
@@ -483,6 +493,7 @@ impl SimpleComponent for LibraryView {
 impl LibraryView {
     /// Clears the list and loads it again from the first page.
     fn reload(&mut self, sender: &ComponentSender<Self>) {
+        self.stale = false;
         if let Some(task) = self.pending.take() {
             task.abort();
         }
@@ -584,6 +595,15 @@ fn build_next_page_spinner() -> adw::Spinner {
         .margin_top(12)
         .margin_bottom(12)
         .visible(false)
+        .build()
+}
+
+/// Builds the button that opens the dialog of a new playlist.
+fn build_new_playlist_button() -> gtk::Button {
+    gtk::Button::builder()
+        .icon_name("list-add-symbolic")
+        .tooltip_text(gettext("New Playlist…"))
+        .action_name("win.new-playlist")
         .build()
 }
 

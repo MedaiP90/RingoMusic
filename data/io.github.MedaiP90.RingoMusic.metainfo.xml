@@ -59,6 +59,9 @@ Copyright (C) 2026 RingoMusic contributors
     <release version="1.2.0" date="2026-11-26">
       <description>
         <p>Release 1.2.0.</p>
+        <ul>
+          <li>Create playlists in your library.</li>
+        </ul>
       </description>
     </release>
     <release version="1.1.1" date="2026-11-25">

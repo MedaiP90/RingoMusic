@@ -8,6 +8,7 @@ crates/ui/src/library_write.rs
 crates/ui/src/main.rs
 crates/ui/src/menu.rs
 crates/ui/src/network_banner.rs
+crates/ui/src/new_playlist.rs
 crates/ui/src/notification.rs
 crates/ui/src/playback_actions.rs
 crates/ui/src/preferences.rs

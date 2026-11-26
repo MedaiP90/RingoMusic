@@ -25,6 +25,7 @@ use crate::background::{self, BackgroundPlayback, CloseAction};
 use crate::detail_pages::{self, PageSources};
 use crate::gate::{self, Gate};
 use crate::item_actions::{self, SongCatalog};
+use crate::new_playlist;
 use crate::preferences::{Preferences, PreferencesInit};
 use crate::section::Section;
 use crate::services::AppServices;
@@ -262,7 +263,8 @@ impl SimpleComponent for App {
         ]
         .map(launch_sections);
         register_refresh(&root, sender.input_sender());
-        let library_pages = LibraryKind::ALL.map(|kind| launch_library(kind, &services, &catalog));
+        let library_pages =
+            LibraryKind::ALL.map(|kind| launch_library(kind, &root, &services, &catalog));
         let mut queue = QueueView::builder().launch(QueueInit {
             core: core.clone(),
             window: root.clone(),
@@ -516,6 +518,7 @@ fn register_refresh(window: &adw::ApplicationWindow, input: &relm4::Sender<Input
 /// as its widget.
 fn launch_library(
     kind: LibraryKind,
+    window: &adw::ApplicationWindow,
     services: &AppServices,
     catalog: &SongCatalog,
 ) -> (LibraryKind, adw::ToolbarView) {
@@ -525,6 +528,9 @@ fn launch_library(
         catalog: catalog.clone(),
     });
     let page = view.widget().clone();
+    if kind == LibraryKind::Playlists {
+        new_playlist::register(window, services.clone(), view.sender().clone());
+    }
     view.detach_runtime();
     (kind, page)
 }
