@@ -942,7 +942,9 @@ msgid "The narrow layout"
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
-msgid "Release 1.2.0."
+msgid ""
+"This release adds library management: create playlists, add songs to "
+"playlists and to your library, and mark favorites and dislikes."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
