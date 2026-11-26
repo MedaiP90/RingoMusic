@@ -15,11 +15,13 @@ use relm4::adw::prelude::*;
 use relm4::gtk;
 use relm4::gtk::glib::Variant;
 use relm4::prelude::*;
+use ringo_am_api::models::ArtistId;
+use ringo_am_api::write::CatalogItem;
 use ringo_core::runner::CoreHandle;
 use tokio::task::JoinHandle;
 use tracing::warn;
 
-use crate::detail::{self, ArtistData, ArtistList, ArtistStart};
+use crate::detail::{self, ArtistData, ArtistList, ArtistStart, is_library_id};
 use crate::item::SongItem;
 use crate::item_actions::{self, OPEN_ARTIST_SONGS, SongCatalog};
 use crate::services::{ApiClient, AppServices};
@@ -219,6 +221,10 @@ impl ArtistView {
         self.title.clone_from(&data.name);
         self.top_songs.clone_from(&data.top_songs);
         self.catalog.remember(&self.top_songs);
+        self.header.show_favorite(
+            (!is_library_id(&self.id))
+                .then(|| CatalogItem::Artist(ArtistId::from(self.id.clone()))),
+        );
         self.header.set_artwork(data.artwork_template.as_deref());
         self.header.set_title(&data.name);
         let details = details_line(data);

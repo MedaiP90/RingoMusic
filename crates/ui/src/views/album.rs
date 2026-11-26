@@ -110,7 +110,7 @@ impl SimpleComponent for AlbumView {
             id,
         } = init;
         let header = DetailHeader::new(ArtworkShape::Square);
-        let add_menu = ItemMenu::new();
+        let add_menu = ItemMenu::new(header.favorite());
         let add_menu_widget = add_menu.widget().clone();
         tint::follow_viewed(header.artwork_image(), &root, &id);
         let discs = gtk::Box::new(gtk::Orientation::Vertical, 12);
@@ -197,6 +197,9 @@ impl AlbumView {
         self.add_menu
             .set_songs(self.songs.iter().map(|song| song.id().to_owned()).collect());
         self.add_menu.set_library_item(
+            (!is_library_id(&self.id)).then(|| CatalogItem::Album(AlbumId::from(self.id.clone()))),
+        );
+        self.header.show_favorite(
             (!is_library_id(&self.id)).then(|| CatalogItem::Album(AlbumId::from(self.id.clone()))),
         );
         self.header.set_artwork(data.artwork_template.as_deref());

@@ -11,7 +11,9 @@ use relm4::gtk::gio::{SimpleAction, SimpleActionGroup};
 use relm4::gtk::glib;
 use relm4::gtk::pango::{EllipsizeMode, WrapMode};
 use relm4::gtk::prelude::*;
+use ringo_am_api::write::CatalogItem;
 
+use crate::favorite::{FavoriteButton, FavoriteControl};
 use crate::widgets::artwork_image::ArtworkImage;
 
 /// Size of the artwork in pixels.
@@ -65,6 +67,7 @@ pub struct DetailHeader {
     /// The row with the Play and Shuffle buttons.
     buttons: gtk::Box,
     shuffle_button: gtk::Button,
+    favorite: FavoriteButton,
 }
 
 impl DetailHeader {
@@ -94,6 +97,8 @@ impl DetailHeader {
             .build();
         let description = Description::new(&title);
         let (buttons, shuffle_button) = build_buttons();
+        let favorite = FavoriteButton::new();
+        buttons.append(favorite.widget());
 
         let texts = gtk::Box::builder()
             .orientation(gtk::Orientation::Vertical)
@@ -127,6 +132,7 @@ impl DetailHeader {
             description,
             buttons,
             shuffle_button,
+            favorite,
         }
     }
 
@@ -179,6 +185,16 @@ impl DetailHeader {
     /// Shows the first line of a description of plain text. `None` hides it.
     pub fn set_description(&self, text: Option<&str>) {
         self.description.set_text(text);
+    }
+
+    /// The favorite state of the item of the page. A menu of the page can use its action.
+    pub fn favorite(&self) -> &FavoriteControl {
+        self.favorite.control()
+    }
+
+    /// Shows the star for `item` and reads its status. `None` leaves the star off.
+    pub fn show_favorite(&self, item: Option<CatalogItem>) {
+        self.favorite.control().show_item(item);
     }
 
     /// Adds `button` after the Play and Shuffle buttons.

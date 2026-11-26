@@ -16,6 +16,7 @@ use relm4::gtk::gdk::EventType;
 use relm4::gtk::glib::{self, Propagation};
 use relm4::gtk::pango::EllipsizeMode;
 use relm4::prelude::*;
+use ringo_am_api::write::CatalogItem;
 use ringo_core::artwork::ArtworkStore;
 use ringo_core::runner::CoreHandle;
 use ringo_core::settings::Settings;
@@ -24,7 +25,8 @@ use ringo_engine::protocol::{PlaybackState, RepeatMode};
 use tracing::warn;
 
 use crate::add_to_playlist::ItemMenu;
-use crate::detail;
+use crate::detail::{self, is_library_id};
+use crate::favorite::FavoriteButton;
 use crate::item_actions::{OPEN_ALBUM, OPEN_ARTIST, SongCatalog, SongLinks};
 use crate::playback_actions::{self as shortcuts, ActionState, PlaybackActions};
 use crate::services::ApiClient;
@@ -109,6 +111,13 @@ impl BarState {
         self.artist_id = catalog.artist_id(song_id);
     }
 
+    /// The current song as a catalog item. A song of the library has none: Apple takes only
+    /// catalog IDs for a favorite.
+    fn catalog_song(&self) -> Option<CatalogItem> {
+        let id = self.song_id.as_deref().filter(|id| !is_library_id(id))?;
+        Some(CatalogItem::Song(id.to_owned().into()))
+    }
+
     /// Tells if the album or the artist of the song is still unknown.
     fn lacks_links(&self) -> bool {
         self.song_id.is_some() && (self.album_id.is_none() || self.artist_id.is_none())
@@ -151,6 +160,8 @@ pub struct PlayerBar {
     /// IDs of the songs whose links were asked for. Each song is asked once.
     asked_links: HashSet<String>,
     artwork: ArtworkImage,
+    /// The star of the current song.
+    favorite: FavoriteButton,
     /// The menu that adds the current song to a playlist or to the library.
     add_menu: ItemMenu,
     /// The user holds the seek bar. Position updates wait until the release.
@@ -427,6 +438,9 @@ impl SimpleComponent for PlayerBar {
                 },
 
                 #[local_ref]
+                favorite_widget -> gtk::Button {},
+
+                #[local_ref]
                 add_menu_widget -> gtk::MenuButton {},
             },
             },
@@ -458,7 +472,10 @@ impl SimpleComponent for PlayerBar {
         artwork.set_artwork(state.artwork.as_deref(), ARTWORK_SIZE);
         let artwork_widget = artwork.widget().clone();
         tint::follow_playing(&artwork_widget);
-        let add_menu = ItemMenu::new();
+        let favorite = FavoriteButton::new();
+        favorite.control().show_item(state.catalog_song());
+        let favorite_widget = favorite.widget().clone();
+        let add_menu = ItemMenu::new(favorite.control());
         add_menu.set_song(state.song_id.clone());
         let add_menu_widget = add_menu.widget().clone();
         let mut model = Self {
@@ -471,6 +488,7 @@ impl SimpleComponent for PlayerBar {
             window,
             asked_links: HashSet::new(),
             artwork,
+            favorite,
             add_menu,
             dragging: false,
             seek_target: None,
@@ -534,6 +552,7 @@ impl PlayerBar {
             .set_artwork(state.artwork.as_deref(), ARTWORK_SIZE);
         if state.song_id != self.state.song_id {
             self.add_menu.set_song(state.song_id.clone());
+            self.favorite.control().show_item(state.catalog_song());
         }
         self.state = state;
     }

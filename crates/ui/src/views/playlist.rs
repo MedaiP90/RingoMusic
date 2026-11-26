@@ -120,7 +120,7 @@ impl SimpleComponent for PlaylistView {
             id,
         } = init;
         let header = DetailHeader::new(ArtworkShape::Square);
-        let add_menu = ItemMenu::new();
+        let add_menu = ItemMenu::new(header.favorite());
         let add_menu_widget = add_menu.widget().clone();
         let list = build_list(&sender);
         let scrolled = gtk::ScrolledWindow::builder()
@@ -241,6 +241,10 @@ impl PlaylistView {
         }
         self.title.clone_from(&data.title);
         self.add_menu.set_library_item(
+            (!is_library_id(&self.id))
+                .then(|| CatalogItem::Playlist(PlaylistId::from(self.id.clone()))),
+        );
+        self.header.show_favorite(
             (!is_library_id(&self.id))
                 .then(|| CatalogItem::Playlist(PlaylistId::from(self.id.clone()))),
         );

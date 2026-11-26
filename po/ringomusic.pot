@@ -89,6 +89,10 @@ msgstr ""
 msgid "Could not load your playlists."
 msgstr ""
 
+#: crates/ui/src/add_to_playlist.rs
+msgid "Favorite"
+msgstr ""
+
 #: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
 msgid "More"
 msgstr ""
@@ -151,6 +155,18 @@ msgstr ""
 
 #: crates/ui/src/detail.rs
 msgid "Singles & EPs"
+msgstr ""
+
+#: crates/ui/src/favorite.rs
+msgid "Add to favorites"
+msgstr ""
+
+#: crates/ui/src/favorite.rs
+msgid "Remove from favorites"
+msgstr ""
+
+#: crates/ui/src/favorite.rs
+msgid "Remove from favorites (marks the artist as disliked)"
 msgstr ""
 
 #: crates/ui/src/gate.rs
@@ -876,6 +892,13 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "Add songs, albums, and playlists to your library."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Add songs, albums, artists, and playlists to your favorites, and remove them "
+"again, with the star button. In a song list, the star shows at the start of "
+"a row when the pointer is over it."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
