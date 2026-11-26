@@ -14,7 +14,7 @@ use ringo_core::state::{AuthState, Message};
 use ringo_core::update_checker;
 
 use crate::services::AppServices;
-use crate::{accent, theme};
+use crate::{accent, disclaimer, theme};
 
 /// Response ID of the confirmation dialog for the sign-out button.
 const SIGN_OUT_RESPONSE: &str = "sign-out";
@@ -201,6 +201,26 @@ impl SimpleComponent for Preferences {
                         add_css_class: "destructive-action",
                         set_sensitive: model.signed_in,
                         connect_activated => Input::ConfirmSignOut,
+                    },
+                },
+
+                add = &adw::PreferencesGroup {
+                    // Collapsed by default, so the long text does not make the dialog taller.
+                    add = &adw::ExpanderRow {
+                        set_title: &gettext("Library Functions"),
+                        add_row = &gtk::Label {
+                            set_label: &disclaimer::body(),
+                            set_wrap: true,
+                            set_xalign: 0.0,
+                            set_selectable: true,
+                            set_margin_all: 12,
+                        },
+                        add_row = &adw::ButtonRow {
+                            set_title: &gettext("Open music.apple.com"),
+                            connect_activated[dialog = root.clone()] => move |_| {
+                                disclaimer::open_music_site(&dialog);
+                            },
+                        },
                     },
                 },
             },

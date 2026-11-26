@@ -23,6 +23,7 @@ const CHECK_UPDATES: &str = "check-updates";
 const LAST_UPDATE_CHECK: &str = "last-update-check";
 const API_CACHE_MAX_MB: &str = "api-cache-max-mb";
 const ARTWORK_CACHE_MAX_MB: &str = "artwork-cache-max-mb";
+const LIBRARY_DISCLAIMER_VERSION: &str = "library-disclaimer-version";
 
 /// Typed view of the application settings.
 ///
@@ -214,6 +215,25 @@ impl Settings {
     #[must_use]
     pub fn artwork_cache_max_mb(&self) -> u32 {
         self.inner.uint(ARTWORK_CACHE_MAX_MB)
+    }
+
+    /// Version of the library functions disclaimer that the user accepted.
+    /// Zero means that the user did not accept any version.
+    #[must_use]
+    pub fn library_disclaimer_version(&self) -> u32 {
+        self.inner.uint(LIBRARY_DISCLAIMER_VERSION)
+    }
+
+    /// Sets the accepted version of the library functions disclaimer.
+    ///
+    /// # Errors
+    ///
+    /// Returns an error if the key cannot be written.
+    pub fn set_library_disclaimer_version(&self, value: u32) -> Result<()> {
+        Self::write(
+            LIBRARY_DISCLAIMER_VERSION,
+            self.inner.set_uint(LIBRARY_DISCLAIMER_VERSION, value),
+        )
     }
 
     /// Adds the key name to a failed write.

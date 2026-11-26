@@ -5,6 +5,7 @@ crates/ui/src/add_to_playlist.rs
 crates/ui/src/app.rs
 crates/ui/src/background.rs
 crates/ui/src/detail.rs
+crates/ui/src/disclaimer.rs
 crates/ui/src/favorite.rs
 crates/ui/src/gate.rs
 crates/ui/src/library_write.rs

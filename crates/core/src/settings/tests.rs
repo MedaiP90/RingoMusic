@@ -64,6 +64,16 @@ fn background_denied_flag_can_be_set_and_cleared() {
 }
 
 #[test]
+fn library_disclaimer_version_starts_at_zero_and_can_be_set() {
+    let settings = test_settings();
+    assert_eq!(settings.library_disclaimer_version(), 0);
+    settings
+        .set_library_disclaimer_version(2)
+        .expect("key is writable");
+    assert_eq!(settings.library_disclaimer_version(), 2);
+}
+
+#[test]
 fn volume_accepts_the_range_limits() {
     let settings = test_settings();
     settings.set_volume(0.0).expect("value is in range");

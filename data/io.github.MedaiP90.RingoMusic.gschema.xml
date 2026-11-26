@@ -90,5 +90,10 @@ Copyright (C) 2026 RingoMusic contributors
       <summary>Size limit of the artwork cache</summary>
       <description>Maximum size of the cache for artwork images, in mebibytes. The application removes the oldest files at start-up when the cache is larger.</description>
     </key>
+    <key name="library-disclaimer-version" type="u">
+      <default>0</default>
+      <summary>Accepted version of the library functions message</summary>
+      <description>Version of the message about the library functions that Apple does not offer to other apps. The application shows the message after sign-in when this value is lower than the version in the application. The value 0 means that the user did not accept any version.</description>
+    </key>
   </schema>
 </schemalist>

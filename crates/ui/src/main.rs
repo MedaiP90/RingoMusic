@@ -13,6 +13,7 @@ mod background;
 mod debug_play;
 mod detail;
 mod detail_pages;
+mod disclaimer;
 mod dislike;
 mod favorite;
 mod gate;

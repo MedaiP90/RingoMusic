@@ -157,6 +157,65 @@ msgstr ""
 msgid "Singles & EPs"
 msgstr ""
 
+#: crates/ui/src/disclaimer.rs
+msgid "Change the order of songs in a playlist"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "Delete a playlist"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "I _Understand"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs crates/ui/src/preferences.rs
+msgid "Open music.apple.com"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "Remove items from your library"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "Remove songs from a playlist"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid ""
+"Removing an artist from your favorites uses a function that Apple does not "
+"document. It can stop working without notice, and it also marks the artist "
+"as disliked."
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "Rename a playlist or change its description"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "RingoMusic is not affiliated with Apple."
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid ""
+"RingoMusic respects Apple's terms of use. It uses the functions that Apple "
+"makes available to other apps, with one exception that is described below."
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "Some Library Functions Are Not Available"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid "These functions are not available in RingoMusic:"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
+msgid ""
+"To do these actions, use the Apple Music app or music.apple.com. RingoMusic "
+"shows the changes the next time it loads your library."
+msgstr ""
+
 #: crates/ui/src/favorite.rs
 msgid "Add to favorites"
 msgstr ""
@@ -363,6 +422,10 @@ msgstr ""
 
 #: crates/ui/src/preferences.rs
 msgid "In use"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+msgid "Library Functions"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
@@ -906,6 +969,12 @@ msgstr ""
 msgid ""
 "Dislike songs. A disliked song shows dimmed in song lists, also after a "
 "restart."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"A message tells which library functions are only available in Apple's apps. "
+"The Account page in Preferences shows it again."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
