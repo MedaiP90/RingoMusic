@@ -65,6 +65,7 @@ Copyright (C) 2026 RingoMusic contributors
           <li>To remove an artist from your favorites, use the Apple Music app or music.apple.com. RingoMusic used a function that Apple does not document for this, and it also marked the artist as disliked.</li>
           <li>The message about library functions shows one more time, with the updated list.</li>
           <li>Stricter checks of the requests that change your library.</li>
+          <li>Less work during playback with a long queue: the progress updates no longer copy the queue.</li>
         </ul>
       </description>
     </release>

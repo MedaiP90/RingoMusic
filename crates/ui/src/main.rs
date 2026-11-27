@@ -33,6 +33,7 @@ mod section;
 mod services;
 mod sidebar;
 mod startup_error;
+mod status_batch;
 mod subscription;
 mod theme;
 mod tint;

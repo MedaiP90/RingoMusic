@@ -16,7 +16,6 @@ use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 use std::sync::Arc;
-use std::time::Duration;
 
 use relm4::gtk;
 use relm4::gtk::gio::SimpleAction;
@@ -26,16 +25,11 @@ use ringo_am_api::ApiTransport;
 use ringo_am_api::write::{self, CatalogItem};
 use tracing::warn;
 
-use crate::add_to_playlist;
 use crate::favorite::{Change, FavoriteControl, FavoriteState};
 use crate::library_write;
 use crate::rating_confirmation::{self, RatingControl, RatingState, WriteToken};
-
-/// Time that the rows of a list wait for each other before one request reads their rating.
-const BATCH_DELAY: Duration = Duration::from_millis(60);
-
-/// Most songs in one rating request.
-const BATCH_SIZE: usize = 50;
+use crate::services;
+use crate::status_batch::{StatusBatch, StatusTarget};
 
 /// Name of the dislike action, in every group that holds it.
 pub const ACTION_NAME: &str = "dislike";
@@ -149,8 +143,7 @@ impl Inner {
         }
         remember(Some(&toggle.item), target);
         self.sync();
-        let (Some(anchor), Some(services)) = (self.anchor.upgrade(), add_to_playlist::services())
-        else {
+        let (Some(anchor), Some(services)) = (self.anchor.upgrade(), services::installed()) else {
             warn!("the dislike has no widget or no services");
             self.undo(&toggle, displaced_favorite);
             return;
@@ -293,123 +286,68 @@ impl DislikeControl {
     }
 
     /// Reads the rating together with the other controls that queue in the same moment. The rows
-    /// of a list use this: they get one request for up to [`BATCH_SIZE`] songs, not one request for
-    /// each row. A song that the session changed has no read.
+    /// of a list use this: they get one request for many songs, not one request for each row. A
+    /// song that the session changed has no read.
     pub fn queue_status(&self) {
-        let item = self.inner.item.borrow().clone();
-        if item.as_ref().is_some_and(|item| remembered(item).is_some()) {
-            return;
-        }
-        let request = self.inner.state.borrow_mut().begin_load();
-        let Some((generation, item)) = request else {
-            return;
-        };
-        self.inner.sync();
-        let waiting = Waiting {
-            inner: Rc::downgrade(&self.inner),
-            generation,
-            item,
-        };
-        let first = WAITING.with_borrow_mut(|queue| {
-            queue.push(waiting);
-            queue.len() == 1
-        });
-        if first {
-            glib::timeout_add_local_once(BATCH_DELAY, read_waiting);
+        if let Some((generation, item)) = self.begin_load() {
+            StatusBatch::queue(&READS, self.target(), generation, item);
         }
     }
 
     /// Reads the rating of the item, live. The item stays off until the result comes. A
     /// failure counts as no dislike. An item that the session changed has no read.
     pub fn load_status(&self) {
-        let item = self.inner.item.borrow().clone();
-        if item.as_ref().is_some_and(|item| remembered(item).is_some()) {
-            return;
+        if let Some((generation, item)) = self.begin_load() {
+            StatusBatch::read_now(&READS, self.target(), generation, item);
+        }
+    }
+
+    /// Starts a read and shows that the rating loads. `None` if no read is necessary, also
+    /// for an item that the session changed.
+    fn begin_load(&self) -> Option<(u64, CatalogItem)> {
+        let changed_in_session = self
+            .inner
+            .item
+            .borrow()
+            .as_ref()
+            .is_some_and(|item| remembered(item).is_some());
+        if changed_in_session {
+            return None;
         }
         let request = self.inner.state.borrow_mut().begin_load();
-        let Some((generation, item)) = request else {
-            return;
-        };
-        self.inner.sync();
-        let weak = Rc::downgrade(&self.inner);
-        glib::spawn_future_local(async move {
-            let disliked = read_dislike(item).await;
-            let Some(inner) = weak.upgrade() else {
-                return;
-            };
-            let current = inner.state.borrow_mut().finish_load(generation, disliked);
-            if current {
-                inner.sync();
-            }
-        });
+        if request.is_some() {
+            self.inner.sync();
+        }
+        request
+    }
+
+    fn target(&self) -> Weak<dyn StatusTarget> {
+        Rc::downgrade(&self.inner) as Weak<dyn StatusTarget>
     }
 }
 
-/// A control that waits for a batched rating read.
-#[derive(Clone)]
-struct Waiting {
-    inner: Weak<Inner>,
-    generation: u64,
-    item: CatalogItem,
-}
+impl StatusTarget for Inner {
+    fn is_loading(&self, generation: u64) -> bool {
+        self.state.borrow().is_loading(generation)
+    }
 
-impl Waiting {
-    /// Tells if the control still waits for this read.
-    fn is_current(&self) -> bool {
-        self.inner
-            .upgrade()
-            .is_some_and(|inner| inner.state.borrow().is_loading(self.generation))
+    fn finish_load(&self, generation: u64, disliked: bool) {
+        let current = self.state.borrow_mut().finish_load(generation, disliked);
+        if current {
+            self.sync();
+        }
     }
 }
 
 thread_local! {
-    static WAITING: RefCell<Vec<Waiting>> = const { RefCell::new(Vec::new()) };
-}
-
-/// Reads the rating of the controls that queued, in requests of up to [`BATCH_SIZE`] songs. A
-/// control that got another item in the meantime does not count. After a failure the songs
-/// count as not disliked, like for a single read.
-fn read_waiting() {
-    let waiting: Vec<Waiting> = WAITING
-        .take()
-        .into_iter()
-        .filter(Waiting::is_current)
-        .collect();
-    let mut items: Vec<CatalogItem> = Vec::new();
-    for entry in &waiting {
-        if !items.contains(&entry.item) {
-            items.push(entry.item.clone());
-        }
-    }
-    for chunk in items.chunks(BATCH_SIZE) {
-        let chunk = chunk.to_vec();
-        let entries: Vec<Waiting> = waiting
-            .iter()
-            .filter(|entry| chunk.contains(&entry.item))
-            .cloned()
-            .collect();
-        glib::spawn_future_local(async move {
-            let status = read_dislikes(chunk).await;
-            for entry in entries {
-                let Some(inner) = entry.inner.upgrade() else {
-                    continue;
-                };
-                let disliked = status.get(&entry.item).copied().unwrap_or(false);
-                let current = inner
-                    .state
-                    .borrow_mut()
-                    .finish_load(entry.generation, disliked);
-                if current {
-                    inner.sync();
-                }
-            }
-        });
-    }
+    /// The rating reads of the dislike controls. A failure counts as "no dislike", like for the
+    /// star: the item stays usable, and Apple ignores a duplicate rating.
+    static READS: StatusBatch = const { StatusBatch::new(|items| Box::pin(read_dislikes(items))) };
 }
 
 /// Reads which of `items` have a dislike, live. After a failure the result is empty.
 async fn read_dislikes(items: Vec<CatalogItem>) -> HashMap<CatalogItem, bool> {
-    let Some(services) = add_to_playlist::services() else {
+    let Some(services) = services::installed() else {
         return HashMap::new();
     };
     let api = Arc::clone(services.api());
@@ -425,13 +363,6 @@ async fn read_dislikes(items: Vec<CatalogItem>) -> HashMap<CatalogItem, bool> {
             HashMap::new()
         }
     }
-}
-
-/// Reads if `item` has a dislike. A failure counts as "no dislike", like for the star: the item
-/// stays usable, and Apple ignores a duplicate rating.
-async fn read_dislike(item: CatalogItem) -> bool {
-    let status = read_dislikes(vec![item.clone()]).await;
-    status.get(&item).copied().unwrap_or(false)
 }
 
 #[cfg(test)]

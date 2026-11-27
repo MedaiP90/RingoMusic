@@ -109,7 +109,7 @@ impl SimpleComponent for Preferences {
                     add = &adw::ComboRow {
                         set_title: &gettext("Theme"),
                         set_model: Some(&labels(&theme::IDS, theme::label)),
-                        set_selected: theme::position(&model.services.settings().color_scheme()),
+                        set_selected: position_in(&theme::IDS, &model.services.settings().color_scheme()),
                         connect_selected_notify[sender] => move |row| {
                             sender.input(Input::ThemeSelected(row.selected()));
                         },
@@ -117,7 +117,7 @@ impl SimpleComponent for Preferences {
                     add = &adw::ComboRow {
                         set_title: &gettext("Accent color"),
                         set_model: Some(&labels(&accent::IDS, accent::label)),
-                        set_selected: accent::position(&model.services.settings().accent_color()),
+                        set_selected: position_in(&accent::IDS, &model.services.settings().accent_color()),
                         connect_selected_notify[sender] => move |row| {
                             sender.input(Input::AccentSelected(row.selected()));
                         },
@@ -449,6 +449,15 @@ fn labels(ids: &[&str], name: fn(&str) -> String) -> gtk::StringList {
         list.append(&name(id));
     }
     list
+}
+
+/// Returns the position of `id` in `ids`. An unknown value gives the first entry, the
+/// system entry.
+fn position_in(ids: &[&str], id: &str) -> u32 {
+    ids.iter()
+        .position(|candidate| *candidate == id)
+        .and_then(|index| u32::try_from(index).ok())
+        .unwrap_or(0)
 }
 
 /// Makes the adjustment of a cache limit row, from 16 to 4096 MiB.

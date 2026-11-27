@@ -22,7 +22,6 @@ use ringo_mpris::Callbacks;
 use tracing::{debug, warn};
 
 use crate::add_to_library;
-use crate::add_to_playlist;
 use crate::background::{self, BackgroundPlayback, CloseAction};
 use crate::detail_pages::{self, PageSources};
 use crate::gate::{self, Gate};
@@ -30,7 +29,7 @@ use crate::item_actions::{self, SongCatalog};
 use crate::new_playlist;
 use crate::preferences::{Preferences, PreferencesInit};
 use crate::section::Section;
-use crate::services::AppServices;
+use crate::services::{self, AppServices};
 use crate::views::library::{LibraryInit, LibraryInput, LibraryKind, LibraryView};
 use crate::views::queue::{QueueInit, QueueView};
 use crate::views::search::{SearchInit, SearchInput, SearchView};
@@ -281,7 +280,7 @@ impl SimpleComponent for App {
             &root,
             PageSources {
                 services: services.clone(),
-                catalog: catalog.clone(),
+                catalog,
                 split_view: split_view.clone(),
                 sections: content_stack.clone(),
             },
@@ -489,7 +488,7 @@ fn register_actions(sender: &ComponentSender<App>) {
 /// services of the add to playlist popover.
 fn install_shared_state(services: &AppServices) {
     artwork::install_store(services.artwork().clone());
-    add_to_playlist::install(services.clone());
+    services::install(services.clone());
     accent::install(services.settings());
     theme::install(services.settings());
 }

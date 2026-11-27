@@ -14,7 +14,6 @@ use ringo_am_api::models::{
     Relationship, Resource, SongId,
 };
 use ringo_am_api::{Page, Result as ApiResult};
-use ringo_core::state::{AppState, AuthState};
 
 use crate::item::{SongItem, TileItem, first_id};
 use crate::item_actions::SongLinks;
@@ -36,14 +35,6 @@ const YEAR_LENGTH: usize = 4;
 /// `pl.`.
 pub fn is_library_id(id: &str) -> bool {
     matches!(id.as_bytes(), [b'l' | b'r' | b'p' | b'i', b'.', ..])
-}
-
-/// The storefront of the signed-in user.
-pub fn storefront(state: &AppState) -> Option<String> {
-    match &state.auth {
-        AuthState::SignedIn { storefront } => Some(storefront.clone()),
-        AuthState::Unknown | AuthState::SignedOut => None,
-    }
 }
 
 /// A song of an album, with its place in the album.
@@ -870,21 +861,5 @@ mod tests {
         };
         assert_eq!(description_of(Some(&blank)), None);
         assert_eq!(description_of(None), None);
-    }
-
-    #[test]
-    fn storefront_is_none_when_signed_out() {
-        let mut state = AppState::default();
-        state.auth = AuthState::SignedOut;
-        assert_eq!(storefront(&state), None);
-    }
-
-    #[test]
-    fn storefront_is_the_one_of_the_signed_in_user() {
-        let mut state = AppState::default();
-        state.auth = AuthState::SignedIn {
-            storefront: "it".to_owned(),
-        };
-        assert_eq!(storefront(&state).as_deref(), Some("it"));
     }
 }

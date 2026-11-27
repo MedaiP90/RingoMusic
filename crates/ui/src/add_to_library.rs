@@ -18,9 +18,8 @@ use relm4::gtk::glib;
 use ringo_am_api::write::{self, CatalogItem};
 use tracing::warn;
 
-use crate::add_to_playlist;
-use crate::detail;
 use crate::library_write;
+use crate::services;
 use crate::views::library::LibraryInput;
 
 /// Time between a successful write and the reload of the library views.
@@ -46,7 +45,7 @@ pub fn register(window: &adw::ApplicationWindow, pages: Vec<relm4::Sender<Librar
 /// appears over its window. On success, a toast tells it and the library views load again once,
 /// after [`RELOAD_DELAY`].
 pub fn add(anchor: &impl IsA<gtk::Widget>, item: CatalogItem) {
-    let Some(services) = add_to_playlist::services() else {
+    let Some(services) = services::installed() else {
         warn!("the add to library item has no services");
         return;
     };
@@ -67,10 +66,10 @@ pub fn add(anchor: &impl IsA<gtk::Widget>, item: CatalogItem) {
 /// Reads if `item` is in the library. The request is live. A failure counts as "not in the
 /// library", so the item stays available (decision L17).
 pub async fn is_in_library(item: CatalogItem) -> bool {
-    let Some(services) = add_to_playlist::services() else {
+    let Some(services) = services::installed() else {
         return false;
     };
-    let storefront = detail::storefront(&services.core().subscribe().borrow()).unwrap_or_default();
+    let storefront = services.core().storefront().unwrap_or_default();
     let api = Arc::clone(services.api());
     let task =
         relm4::spawn(async move { write::library_status(api.as_ref(), &storefront, &item).await });

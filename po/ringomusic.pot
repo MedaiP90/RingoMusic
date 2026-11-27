@@ -981,6 +981,12 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
+"Less work during playback with a long queue: the progress updates no longer "
+"copy the queue."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
 "This release adds library management: create playlists, add songs to "
 "playlists and to your library, and mark favorites and dislikes."
 msgstr ""

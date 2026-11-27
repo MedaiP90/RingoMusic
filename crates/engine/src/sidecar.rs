@@ -210,7 +210,8 @@ impl PlaybackEngine for SidecarEngine {
     }
 
     async fn shutdown(&self) -> Result<()> {
-        if let Some(stop) = lock(&self.stop).take() {
+        let stop = lock(&self.stop).take();
+        if let Some(stop) = stop {
             // The supervisor can be gone already.
             let _ = stop.send(());
         }

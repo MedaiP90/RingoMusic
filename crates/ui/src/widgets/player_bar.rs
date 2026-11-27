@@ -101,7 +101,7 @@ impl BarState {
             shuffle: state.queue.shuffle_enabled(),
             repeat: state.queue.repeat(),
             has_queue: !state.queue.items().is_empty(),
-            storefront: detail::storefront(state),
+            storefront: state.storefront().map(str::to_owned),
         }
     }
 
@@ -573,7 +573,7 @@ impl PlayerBar {
     /// song gets its catalog ID only after its links load.
     fn refresh_favorite(&mut self) {
         let item = self.state.catalog_song(&self.catalog);
-        let storefront = detail::storefront(&self.core.subscribe().borrow());
+        let storefront = self.core.storefront();
         let shown = (item, storefront);
         if shown == self.shown_favorite {
             return;
@@ -609,7 +609,7 @@ impl PlayerBar {
             return;
         };
         // The storefront is unknown until the sign-in ends. Ask again after it, not before.
-        let Some(storefront) = detail::storefront(&self.core.subscribe().borrow()) else {
+        let Some(storefront) = self.core.storefront() else {
             return;
         };
         if !self.asked_links.insert(song_id.clone()) {
@@ -838,7 +838,7 @@ mod tests {
             duration: Duration::from_secs(90),
             artwork_template: None,
         };
-        let _ = state.queue.replace(vec![item], 0);
+        let _ = Arc::make_mut(&mut state.queue).replace(vec![item], 0);
         let bar = BarState::of(&state);
         assert_eq!(
             (bar.title.as_str(), bar.duration, bar.has_queue),

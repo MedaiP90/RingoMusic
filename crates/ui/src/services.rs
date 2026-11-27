@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
+use std::cell::RefCell;
 use std::sync::Arc;
 use std::sync::mpsc;
 use std::time::Duration;
@@ -61,6 +62,23 @@ impl AppServices {
     pub fn paths(&self) -> &Paths {
         &self.paths
     }
+}
+
+thread_local! {
+    // Song rows, menus, and rating controls are set up without any context, so they
+    // get the services here.
+    static INSTALLED: RefCell<Option<AppServices>> = const { RefCell::new(None) };
+}
+
+/// Sets the services that [`installed`] returns. Call it once, at start-up, on the main
+/// thread.
+pub fn install(services: AppServices) {
+    INSTALLED.with_borrow_mut(|installed| *installed = Some(services));
+}
+
+/// The services that [`install`] set. `None` before the start-up ends.
+pub fn installed() -> Option<AppServices> {
+    INSTALLED.with_borrow(Clone::clone)
 }
 
 /// Owner of the running services (decision D12). It runs the core and the

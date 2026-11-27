@@ -19,7 +19,6 @@ use ringo_core::runner::CoreHandle;
 use tokio::task::JoinHandle;
 use tracing::warn;
 
-use crate::detail::storefront;
 use crate::item::{SongItem, TileItem};
 use crate::item_actions::{self, SongCatalog};
 use crate::services::{ApiClient, AppServices};
@@ -415,7 +414,7 @@ impl SearchView {
             self.show(SearchSections::default());
             return;
         }
-        let storefront = storefront(&self.core.subscribe().borrow()).unwrap_or_default();
+        let storefront = self.core.storefront().unwrap_or_default();
         self.phase = Phase::Loading;
         let (api, term, generation) = (Arc::clone(&self.api), self.term.clone(), self.generation);
         let scope = self.scope;

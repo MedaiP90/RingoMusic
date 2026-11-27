@@ -15,7 +15,6 @@ use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 use std::sync::Arc;
-use std::time::Duration;
 
 use gettextrs::gettext;
 use relm4::gtk;
@@ -25,16 +24,10 @@ use relm4::gtk::prelude::*;
 use ringo_am_api::write::{self, CatalogItem};
 use tracing::warn;
 
-use crate::add_to_playlist;
-use crate::detail;
 use crate::library_write;
 use crate::rating_confirmation::{self, RatingControl, RatingState, WriteToken};
-
-/// Time that the rows of a list wait for each other before one request reads their status.
-const BATCH_DELAY: Duration = Duration::from_millis(60);
-
-/// Most songs in one status request.
-const BATCH_SIZE: usize = 50;
+use crate::services;
+use crate::status_batch::{StatusBatch, StatusTarget};
 
 /// Name of the favorite action, in every group that holds it.
 pub const ACTION_NAME: &str = "favorite";
@@ -249,8 +242,7 @@ impl Inner {
         };
         self.sync();
         self.notify(Change::Toggled(target));
-        let (Some(anchor), Some(services)) = (self.anchor.upgrade(), add_to_playlist::services())
-        else {
+        let (Some(anchor), Some(services)) = (self.anchor.upgrade(), services::installed()) else {
             warn!("the favorite has no widget or no services");
             self.undo(&toggle);
             return;
@@ -360,46 +352,32 @@ impl FavoriteControl {
     }
 
     /// Reads the status together with the other controls that queue in the same moment. The
-    /// rows of a list use this: they get one request for up to [`BATCH_SIZE`] songs, not one
-    /// request for each row.
+    /// rows of a list use this: they get one request for many songs, not one request for each
+    /// row.
     pub fn queue_status(&self) {
-        let request = self.inner.state.borrow_mut().begin_load();
-        let Some((generation, item)) = request else {
-            return;
-        };
-        self.inner.sync();
-        let waiting = Waiting {
-            inner: Rc::downgrade(&self.inner),
-            generation,
-            item,
-        };
-        let first = WAITING.with_borrow_mut(|queue| {
-            queue.push(waiting);
-            queue.len() == 1
-        });
-        if first {
-            glib::timeout_add_local_once(BATCH_DELAY, read_waiting);
+        if let Some((generation, item)) = self.begin_load() {
+            StatusBatch::queue(&READS, self.target(), generation, item);
         }
     }
 
     /// Reads the status of the item, live, and shows it.
     pub fn load_status(&self) {
+        if let Some((generation, item)) = self.begin_load() {
+            StatusBatch::read_now(&READS, self.target(), generation, item);
+        }
+    }
+
+    /// Starts a read and shows that the status loads. `None` if no read is necessary.
+    fn begin_load(&self) -> Option<(u64, CatalogItem)> {
         let request = self.inner.state.borrow_mut().begin_load();
-        let Some((generation, item)) = request else {
-            return;
-        };
-        self.inner.sync();
-        let weak = Rc::downgrade(&self.inner);
-        glib::spawn_future_local(async move {
-            let favorite = read_status(item).await;
-            let Some(inner) = weak.upgrade() else {
-                return;
-            };
-            let current = inner.state.borrow_mut().finish_load(generation, favorite);
-            if current {
-                inner.sync();
-            }
-        });
+        if request.is_some() {
+            self.inner.sync();
+        }
+        request
+    }
+
+    fn target(&self) -> Weak<dyn StatusTarget> {
+        Rc::downgrade(&self.inner) as Weak<dyn StatusTarget>
     }
 
     /// Tells if the status is known and on.
@@ -435,77 +413,31 @@ impl FavoriteControl {
     }
 }
 
-/// A control that waits for a batched status read.
-#[derive(Clone)]
-struct Waiting {
-    inner: Weak<Inner>,
-    generation: u64,
-    item: CatalogItem,
-}
+impl StatusTarget for Inner {
+    fn is_loading(&self, generation: u64) -> bool {
+        self.state.borrow().is_loading(generation)
+    }
 
-impl Waiting {
-    /// Tells if the control still waits for this read.
-    fn is_current(&self) -> bool {
-        self.inner
-            .upgrade()
-            .is_some_and(|inner| inner.state.borrow().is_loading(self.generation))
+    fn finish_load(&self, generation: u64, favorite: bool) {
+        let current = self.state.borrow_mut().finish_load(generation, favorite);
+        if current {
+            self.sync();
+        }
     }
 }
 
 thread_local! {
-    static WAITING: RefCell<Vec<Waiting>> = const { RefCell::new(Vec::new()) };
-}
-
-/// Reads the status of the controls that queued, in requests of up to [`BATCH_SIZE`] songs. A
-/// control that got another item in the meantime does not count.
-fn read_waiting() {
-    let queue = WAITING.take();
-    let waiting: Vec<Waiting> = queue.into_iter().filter(Waiting::is_current).collect();
-    let mut items: Vec<CatalogItem> = Vec::new();
-    for entry in &waiting {
-        if !items.contains(&entry.item) {
-            items.push(entry.item.clone());
-        }
-    }
-    for chunk in items.chunks(BATCH_SIZE) {
-        let chunk = chunk.to_vec();
-        let entries: Vec<Waiting> = waiting
-            .iter()
-            .filter(|entry| chunk.contains(&entry.item))
-            .cloned()
-            .collect();
-        glib::spawn_future_local(async move {
-            let status = read_statuses(chunk).await;
-            for entry in entries {
-                let Some(inner) = entry.inner.upgrade() else {
-                    continue;
-                };
-                let favorite = status.get(&entry.item).copied().unwrap_or(false);
-                let current = inner
-                    .state
-                    .borrow_mut()
-                    .finish_load(entry.generation, favorite);
-                if current {
-                    inner.sync();
-                }
-            }
-        });
-    }
-}
-
-/// Reads if `item` is a favorite. A failure counts as "not a favorite": the star stays usable, and
-/// Apple ignores a duplicate add.
-async fn read_status(item: CatalogItem) -> bool {
-    let status = read_statuses(vec![item.clone()]).await;
-    status.get(&item).copied().unwrap_or(false)
+    /// The status reads of the stars. A failure counts as "not a favorite": the star stays
+    /// usable, and Apple ignores a duplicate add.
+    static READS: StatusBatch = const { StatusBatch::new(|items| Box::pin(read_statuses(items))) };
 }
 
 /// Reads the status of `items`, live. After a failure the result is empty.
 async fn read_statuses(items: Vec<CatalogItem>) -> HashMap<CatalogItem, bool> {
-    let Some(services) = add_to_playlist::services() else {
+    let Some(services) = services::installed() else {
         return HashMap::new();
     };
-    let storefront = detail::storefront(&services.core().subscribe().borrow()).unwrap_or_default();
+    let storefront = services.core().storefront().unwrap_or_default();
     let api = Arc::clone(services.api());
     let task =
         relm4::spawn(

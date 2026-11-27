@@ -23,14 +23,6 @@ pub fn label(id: &str) -> String {
     }
 }
 
-/// Returns the position of `id` in [`IDS`]. An unknown value gives the system entry.
-pub fn position(id: &str) -> u32 {
-    IDS.iter()
-        .position(|candidate| *candidate == id)
-        .and_then(|index| u32::try_from(index).ok())
-        .unwrap_or(0)
-}
-
 /// Applies the color scheme of the settings now, and each time that the
 /// setting changes. Call it one time at start.
 pub fn install(settings: &Settings) {

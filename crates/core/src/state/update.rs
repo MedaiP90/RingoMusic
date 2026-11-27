@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
+use std::sync::Arc;
 use std::time::Duration;
 
 use rand::SeedableRng;
@@ -20,9 +21,9 @@ pub fn update(state: &mut AppState, message: Message) -> Vec<Command> {
         Message::Play => vec![Command::Play],
         Message::Pause => vec![Command::Pause],
         Message::Stop => vec![Command::Stop],
-        Message::Next => skip_forward(&mut state.queue),
-        Message::Previous => skip_back(&mut state.queue),
-        Message::JumpTo { index, id } => jump_to(&mut state.queue, index, &id),
+        Message::Next => skip_forward(Arc::make_mut(&mut state.queue)),
+        Message::Previous => skip_back(Arc::make_mut(&mut state.queue)),
+        Message::JumpTo { index, id } => jump_to(Arc::make_mut(&mut state.queue), index, &id),
         Message::Seek(position) => vec![Command::Seek(position)],
         Message::SetVolume(volume) => {
             let volume = volume.clamp(0.0, 1.0);
@@ -30,7 +31,7 @@ pub fn update(state: &mut AppState, message: Message) -> Vec<Command> {
             vec![Command::SetVolume(volume)]
         }
         Message::SetRepeat(mode) => {
-            state.queue.set_repeat(mode);
+            Arc::make_mut(&mut state.queue).set_repeat(mode);
             vec![Command::SetRepeat(mode)]
         }
         Message::SignIn => start_sign_in(state),
@@ -58,7 +59,7 @@ pub fn update(state: &mut AppState, message: Message) -> Vec<Command> {
 /// Handles the messages that change the queue.
 fn edit_queue(state: &mut AppState, message: Message) -> Vec<Command> {
     let was_playing = state.playback.state == PlaybackState::Playing;
-    let queue = &mut state.queue;
+    let queue = Arc::make_mut(&mut state.queue);
     let (change, autoplay) = match message {
         Message::ReplaceQueue { items, start } => (queue.replace(items, start), true),
         Message::ReplaceQueueShuffled { items, seed } => {
@@ -255,8 +256,11 @@ fn apply_event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
             album_id,
             queue_index,
         } => {
-            // An index outside the queue is ignored. The queue stays as it is.
-            let _ = state.queue.sync_to_playback_index(queue_index);
+            // An index outside the queue is ignored. The queue stays as it is. A queue
+            // that is already at the index is not copied.
+            if state.queue.current_playback_index() != Some(queue_index) {
+                let _ = Arc::make_mut(&mut state.queue).sync_to_playback_index(queue_index);
+            }
             state.playback.position = Duration::ZERO;
             state.now_playing = Some(NowPlaying {
                 id,
@@ -305,7 +309,7 @@ fn apply_event(state: &mut AppState, event: EngineEvent) -> Vec<Command> {
 
 /// Puts a saved queue in place. If the engine is ready, it gets the queue now.
 fn restore_queue(state: &mut AppState, queue: Queue, position: Duration) -> Vec<Command> {
-    state.queue = queue;
+    state.queue = Arc::new(queue);
     state.playback.position = position;
     state.resume = state.queue.current().map(|_| Resume {
         position,

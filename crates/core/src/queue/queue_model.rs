@@ -131,7 +131,8 @@ impl Queue {
 
     /// Returns the IDs of the played items, the oldest first. The history
     /// keeps the last 100 items.
-    pub fn history(&self) -> impl Iterator<Item = &ItemId> {
+    #[must_use]
+    pub fn history(&self) -> impl DoubleEndedIterator<Item = &ItemId> {
         self.history.iter()
     }
 

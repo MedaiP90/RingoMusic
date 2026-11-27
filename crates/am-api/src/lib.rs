@@ -10,12 +10,16 @@ pub mod write;
 
 mod artwork;
 mod error;
-mod fixture_transport;
 mod page;
 mod transport;
 
 pub use artwork::artwork_url;
 pub use error::{Error, Result, TransportError};
-pub use fixture_transport::{FixtureTransport, RecordedWrite};
 pub use page::{PAGE_SIZE, Page};
 pub use transport::{ApiTransport, WriteMethod, WriteRequest};
+
+#[cfg(any(test, feature = "fixture"))]
+mod fixture_transport;
+
+#[cfg(any(test, feature = "fixture"))]
+pub use fixture_transport::{FixtureTransport, RecordedWrite};

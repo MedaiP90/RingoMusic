@@ -22,9 +22,8 @@ use relm4::gtk::glib;
 use ringo_am_api::write::{self, CatalogItem};
 use tracing::warn;
 
-use crate::add_to_playlist;
-use crate::detail;
 use crate::library_write;
+use crate::services;
 
 /// Times after the write when the state is read again.
 const READ_TIMES: [Duration; 3] = [
@@ -184,8 +183,8 @@ async fn read_until_confirmed(token: &WriteToken, expected: RatingState) -> Opti
 
 /// Reads the favorite and the dislike of `item`, live. Returns `None` after a failure.
 async fn read_state(item: CatalogItem) -> Option<RatingState> {
-    let services = add_to_playlist::services()?;
-    let storefront = detail::storefront(&services.core().subscribe().borrow()).unwrap_or_default();
+    let services = services::installed()?;
+    let storefront = services.core().storefront().unwrap_or_default();
     let api = Arc::clone(services.api());
     let task = relm4::spawn(async move {
         let items = slice::from_ref(&item);

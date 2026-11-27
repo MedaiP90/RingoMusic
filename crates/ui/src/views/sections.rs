@@ -19,7 +19,6 @@ use ringo_core::runner::CoreHandle;
 use tokio::task::JoinHandle;
 use tracing::debug;
 
-use crate::detail::storefront;
 use crate::item::{SongItem, TileItem};
 use crate::item_actions::{self, SongCatalog};
 use crate::services::{ApiClient, AppServices};
@@ -320,7 +319,7 @@ impl SectionsView {
         self.phase = Phase::Loading;
         let context = LoadContext {
             api: Arc::clone(&self.api),
-            storefront: storefront(&self.core.subscribe().borrow()),
+            storefront: self.core.storefront(),
         };
         let (loader, generation) = (self.loader, self.generation);
         let input = sender.input_sender().clone();

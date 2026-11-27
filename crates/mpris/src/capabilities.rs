@@ -36,6 +36,7 @@ impl Capabilities {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
     use std::time::Duration;
 
     use ringo_core::queue::QueueItem;
@@ -54,7 +55,7 @@ mod tests {
             duration: Duration::from_secs(60),
             artwork_template: None,
         };
-        let _ = state.queue.replace(vec![item], 0);
+        let _ = Arc::make_mut(&mut state.queue).replace(vec![item], 0);
         state
     }
 

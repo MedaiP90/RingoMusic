@@ -1805,6 +1805,7 @@ name = "ringo-am-api"
 version = "1.3.0"
 dependencies = [
  "async-trait",
+ "ringo-am-api",
  "serde",
  "serde_json",
  "thiserror",

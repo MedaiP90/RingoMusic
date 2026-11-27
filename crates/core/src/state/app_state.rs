@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
+use std::sync::Arc;
 use std::time::Duration;
 
 use ringo_engine::ItemId;
@@ -106,8 +107,9 @@ pub struct AppState {
     pub sign_in_failed: bool,
     /// The API refused a request because the account has no subscription.
     pub no_subscription: bool,
-    /// Playback queue.
-    pub queue: Queue,
+    /// Playback queue. It is shared, so a copy of the state is cheap. Change it
+    /// with [`Arc::make_mut`].
+    pub queue: Arc<Queue>,
     /// Playback state, position, and volume.
     pub playback: Playback,
     /// The item that plays now.
@@ -126,6 +128,15 @@ impl Default for AppState {
 }
 
 impl AppState {
+    /// The storefront of the signed-in user. `None` when nobody is signed in.
+    #[must_use]
+    pub fn storefront(&self) -> Option<&str> {
+        match &self.auth {
+            AuthState::SignedIn { storefront } => Some(storefront),
+            AuthState::Unknown | AuthState::SignedOut => None,
+        }
+    }
+
     /// Creates the state at application start: engine starting, nobody known,
     /// empty queue, full volume.
     #[must_use]
@@ -136,7 +147,7 @@ impl AppState {
             signing_in: false,
             sign_in_failed: false,
             no_subscription: false,
-            queue: Queue::new(),
+            queue: Arc::new(Queue::new()),
             playback: Playback {
                 state: PlaybackState::Stopped,
                 position: Duration::ZERO,
