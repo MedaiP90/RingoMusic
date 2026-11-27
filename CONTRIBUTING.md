@@ -8,7 +8,7 @@ These rules apply to all contributions.
 
 1. Do not add code that downloads, decrypts, or saves audio streams.
 2. Each request that changes the user's library starts from one direct user action. Do not add automatic, scheduled, background, or bulk writes. Do not add automatic retries of a failed write. Do not send writes from the CLI, MPRIS, D-Bus, or a plug-in or scripting interface. These rules have no exceptions, also for optional features.
-3. Use only write endpoints that Apple documents in the [Apple Music API](https://developer.apple.com/documentation/applemusicapi). Add a link to the documentation page in the doc comment of each write function.
+3. Use only write endpoints that Apple documents in the [Apple Music API](https://developer.apple.com/documentation/applemusicapi). Add a link to the documentation page in the doc comment of each write function. Add each new write endpoint to `WRITE_PATTERNS` in `crates/engine/src/protocol/to_engine.rs` and in `engine/src/api-write.ts`: the app refuses each other write request.
 4. Do not put the Widevine CDM in the repository or in a package. The engine downloads the CDM at runtime.
 5. Do not use Apple logos, the Apple Music icon, or the Apple Music name as part of the product name or icon.
 6. All code, comments, and commit messages are in English.

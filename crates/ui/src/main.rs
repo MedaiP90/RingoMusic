@@ -28,6 +28,7 @@ mod notification;
 mod paged;
 mod playback_actions;
 mod preferences;
+mod rating_confirmation;
 mod section;
 mod services;
 mod sidebar;

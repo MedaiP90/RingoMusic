@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
-//! The "Dislike" menu item of an item: one stateful action that works with the star of
-//! `favorite.rs` (decisions L7, L8, L19, and L20).
+//! The "Suggest Less" menu item of an item (a dislike for Apple): one stateful action that works
+//! with the star of `favorite.rs` (decisions L7, L8, and L20).
 //!
 //! The star and the dislike exclude each other. A dislike turns the star off, and the star
 //! turns a dislike off. Each change sends one request. The state is read live when the menu
-//! opens. A failed request changes both controls back.
+//! opens, and again after each successful write until Apple confirms it
+//! (`rating_confirmation.rs`). A failed request changes both controls back.
 //!
 //! Apple reports a new rating late. So the control remembers each change of this session and
 //! uses it before it asks Apple. Only songs have a dislike item.
@@ -22,12 +23,13 @@ use relm4::gtk::gio::SimpleAction;
 use relm4::gtk::glib::{self, Variant};
 use relm4::gtk::prelude::*;
 use ringo_am_api::ApiTransport;
-use ringo_am_api::write::{self, CatalogItem, Rating};
+use ringo_am_api::write::{self, CatalogItem};
 use tracing::warn;
 
 use crate::add_to_playlist;
 use crate::favorite::{Change, FavoriteControl, FavoriteState};
 use crate::library_write;
+use crate::rating_confirmation::{self, RatingControl, RatingState, WriteToken};
 
 /// Time that the rows of a list wait for each other before one request reads their rating.
 const BATCH_DELAY: Duration = Duration::from_millis(60);
@@ -53,20 +55,12 @@ fn remembered(item: &CatalogItem) -> Option<bool> {
     SESSION.with_borrow(|session| session.get(item).copied())
 }
 
-/// The rating state of an item. A favorite and a dislike never hold together.
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-enum RatingState {
-    Unrated,
-    Favorite,
-    Dislike,
-}
-
 /// The one request that moves an item from one rating state to another.
 #[derive(Copy, Clone, Debug, Eq, PartialEq)]
 enum RatingRequest {
     AddFavorite,
-    RemoveFavorite,
     SetDislike,
+    /// Removes a favorite or a dislike.
     RemoveRating,
 }
 
@@ -80,11 +74,12 @@ fn next_request(old: RatingState, new: RatingState) -> Option<RatingRequest> {
         (RatingState::Unrated | RatingState::Dislike, RatingState::Favorite) => {
             Some(RatingRequest::AddFavorite)
         }
-        (RatingState::Favorite, RatingState::Unrated) => Some(RatingRequest::RemoveFavorite),
         (RatingState::Unrated | RatingState::Favorite, RatingState::Dislike) => {
             Some(RatingRequest::SetDislike)
         }
-        (RatingState::Dislike, RatingState::Unrated) => Some(RatingRequest::RemoveRating),
+        (RatingState::Favorite | RatingState::Dislike, RatingState::Unrated) => {
+            Some(RatingRequest::RemoveRating)
+        }
     }
 }
 
@@ -92,8 +87,7 @@ impl RatingRequest {
     async fn send(self, api: &impl ApiTransport, item: &CatalogItem) -> ringo_am_api::Result<()> {
         match self {
             Self::AddFavorite => write::add_to_favorites(api, item).await,
-            Self::RemoveFavorite => write::remove_from_favorites(api, item).await,
-            Self::SetDislike => write::set_rating(api, item, Rating::Dislike).await,
+            Self::SetDislike => write::set_dislike(api, item).await,
             Self::RemoveRating => write::remove_rating(api, item).await,
         }
     }
@@ -129,7 +123,8 @@ impl Inner {
         }
     }
 
-    /// Handles a menu choice: changes both controls at once, then sends one request.
+    /// Handles a menu choice: changes both controls at once, then sends one request. After a
+    /// successful request, Apple confirms the new state.
     fn toggle(self: &Rc<Self>, target: bool) {
         let favorite_on = self.favorite.is_on();
         let (old, new) = if target {
@@ -160,15 +155,26 @@ impl Inner {
             self.undo(&toggle, displaced_favorite);
             return;
         };
+        let token = WriteToken::begin(&toggle.item);
         let api = Arc::clone(services.api());
         let item = toggle.item.clone();
-        let inner = Rc::clone(self);
+        let (confirming, undoing) = (Rc::downgrade(self), Rc::clone(self));
         library_write::run(
             &anchor,
             async move { request.send(api.as_ref(), &item).await },
-            |()| {},
-            move || inner.undo(&toggle, displaced_favorite),
+            move |()| rating_confirmation::confirm(&confirming, token, new),
+            move || undoing.undo(&toggle, displaced_favorite),
         );
+    }
+
+    /// Shows the dislike state that Apple has for `item`. Does nothing to the control if it
+    /// shows another item.
+    fn show_confirmed(&self, item: &CatalogItem, disliked: bool) {
+        remember(Some(item), disliked);
+        let changed = self.state.borrow_mut().force_for(item, disliked);
+        if changed {
+            self.sync();
+        }
     }
 
     /// Changes the dislike back after a failed request. Turns the star on again if the dislike
@@ -184,8 +190,8 @@ impl Inner {
         }
     }
 
-    /// Follows the star: a star that turns on turns a dislike off, and a failed star request
-    /// turns the dislike on again.
+    /// Follows the star: a star that turns on turns a dislike off, a failed star request turns
+    /// the dislike on again, and a correction after a star write shows the state of Apple.
     fn follow(&self, change: Change) {
         match change {
             Change::Toggled(on) => {
@@ -204,7 +210,20 @@ impl Inner {
                     self.sync();
                 }
             }
+            Change::Corrected { item, state } => self.show_confirmed(&item, state.is_disliked()),
         }
+    }
+}
+
+impl RatingControl for Inner {
+    fn anchor(&self) -> Option<gtk::Widget> {
+        self.anchor.upgrade()
+    }
+
+    /// Shows `state` in both controls: the dislike here and the favorite on the star.
+    fn correct(&self, item: &CatalogItem, state: RatingState) {
+        self.favorite.show_confirmed(item, state.is_favorite());
+        self.show_confirmed(item, state.is_disliked());
     }
 }
 
@@ -251,7 +270,7 @@ impl DislikeControl {
         *self.inner.on_change.borrow_mut() = Some(Box::new(on_change));
     }
 
-    /// The action. Add it to the group of a menu, for the "Dislike" item.
+    /// The action. Add it to the group of a menu, for the "Suggest Less" item.
     pub fn action(&self) -> &SimpleAction {
         &self.inner.action
     }
@@ -409,25 +428,10 @@ async fn read_dislikes(items: Vec<CatalogItem>) -> HashMap<CatalogItem, bool> {
 }
 
 /// Reads if `item` has a dislike. A failure counts as "no dislike", like for the star: the item
-/// stays usable, and Apple ignores a duplicate rating. Apple can answer an unrated item with an
-/// error.
+/// stays usable, and Apple ignores a duplicate rating.
 async fn read_dislike(item: CatalogItem) -> bool {
-    let Some(services) = add_to_playlist::services() else {
-        return false;
-    };
-    let api = Arc::clone(services.api());
-    let task = relm4::spawn(async move { write::rating(api.as_ref(), &item).await });
-    match task.await {
-        Ok(Ok(rating)) => rating == Some(Rating::Dislike),
-        Ok(Err(error)) => {
-            warn!(%error, "cannot read the rating");
-            false
-        }
-        Err(join_error) => {
-            warn!(%join_error, "the rating task did not finish");
-            false
-        }
-    }
+    let status = read_dislikes(vec![item.clone()]).await;
+    status.get(&item).copied().unwrap_or(false)
 }
 
 #[cfg(test)]
@@ -460,9 +464,13 @@ mod tests {
     }
 
     #[test]
-    fn next_request_removes_the_rating_to_clear_a_dislike() {
+    fn next_request_removes_the_rating_to_clear_a_dislike_or_a_favorite() {
         assert_eq!(
             next_request(RatingState::Dislike, RatingState::Unrated),
+            Some(RatingRequest::RemoveRating)
+        );
+        assert_eq!(
+            next_request(RatingState::Favorite, RatingState::Unrated),
             Some(RatingRequest::RemoveRating)
         );
     }
@@ -476,14 +484,6 @@ mod tests {
         assert_eq!(
             next_request(RatingState::Dislike, RatingState::Favorite),
             Some(RatingRequest::AddFavorite)
-        );
-    }
-
-    #[test]
-    fn next_request_removes_a_favorite() {
-        assert_eq!(
-            next_request(RatingState::Favorite, RatingState::Unrated),
-            Some(RatingRequest::RemoveFavorite)
         );
     }
 }

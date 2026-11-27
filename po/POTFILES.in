@@ -16,6 +16,7 @@ crates/ui/src/new_playlist.rs
 crates/ui/src/notification.rs
 crates/ui/src/playback_actions.rs
 crates/ui/src/preferences.rs
+crates/ui/src/rating_confirmation.rs
 crates/ui/src/section.rs
 crates/ui/src/sidebar.rs
 crates/ui/src/startup_error.rs

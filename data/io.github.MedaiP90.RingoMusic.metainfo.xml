@@ -56,6 +56,18 @@ Copyright (C) 2026 RingoMusic contributors
     <control>pointing</control>
   </recommends>
   <releases>
+    <release version="1.3.0" date="2026-11-27">
+      <description>
+        <p>This release makes favorites and ratings follow Apple Music more closely, and it uses only the functions that Apple documents.</p>
+        <ul>
+          <li>The "Dislike" menu item is now "Suggest Less", as in the Apple Music app.</li>
+          <li>After each change, the star and "Suggest Less" show the state that Apple Music confirms. If Apple Music does not confirm the change, a message tells you.</li>
+          <li>To remove an artist from your favorites, use the Apple Music app or music.apple.com. RingoMusic used a function that Apple does not document for this, and it also marked the artist as disliked.</li>
+          <li>The message about library functions shows one more time, with the updated list.</li>
+          <li>Stricter checks of the requests that change your library.</li>
+        </ul>
+      </description>
+    </release>
     <release version="1.2.0" date="2026-11-26">
       <description>
         <p>This release adds library management: create playlists, add songs to playlists and to your library, and mark favorites and dislikes.</p>

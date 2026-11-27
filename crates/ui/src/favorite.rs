@@ -5,8 +5,11 @@
 //! "Favorite" menu items (decisions L7, L8, L14, L18, and L20).
 //!
 //! The action state is the optimistic value. A click changes it at once and sends one request.
-//! A failed request changes it back. The status is read live, when the item shows, never after a
-//! write (rule R8).
+//! A failed request changes it back. The status is read live when the item shows, and again after
+//! each successful write until Apple confirms it (`rating_confirmation.rs`).
+//!
+//! Apple documents no way to remove an artist favorite. So the star of an artist that is a
+//! favorite is disabled, and its tooltip sends the user to Apple's apps.
 
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
@@ -25,6 +28,7 @@ use tracing::warn;
 use crate::add_to_playlist;
 use crate::detail;
 use crate::library_write;
+use crate::rating_confirmation::{self, RatingControl, RatingState, WriteToken};
 
 /// Time that the rows of a list wait for each other before one request reads their status.
 const BATCH_DELAY: Duration = Duration::from_millis(60);
@@ -43,11 +47,17 @@ const BUTTON_GROUP: &str = "star";
 pub struct Look {
     /// The item is a favorite (the optimistic value).
     pub favorite: bool,
-    /// The item is an artist. Removing its favorite stores a dislike (decision L19).
+    /// The item is an artist. The app cannot remove an artist favorite.
     pub artist: bool,
 }
 
 impl Look {
+    /// Tells if a click can change the star. Only the removal of an artist favorite is not
+    /// possible.
+    fn can_toggle(self) -> bool {
+        !(self.favorite && self.artist)
+    }
+
     fn icon_name(self) -> &'static str {
         if self.favorite {
             "starred-symbolic"
@@ -60,7 +70,9 @@ impl Look {
         match (self.favorite, self.artist) {
             (false, _) => gettext("Add to favorites"),
             (true, false) => gettext("Remove from favorites"),
-            (true, true) => gettext("Remove from favorites (marks the artist as disliked)"),
+            (true, true) => gettext(
+                "Remove this artist from your favorites in the Apple Music app or on music.apple.com",
+            ),
         }
     }
 }
@@ -86,12 +98,17 @@ pub(crate) struct Toggle {
 }
 
 /// A change of the star that a linked control must know (see [`FavoriteControl::connect_change`]).
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) enum Change {
     /// A click set the star to this value and sent a request.
     Toggled(bool),
     /// The request of a click failed, so the star went back from this value.
     Undone(bool),
+    /// After a write, Apple has this other state for `item`. The star already shows it.
+    Corrected {
+        item: CatalogItem,
+        state: RatingState,
+    },
 }
 
 /// The state logic of the star, with no widget. A generation number drops the result of a request
@@ -177,6 +194,16 @@ impl FavoriteState {
         }
     }
 
+    /// Sets a known status with no request, like [`Self::force`], but only while the state shows
+    /// `item`. Returns `true` if the status changed.
+    pub(crate) fn force_for(&mut self, item: &CatalogItem, value: bool) -> bool {
+        let applies = self.item.as_ref() == Some(item) && self.status == Status::Known(!value);
+        if applies {
+            self.status = Status::Known(value);
+        }
+        applies
+    }
+
     fn look(&self) -> Look {
         Look {
             favorite: self.status == Status::Known(true),
@@ -207,7 +234,7 @@ impl Inner {
             let state = self.state.borrow();
             (state.is_known(), state.look())
         };
-        self.action.set_enabled(known);
+        self.action.set_enabled(known && look.can_toggle());
         self.action.set_state(&look.favorite.to_variant());
         if let Some(on_look) = self.on_look.borrow().as_ref() {
             on_look(look);
@@ -215,6 +242,7 @@ impl Inner {
     }
 
     /// Handles a click or a menu choice: changes the status at once, then sends one request.
+    /// After a successful request, Apple confirms the new status.
     fn toggle(self: &Rc<Self>, target: bool) {
         let Some(toggle) = self.state.borrow_mut().begin_toggle(target) else {
             return;
@@ -227,17 +255,28 @@ impl Inner {
             self.undo(&toggle);
             return;
         };
+        let token = WriteToken::begin(&toggle.item);
         let api = Arc::clone(services.api());
         let item = toggle.item.clone();
         let request = async move {
             if target {
                 write::add_to_favorites(api.as_ref(), &item).await
             } else {
-                write::remove_from_favorites(api.as_ref(), &item).await
+                write::remove_rating(api.as_ref(), &item).await
             }
         };
-        let inner = Rc::clone(self);
-        library_write::run(&anchor, request, |()| {}, move || inner.undo(&toggle));
+        let expected = if target {
+            RatingState::Favorite
+        } else {
+            RatingState::Unrated
+        };
+        let (confirming, undoing) = (Rc::downgrade(self), Rc::clone(self));
+        library_write::run(
+            &anchor,
+            request,
+            move |()| rating_confirmation::confirm(&confirming, token, expected),
+            move || undoing.undo(&toggle),
+        );
     }
 
     fn undo(&self, toggle: &Toggle) {
@@ -252,6 +291,24 @@ impl Inner {
         if let Some(on_change) = self.on_change.borrow().as_ref() {
             on_change(change);
         }
+    }
+}
+
+impl RatingControl for Inner {
+    fn anchor(&self) -> Option<gtk::Widget> {
+        self.anchor.upgrade()
+    }
+
+    /// Shows the favorite status of `state` on the star, and tells the linked control.
+    fn correct(&self, item: &CatalogItem, state: RatingState) {
+        let changed = self.state.borrow_mut().force_for(item, state.is_favorite());
+        if changed {
+            self.sync();
+        }
+        self.notify(Change::Corrected {
+            item: item.clone(),
+            state,
+        });
     }
 }
 
@@ -357,7 +414,17 @@ impl FavoriteControl {
         self.inner.sync();
     }
 
-    /// Calls `on_change` for each click and each undo of a click. One handler at a time.
+    /// Shows the favorite status that Apple has for `item` after a write of another control. Does
+    /// nothing if the control shows another item.
+    pub(crate) fn show_confirmed(&self, item: &CatalogItem, favorite: bool) {
+        let changed = self.inner.state.borrow_mut().force_for(item, favorite);
+        if changed {
+            self.inner.sync();
+        }
+    }
+
+    /// Calls `on_change` for each click, each undo of a click, and each correction after a write.
+    /// One handler at a time.
     pub(crate) fn connect_change(&self, on_change: impl Fn(Change) + 'static) {
         *self.inner.on_change.borrow_mut() = Some(Box::new(on_change));
     }
@@ -623,20 +690,42 @@ mod tests {
     }
 
     #[test]
-    fn tooltip_of_an_active_artist_star_names_the_dislike() {
+    fn tooltip_of_an_active_artist_star_names_apples_apps() {
         let look = Look {
             favorite: true,
             artist: true,
         };
         assert_eq!(
             look.tooltip(),
-            "Remove from favorites (marks the artist as disliked)"
+            "Remove this artist from your favorites in the Apple Music app or on music.apple.com"
         );
         let song = Look {
             favorite: true,
             artist: false,
         };
         assert_eq!(song.tooltip(), "Remove from favorites");
+    }
+
+    #[test]
+    fn only_an_active_artist_star_cannot_toggle() {
+        for (favorite, artist, can_toggle) in [
+            (false, false, true),
+            (true, false, true),
+            (false, true, true),
+            (true, true, false),
+        ] {
+            let look = Look { favorite, artist };
+            assert_eq!(look.can_toggle(), can_toggle, "{look:?}");
+        }
+    }
+
+    #[test]
+    fn force_for_changes_only_the_shown_item() {
+        let mut state = known(song("1"), false);
+        assert!(!state.force_for(&song("2"), true));
+        assert!(!state.look().favorite);
+        assert!(state.force_for(&song("1"), true));
+        assert!(state.look().favorite);
     }
 
     #[test]

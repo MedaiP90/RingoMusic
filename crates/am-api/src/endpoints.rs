@@ -527,8 +527,15 @@ fn library_path(kind: &str, id: &str) -> Result<String> {
 
 /// Checks a value that goes into the path. It must not be empty or change the
 /// structure of the path.
+///
+/// Only ASCII letters, digits, `.`, `_`, and `-` are permitted, because all Apple IDs and
+/// storefronts use only these. Other characters can change the path when the engine builds the
+/// URL: `%2e%2e` and `\` become `..` and `/`, and a tab is removed. The values `.` and `..` are
+/// relative segments.
 pub(crate) fn segment<'a>(name: &str, value: &'a str) -> Result<&'a str> {
-    if value.is_empty() || value.contains(['/', '?', '#']) {
+    let is_permitted =
+        |character: char| character.is_ascii_alphanumeric() || matches!(character, '.' | '_' | '-');
+    if matches!(value, "" | "." | "..") || !value.chars().all(is_permitted) {
         return Err(invalid(format!(
             "the {name} is empty or has a bad character"
         )));
@@ -556,4 +563,32 @@ fn join_types<'a>(types: impl Iterator<Item = &'a str>) -> Result<String> {
 
 pub(crate) fn invalid(message: String) -> Error {
     Error::InvalidInput { message }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn segment_accepts_catalog_library_and_storefront_values() {
+        for value in [
+            "724515236",
+            "i.ABC123",
+            "p.TestPlaylist0001",
+            "pl.u-8aAVZ_x",
+            "us",
+        ] {
+            assert_eq!(segment("ID", value).ok(), Some(value), "value {value:?}");
+        }
+    }
+
+    #[test]
+    fn segment_rejects_values_that_can_change_the_path() {
+        let values = [
+            "", ".", "..", "a/b", "a?b", "a#b", "%2e%2e", "..\\..", "a\tb", "a b", "è",
+        ];
+        for value in values {
+            assert!(segment("ID", value).is_err(), "value {value:?} is accepted");
+        }
+    }
 }

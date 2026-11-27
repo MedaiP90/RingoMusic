@@ -381,7 +381,7 @@ fn load(picker: &Rc<Picker>, services: &AppServices) {
 
 /// A menu button for a header or a bar. It has the items "Add to Playlist…" (set the songs with
 /// [`Self::set_songs`]) and "Add to Library" (set the item with [`Self::set_library_item`]).
-/// An item is hidden while it is off. The button is hidden while both are off. The "Dislike"
+/// An item is hidden while it is off. The button is hidden while both are off. The "Suggest Less"
 /// item (set the item with [`Self::set_dislike_item`]) is off until the rating is known, and it
 /// also shows the button.
 pub struct ItemMenu {
@@ -400,7 +400,7 @@ pub struct ItemMenu {
 
 impl ItemMenu {
     /// Makes the button. It has no songs and no library item yet, so it is hidden. With
-    /// `favorite`, the star of the same song, the menu also has a "Dislike" item. The item and the
+    /// `favorite`, the star of the same song, the menu also has a "Suggest Less" item. The item and the
     /// star exclude each other.
     pub fn new(favorite: Option<&FavoriteControl>) -> Self {
         let menu = Menu::new();
@@ -408,7 +408,7 @@ impl ItemMenu {
         menu.append_item(&hidden_when_off(&gettext("Add to Library"), LIBRARY_ACTION));
         if favorite.is_some() {
             menu.append_item(&MenuItem::new(
-                Some(&gettext("Dislike")),
+                Some(&gettext("Suggest Less")),
                 Some(&format!("{MENU_GROUP}.{}", dislike::ACTION_NAME)),
             ));
         }
@@ -470,7 +470,7 @@ impl ItemMenu {
         }
     }
 
-    /// Sets the catalog item that "Dislike" rates. `None` turns the item off. The rating is read
+    /// Sets the catalog item that "Suggest Less" rates. `None` turns the item off. The rating is read
     /// when the menu opens.
     pub fn set_dislike_item(&self, item: Option<CatalogItem>) {
         let Some(dislike) = &self.dislike else {
