@@ -11,7 +11,7 @@ use std::sync::atomic::{AtomicUsize, Ordering};
 use serde_json::{Value, json};
 
 use ringo_am_api::models::{AlbumId, ArtistId, LibraryPlaylistId, PlaylistId, SongId};
-use ringo_am_api::write::{self, CatalogItem, Rating, Track};
+use ringo_am_api::write::{self, CatalogItem, Track};
 use ringo_am_api::{
     ApiTransport, Error, FixtureTransport, RecordedWrite, TransportError, WriteMethod, WriteRequest,
 };
@@ -253,14 +253,12 @@ async fn add_to_favorites_sends_one_type_in_the_key() {
 }
 
 #[tokio::test]
-async fn remove_from_favorites_deletes_the_rating_of_a_song() {
+async fn remove_rating_deletes_the_rating_of_a_song() {
     let path = format!("/v1/me/ratings/songs/{SONG}");
     let transport =
         FixtureTransport::new().with_write(WriteMethod::Delete, &path, "write/rating_delete.json");
 
-    write::remove_from_favorites(&transport, &song())
-        .await
-        .unwrap();
+    write::remove_rating(&transport, &song()).await.unwrap();
 
     assert_eq!(
         transport.recorded_writes(),
@@ -274,26 +272,15 @@ async fn remove_from_favorites_deletes_the_rating_of_a_song() {
 }
 
 #[tokio::test]
-async fn remove_from_favorites_puts_a_dislike_for_an_artist() {
-    let transport = FixtureTransport::new().with_write(
-        WriteMethod::Put,
-        "/v1/me/ratings/artists/1",
-        "write/rating_put_dislike.json",
-    );
+async fn remove_rating_rejects_an_artist_without_a_request() {
+    let transport = FixtureTransport::new();
 
-    write::remove_from_favorites(&transport, &artist())
+    let error = write::remove_rating(&transport, &artist())
         .await
-        .unwrap();
+        .unwrap_err();
 
-    assert_eq!(
-        transport.recorded_writes(),
-        vec![RecordedWrite {
-            method: WriteMethod::Put,
-            path: "/v1/me/ratings/artists/1".to_owned(),
-            query: Vec::new(),
-            body: Some(json!({ "type": "rating", "attributes": { "value": -1 } })),
-        }]
-    );
+    assert!(matches!(error, Error::InvalidInput { .. }), "got {error:?}");
+    assert_eq!(transport.recorded_writes(), Vec::new());
 }
 
 #[tokio::test]
@@ -352,63 +339,15 @@ async fn dislike_status_marks_only_the_songs_with_a_dislike() {
 }
 
 #[tokio::test]
-async fn rating_reads_the_value() {
-    let transport = FixtureTransport::new().with(
-        &format!("/v1/me/ratings/songs/{SONG}"),
-        &[],
-        "write/read_rating_song.json",
-    );
-
-    let rating = write::rating(&transport, &song()).await.unwrap();
-
-    assert_eq!(rating, Some(Rating::Love));
-}
-
-#[tokio::test]
-async fn rating_returns_none_when_apple_has_no_rating() {
-    // An unknown request is `NotFound`, like the `404` of Apple.
-    let transport = FixtureTransport::in_directory("unused");
-
-    let rating = write::rating(&transport, &song()).await.unwrap();
-
-    assert_eq!(rating, None);
-}
-
-#[tokio::test]
-async fn rating_returns_none_for_an_album_without_a_request() {
-    let transport = SpyTransport::new(FixtureTransport::in_directory("unused"));
-
-    let rating = write::rating(&transport, &album()).await.unwrap();
-
-    assert_eq!(rating, None);
-    assert_eq!(transport.cached.load(Ordering::SeqCst), 0);
-}
-
-#[tokio::test]
-async fn rating_passes_other_errors_on() {
-    let transport = FixtureTransport::in_directory("unused").with(
-        &format!("/v1/me/ratings/songs/{SONG}"),
-        &[],
-        "missing.json",
-    );
-
-    let error = write::rating(&transport, &song()).await.unwrap_err();
-
-    assert!(
-        matches!(error, Error::Transport(TransportError::Other { .. })),
-        "got {error:?}"
-    );
-}
-
-#[tokio::test]
-async fn set_rating_puts_the_value() {
+async fn set_dislike_puts_the_dislike_value() {
     let path = format!("/v1/me/ratings/songs/{SONG}");
-    let transport =
-        FixtureTransport::new().with_write(WriteMethod::Put, &path, "write/rating_put_like.json");
+    let transport = FixtureTransport::new().with_write(
+        WriteMethod::Put,
+        &path,
+        "write/rating_put_dislike.json",
+    );
 
-    write::set_rating(&transport, &song(), Rating::Love)
-        .await
-        .unwrap();
+    write::set_dislike(&transport, &song()).await.unwrap();
 
     assert_eq!(
         transport.recorded_writes(),
@@ -416,20 +355,19 @@ async fn set_rating_puts_the_value() {
             method: WriteMethod::Put,
             path,
             query: Vec::new(),
-            body: Some(json!({ "type": "rating", "attributes": { "value": 1 } })),
+            body: Some(json!({ "type": "rating", "attributes": { "value": -1 } })),
         }]
     );
 }
 
 #[tokio::test]
-async fn set_rating_rejects_an_artist_without_a_request() {
+async fn set_dislike_rejects_an_item_that_is_not_a_song_without_a_request() {
     let transport = FixtureTransport::new();
 
-    let error = write::set_rating(&transport, &artist(), Rating::Dislike)
-        .await
-        .unwrap_err();
-
-    assert!(matches!(error, Error::InvalidInput { .. }), "got {error:?}");
+    for item in [album(), artist()] {
+        let error = write::set_dislike(&transport, &item).await.unwrap_err();
+        assert!(matches!(error, Error::InvalidInput { .. }), "got {error:?}");
+    }
     assert_eq!(transport.recorded_writes(), Vec::new());
 }
 

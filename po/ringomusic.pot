@@ -90,10 +90,6 @@ msgid "Could not load your playlists."
 msgstr ""
 
 #: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
-msgid "Dislike"
-msgstr ""
-
-#: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
 msgid "More"
 msgstr ""
 
@@ -103,6 +99,10 @@ msgstr ""
 
 #: crates/ui/src/add_to_playlist.rs
 msgid "Search playlists"
+msgstr ""
+
+#: crates/ui/src/add_to_playlist.rs crates/ui/src/widgets/song_row.rs
+msgid "Suggest Less"
 msgstr ""
 
 #: crates/ui/src/add_to_playlist.rs
@@ -174,18 +174,15 @@ msgid "Open music.apple.com"
 msgstr ""
 
 #: crates/ui/src/disclaimer.rs
+msgid "Remove artists from your favorites"
+msgstr ""
+
+#: crates/ui/src/disclaimer.rs
 msgid "Remove items from your library"
 msgstr ""
 
 #: crates/ui/src/disclaimer.rs
 msgid "Remove songs from a playlist"
-msgstr ""
-
-#: crates/ui/src/disclaimer.rs
-msgid ""
-"Removing an artist from your favorites uses a function that Apple does not "
-"document. It can stop working without notice, and it also marks the artist "
-"as disliked."
 msgstr ""
 
 #: crates/ui/src/disclaimer.rs
@@ -198,8 +195,8 @@ msgstr ""
 
 #: crates/ui/src/disclaimer.rs
 msgid ""
-"RingoMusic respects Apple's terms of use. It uses the functions that Apple "
-"makes available to other apps, with one exception that is described below."
+"RingoMusic respects Apple's terms of use. It uses only the functions that "
+"Apple makes available to other apps."
 msgstr ""
 
 #: crates/ui/src/disclaimer.rs
@@ -225,7 +222,9 @@ msgid "Remove from favorites"
 msgstr ""
 
 #: crates/ui/src/favorite.rs
-msgid "Remove from favorites (marks the artist as disliked)"
+msgid ""
+"Remove this artist from your favorites in the Apple Music app or on "
+"music.apple.com"
 msgstr ""
 
 #: crates/ui/src/gate.rs
@@ -344,8 +343,20 @@ msgstr ""
 msgid "_Preferences"
 msgstr ""
 
-#: crates/ui/src/menu.rs
+#: crates/ui/src/menu.rs crates/ui/src/mini_player.rs
 msgid "_Quit"
+msgstr ""
+
+#: crates/ui/src/mini_player.rs
+msgid "Menu"
+msgstr ""
+
+#: crates/ui/src/mini_player.rs
+msgid "Right-click to pin"
+msgstr ""
+
+#: crates/ui/src/mini_player.rs
+msgid "_Open RingoMusic"
 msgstr ""
 
 #: crates/ui/src/network_banner.rs
@@ -445,6 +456,10 @@ msgid "Quit when the window is closed"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
+msgid "Show a mini player when the window is closed"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
 msgid "Show notifications for new songs"
 msgstr ""
 
@@ -488,6 +503,10 @@ msgstr ""
 #: crates/ui/src/preferences.rs
 #, rust-format
 msgid "{used} of {limit}"
+msgstr ""
+
+#: crates/ui/src/rating_confirmation.rs
+msgid "Apple Music did not confirm the change"
 msgstr ""
 
 #: crates/ui/src/section.rs crates/ui/src/views/library.rs
@@ -939,6 +958,56 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid "The narrow layout"
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"This release adds a mini player. It also makes favorites and ratings follow "
+"Apple Music more closely, and it uses only the functions that Apple "
+"documents."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"A mini player opens when you close the window and playback continues in the "
+"background. It shows the cover and the seek bar. The player controls appear "
+"when you point at the cover. Drag the cover to move it, and right-click the "
+"cover to keep it above other windows. To turn it off, use Preferences."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The \"Dislike\" menu item is now \"Suggest Less\", as in the Apple Music app."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"After each change, the star and \"Suggest Less\" show the state that Apple "
+"Music confirms. If Apple Music does not confirm the change, a message tells "
+"you."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"To remove an artist from your favorites, use the Apple Music app or "
+"music.apple.com. RingoMusic used a function that Apple does not document for "
+"this, and it also marked the artist as disliked."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The message about library functions shows one more time, with the updated "
+"list."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "Stricter checks of the requests that change your library."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"Less work during playback with a long queue: the progress updates no longer "
+"copy the queue."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

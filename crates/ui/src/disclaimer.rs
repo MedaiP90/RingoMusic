@@ -15,7 +15,7 @@ use tracing::{debug, warn};
 
 /// Version of the list of unavailable functions. Increase it each time the
 /// list changes. Then the dialog shows again, one time, for each user.
-const LIBRARY_DISCLAIMER_VERSION: u32 = 1;
+const LIBRARY_DISCLAIMER_VERSION: u32 = 2;
 
 /// Address of the web player of Apple Music.
 const MUSIC_SITE: &str = "https://music.apple.com";
@@ -36,20 +36,18 @@ pub fn body() -> String {
         gettext("Remove songs from a playlist"),
         gettext("Change the order of songs in a playlist"),
         gettext("Remove items from your library"),
+        gettext("Remove artists from your favorites"),
     ]
     .map(|function| format!("• {function}"))
     .join("\n");
     [
         gettext(
-            "RingoMusic respects Apple's terms of use. It uses the functions that Apple makes available to other apps, with one exception that is described below.",
+            "RingoMusic respects Apple's terms of use. It uses only the functions that Apple makes available to other apps.",
         ),
         gettext("These functions are not available in RingoMusic:"),
         unavailable,
         gettext(
             "To do these actions, use the Apple Music app or music.apple.com. RingoMusic shows the changes the next time it loads your library.",
-        ),
-        gettext(
-            "Removing an artist from your favorites uses a function that Apple does not document. It can stop working without notice, and it also marks the artist as disliked.",
         ),
         gettext("RingoMusic is not affiliated with Apple."),
     ]

@@ -5,14 +5,16 @@
 //! "Favorite" menu items (decisions L7, L8, L14, L18, and L20).
 //!
 //! The action state is the optimistic value. A click changes it at once and sends one request.
-//! A failed request changes it back. The status is read live, when the item shows, never after a
-//! write (rule R8).
+//! A failed request changes it back. The status is read live when the item shows, and again after
+//! each successful write until Apple confirms it (`rating_confirmation.rs`).
+//!
+//! Apple documents no way to remove an artist favorite. So the star of an artist that is a
+//! favorite is disabled, and its tooltip sends the user to Apple's apps.
 
 use std::cell::{Cell, RefCell};
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 use std::sync::Arc;
-use std::time::Duration;
 
 use gettextrs::gettext;
 use relm4::gtk;
@@ -22,15 +24,10 @@ use relm4::gtk::prelude::*;
 use ringo_am_api::write::{self, CatalogItem};
 use tracing::warn;
 
-use crate::add_to_playlist;
-use crate::detail;
 use crate::library_write;
-
-/// Time that the rows of a list wait for each other before one request reads their status.
-const BATCH_DELAY: Duration = Duration::from_millis(60);
-
-/// Most songs in one status request.
-const BATCH_SIZE: usize = 50;
+use crate::rating_confirmation::{self, RatingControl, RatingState, WriteToken};
+use crate::services;
+use crate::status_batch::{StatusBatch, StatusTarget};
 
 /// Name of the favorite action, in every group that holds it.
 pub const ACTION_NAME: &str = "favorite";
@@ -43,11 +40,17 @@ const BUTTON_GROUP: &str = "star";
 pub struct Look {
     /// The item is a favorite (the optimistic value).
     pub favorite: bool,
-    /// The item is an artist. Removing its favorite stores a dislike (decision L19).
+    /// The item is an artist. The app cannot remove an artist favorite.
     pub artist: bool,
 }
 
 impl Look {
+    /// Tells if a click can change the star. Only the removal of an artist favorite is not
+    /// possible.
+    fn can_toggle(self) -> bool {
+        !(self.favorite && self.artist)
+    }
+
     fn icon_name(self) -> &'static str {
         if self.favorite {
             "starred-symbolic"
@@ -60,7 +63,9 @@ impl Look {
         match (self.favorite, self.artist) {
             (false, _) => gettext("Add to favorites"),
             (true, false) => gettext("Remove from favorites"),
-            (true, true) => gettext("Remove from favorites (marks the artist as disliked)"),
+            (true, true) => gettext(
+                "Remove this artist from your favorites in the Apple Music app or on music.apple.com",
+            ),
         }
     }
 }
@@ -86,12 +91,17 @@ pub(crate) struct Toggle {
 }
 
 /// A change of the star that a linked control must know (see [`FavoriteControl::connect_change`]).
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) enum Change {
     /// A click set the star to this value and sent a request.
     Toggled(bool),
     /// The request of a click failed, so the star went back from this value.
     Undone(bool),
+    /// After a write, Apple has this other state for `item`. The star already shows it.
+    Corrected {
+        item: CatalogItem,
+        state: RatingState,
+    },
 }
 
 /// The state logic of the star, with no widget. A generation number drops the result of a request
@@ -177,6 +187,16 @@ impl FavoriteState {
         }
     }
 
+    /// Sets a known status with no request, like [`Self::force`], but only while the state shows
+    /// `item`. Returns `true` if the status changed.
+    pub(crate) fn force_for(&mut self, item: &CatalogItem, value: bool) -> bool {
+        let applies = self.item.as_ref() == Some(item) && self.status == Status::Known(!value);
+        if applies {
+            self.status = Status::Known(value);
+        }
+        applies
+    }
+
     fn look(&self) -> Look {
         Look {
             favorite: self.status == Status::Known(true),
@@ -207,7 +227,7 @@ impl Inner {
             let state = self.state.borrow();
             (state.is_known(), state.look())
         };
-        self.action.set_enabled(known);
+        self.action.set_enabled(known && look.can_toggle());
         self.action.set_state(&look.favorite.to_variant());
         if let Some(on_look) = self.on_look.borrow().as_ref() {
             on_look(look);
@@ -215,29 +235,40 @@ impl Inner {
     }
 
     /// Handles a click or a menu choice: changes the status at once, then sends one request.
+    /// After a successful request, Apple confirms the new status.
     fn toggle(self: &Rc<Self>, target: bool) {
         let Some(toggle) = self.state.borrow_mut().begin_toggle(target) else {
             return;
         };
         self.sync();
         self.notify(Change::Toggled(target));
-        let (Some(anchor), Some(services)) = (self.anchor.upgrade(), add_to_playlist::services())
-        else {
+        let (Some(anchor), Some(services)) = (self.anchor.upgrade(), services::installed()) else {
             warn!("the favorite has no widget or no services");
             self.undo(&toggle);
             return;
         };
+        let token = WriteToken::begin(&toggle.item);
         let api = Arc::clone(services.api());
         let item = toggle.item.clone();
         let request = async move {
             if target {
                 write::add_to_favorites(api.as_ref(), &item).await
             } else {
-                write::remove_from_favorites(api.as_ref(), &item).await
+                write::remove_rating(api.as_ref(), &item).await
             }
         };
-        let inner = Rc::clone(self);
-        library_write::run(&anchor, request, |()| {}, move || inner.undo(&toggle));
+        let expected = if target {
+            RatingState::Favorite
+        } else {
+            RatingState::Unrated
+        };
+        let (confirming, undoing) = (Rc::downgrade(self), Rc::clone(self));
+        library_write::run(
+            &anchor,
+            request,
+            move |()| rating_confirmation::confirm(&confirming, token, expected),
+            move || undoing.undo(&toggle),
+        );
     }
 
     fn undo(&self, toggle: &Toggle) {
@@ -252,6 +283,24 @@ impl Inner {
         if let Some(on_change) = self.on_change.borrow().as_ref() {
             on_change(change);
         }
+    }
+}
+
+impl RatingControl for Inner {
+    fn anchor(&self) -> Option<gtk::Widget> {
+        self.anchor.upgrade()
+    }
+
+    /// Shows the favorite status of `state` on the star, and tells the linked control.
+    fn correct(&self, item: &CatalogItem, state: RatingState) {
+        let changed = self.state.borrow_mut().force_for(item, state.is_favorite());
+        if changed {
+            self.sync();
+        }
+        self.notify(Change::Corrected {
+            item: item.clone(),
+            state,
+        });
     }
 }
 
@@ -303,46 +352,32 @@ impl FavoriteControl {
     }
 
     /// Reads the status together with the other controls that queue in the same moment. The
-    /// rows of a list use this: they get one request for up to [`BATCH_SIZE`] songs, not one
-    /// request for each row.
+    /// rows of a list use this: they get one request for many songs, not one request for each
+    /// row.
     pub fn queue_status(&self) {
-        let request = self.inner.state.borrow_mut().begin_load();
-        let Some((generation, item)) = request else {
-            return;
-        };
-        self.inner.sync();
-        let waiting = Waiting {
-            inner: Rc::downgrade(&self.inner),
-            generation,
-            item,
-        };
-        let first = WAITING.with_borrow_mut(|queue| {
-            queue.push(waiting);
-            queue.len() == 1
-        });
-        if first {
-            glib::timeout_add_local_once(BATCH_DELAY, read_waiting);
+        if let Some((generation, item)) = self.begin_load() {
+            StatusBatch::queue(&READS, self.target(), generation, item);
         }
     }
 
     /// Reads the status of the item, live, and shows it.
     pub fn load_status(&self) {
+        if let Some((generation, item)) = self.begin_load() {
+            StatusBatch::read_now(&READS, self.target(), generation, item);
+        }
+    }
+
+    /// Starts a read and shows that the status loads. `None` if no read is necessary.
+    fn begin_load(&self) -> Option<(u64, CatalogItem)> {
         let request = self.inner.state.borrow_mut().begin_load();
-        let Some((generation, item)) = request else {
-            return;
-        };
-        self.inner.sync();
-        let weak = Rc::downgrade(&self.inner);
-        glib::spawn_future_local(async move {
-            let favorite = read_status(item).await;
-            let Some(inner) = weak.upgrade() else {
-                return;
-            };
-            let current = inner.state.borrow_mut().finish_load(generation, favorite);
-            if current {
-                inner.sync();
-            }
-        });
+        if request.is_some() {
+            self.inner.sync();
+        }
+        request
+    }
+
+    fn target(&self) -> Weak<dyn StatusTarget> {
+        Rc::downgrade(&self.inner) as Weak<dyn StatusTarget>
     }
 
     /// Tells if the status is known and on.
@@ -357,7 +392,17 @@ impl FavoriteControl {
         self.inner.sync();
     }
 
-    /// Calls `on_change` for each click and each undo of a click. One handler at a time.
+    /// Shows the favorite status that Apple has for `item` after a write of another control. Does
+    /// nothing if the control shows another item.
+    pub(crate) fn show_confirmed(&self, item: &CatalogItem, favorite: bool) {
+        let changed = self.inner.state.borrow_mut().force_for(item, favorite);
+        if changed {
+            self.inner.sync();
+        }
+    }
+
+    /// Calls `on_change` for each click, each undo of a click, and each correction after a write.
+    /// One handler at a time.
     pub(crate) fn connect_change(&self, on_change: impl Fn(Change) + 'static) {
         *self.inner.on_change.borrow_mut() = Some(Box::new(on_change));
     }
@@ -368,77 +413,31 @@ impl FavoriteControl {
     }
 }
 
-/// A control that waits for a batched status read.
-#[derive(Clone)]
-struct Waiting {
-    inner: Weak<Inner>,
-    generation: u64,
-    item: CatalogItem,
-}
+impl StatusTarget for Inner {
+    fn is_loading(&self, generation: u64) -> bool {
+        self.state.borrow().is_loading(generation)
+    }
 
-impl Waiting {
-    /// Tells if the control still waits for this read.
-    fn is_current(&self) -> bool {
-        self.inner
-            .upgrade()
-            .is_some_and(|inner| inner.state.borrow().is_loading(self.generation))
+    fn finish_load(&self, generation: u64, favorite: bool) {
+        let current = self.state.borrow_mut().finish_load(generation, favorite);
+        if current {
+            self.sync();
+        }
     }
 }
 
 thread_local! {
-    static WAITING: RefCell<Vec<Waiting>> = const { RefCell::new(Vec::new()) };
-}
-
-/// Reads the status of the controls that queued, in requests of up to [`BATCH_SIZE`] songs. A
-/// control that got another item in the meantime does not count.
-fn read_waiting() {
-    let queue = WAITING.take();
-    let waiting: Vec<Waiting> = queue.into_iter().filter(Waiting::is_current).collect();
-    let mut items: Vec<CatalogItem> = Vec::new();
-    for entry in &waiting {
-        if !items.contains(&entry.item) {
-            items.push(entry.item.clone());
-        }
-    }
-    for chunk in items.chunks(BATCH_SIZE) {
-        let chunk = chunk.to_vec();
-        let entries: Vec<Waiting> = waiting
-            .iter()
-            .filter(|entry| chunk.contains(&entry.item))
-            .cloned()
-            .collect();
-        glib::spawn_future_local(async move {
-            let status = read_statuses(chunk).await;
-            for entry in entries {
-                let Some(inner) = entry.inner.upgrade() else {
-                    continue;
-                };
-                let favorite = status.get(&entry.item).copied().unwrap_or(false);
-                let current = inner
-                    .state
-                    .borrow_mut()
-                    .finish_load(entry.generation, favorite);
-                if current {
-                    inner.sync();
-                }
-            }
-        });
-    }
-}
-
-/// Reads if `item` is a favorite. A failure counts as "not a favorite": the star stays usable, and
-/// Apple ignores a duplicate add.
-async fn read_status(item: CatalogItem) -> bool {
-    let status = read_statuses(vec![item.clone()]).await;
-    status.get(&item).copied().unwrap_or(false)
+    /// The status reads of the stars. A failure counts as "not a favorite": the star stays
+    /// usable, and Apple ignores a duplicate add.
+    static READS: StatusBatch = const { StatusBatch::new(|items| Box::pin(read_statuses(items))) };
 }
 
 /// Reads the status of `items`, live. After a failure the result is empty.
 async fn read_statuses(items: Vec<CatalogItem>) -> HashMap<CatalogItem, bool> {
-    let Some(services) = add_to_playlist::services() else {
+    let Some(services) = services::installed() else {
         return HashMap::new();
     };
-    let storefront = detail::storefront(&services.core().subscribe().borrow()).unwrap_or_default();
+    let storefront = services.core().storefront().unwrap_or_default();
     let api = Arc::clone(services.api());
     let task =
         relm4::spawn(
@@ -623,20 +622,42 @@ mod tests {
     }
 
     #[test]
-    fn tooltip_of_an_active_artist_star_names_the_dislike() {
+    fn tooltip_of_an_active_artist_star_names_apples_apps() {
         let look = Look {
             favorite: true,
             artist: true,
         };
         assert_eq!(
             look.tooltip(),
-            "Remove from favorites (marks the artist as disliked)"
+            "Remove this artist from your favorites in the Apple Music app or on music.apple.com"
         );
         let song = Look {
             favorite: true,
             artist: false,
         };
         assert_eq!(song.tooltip(), "Remove from favorites");
+    }
+
+    #[test]
+    fn only_an_active_artist_star_cannot_toggle() {
+        for (favorite, artist, can_toggle) in [
+            (false, false, true),
+            (true, false, true),
+            (false, true, true),
+            (true, true, false),
+        ] {
+            let look = Look { favorite, artist };
+            assert_eq!(look.can_toggle(), can_toggle, "{look:?}");
+        }
+    }
+
+    #[test]
+    fn force_for_changes_only_the_shown_item() {
+        let mut state = known(song("1"), false);
+        assert!(!state.force_for(&song("2"), true));
+        assert!(!state.look().favorite);
+        assert!(state.force_for(&song("1"), true));
+        assert!(state.look().favorite);
     }
 
     #[test]

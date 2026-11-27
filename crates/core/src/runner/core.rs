@@ -209,7 +209,7 @@ impl Core {
     /// Does the parts of a message that are not state: logs and the copy of
     /// the engine queue. It also changes the queue index of `NowPlaying` from
     /// the engine index to the Rust index.
-    fn observe(&mut self, message: &mut Message) {
+    fn observe(&self, message: &mut Message) {
         let Message::Engine(event) = message else {
             return;
         };

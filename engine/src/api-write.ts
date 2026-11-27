@@ -7,22 +7,22 @@
 import type { ApiWriteRequest } from './protocol.ts';
 
 const API_ORIGIN = 'https://api.music.apple.com';
-const WRITE_PREFIX = '/v1/me/';
 
-// Documented `DELETE` rating types. Source: plan/04_library-management/apple-music-writes.md.
-// Keep this list equal to `DELETE_PATTERNS` in crates/engine/src/protocol/to_engine.rs.
-const DELETE_RATING_TYPES: ReadonlySet<string> = new Set([
-  'songs',
-  'albums',
-  'playlists',
-  'music-videos',
-  'stations',
-  'library-songs',
-  'library-albums',
-  'library-playlists',
-  'library-music-videos',
-]);
-const DELETE_RATING_PREFIX = '/v1/me/ratings/';
+// The only write requests that RingoMusic sends. Each one is documented by Apple
+// (plan/04_library-management/apple-music-writes.md). In a pattern, `{id}` is one ID segment and
+// `a|b` is one of the literal segments `a` and `b`.
+// Keep this list equal to `WRITE_PATTERNS` in crates/engine/src/protocol/to_engine.rs.
+const WRITE_PATTERNS: readonly (readonly [ApiWriteRequest['method'], string])[] = [
+  ['POST', '/v1/me/library'],
+  ['POST', '/v1/me/library/playlists'],
+  ['POST', '/v1/me/library/playlists/{id}/tracks'],
+  ['POST', '/v1/me/favorites'],
+  ['PUT', '/v1/me/ratings/songs/{id}'],
+  ['DELETE', '/v1/me/ratings/songs|albums|playlists/{id}'],
+];
+const ID_PLACEHOLDER = '{id}';
+// ASCII letters, digits, `.`, `_`, and `-`. Other characters can change the path in `new URL()`.
+const ID_SEGMENT = /^[A-Za-z0-9._-]+$/;
 
 // A request value that the engine does not permit. It maps to `invalid_params`.
 export class InvalidParamsError extends Error {}
@@ -45,29 +45,47 @@ export interface WriteContext {
   fetch: typeof fetch;
 }
 
-function isDocumentedDelete(path: string): boolean {
-  if (!path.startsWith(DELETE_RATING_PREFIX)) {
-    return false;
+function isIdSegment(segment: string): boolean {
+  return segment !== '.' && segment !== '..' && ID_SEGMENT.test(segment);
+}
+
+function matchesSegment(segment: string, expected: string): boolean {
+  if (expected === ID_PLACEHOLDER) {
+    return isIdSegment(segment);
   }
-  const [type, id, ...extra] = path.slice(DELETE_RATING_PREFIX.length).split('/');
-  return DELETE_RATING_TYPES.has(type ?? '') && Boolean(id) && extra.length === 0;
+  return expected.split('|').includes(segment);
+}
+
+function matchesPattern(path: string, pattern: string): boolean {
+  const pathSegments = path.split('/');
+  const patternSegments = pattern.split('/');
+  return (
+    pathSegments.length === patternSegments.length &&
+    pathSegments.every((segment, index) => matchesSegment(segment, patternSegments[index] ?? ''))
+  );
 }
 
 // Second check of the rules that Rust applies before the call.
 export function validateWrite({ method, path }: ApiWriteRequest): void {
-  if (!path.startsWith(WRITE_PREFIX)) {
-    throw new InvalidParamsError('api.write path must start with /v1/me/');
+  const isPermitted = WRITE_PATTERNS.some(
+    ([patternMethod, pattern]) => patternMethod === method && matchesPattern(path, pattern),
+  );
+  if (!isPermitted) {
+    throw new InvalidParamsError('api.write is not allowed for this method and path');
   }
-  if (/[?#]/.test(path)) {
-    throw new InvalidParamsError('api.write path must not hold a query or fragment');
+}
+
+// Builds the request URL. Fails if `new URL()` changes the path (an encoded dot, a backslash, a
+// tab), so the request always goes to the path that `validateWrite` checked.
+function buildUrl({ path, query }: ApiWriteRequest): URL {
+  const url = new URL(path, API_ORIGIN);
+  if (url.pathname !== path) {
+    throw new InvalidParamsError('api.write path changes when the URL is built');
   }
-  const segments = path.slice(WRITE_PREFIX.length).split('/');
-  if (segments.some((segment) => ['', '.', '..'].includes(segment))) {
-    throw new InvalidParamsError('api.write path has an empty or relative segment');
+  for (const [key, value] of Object.entries(query)) {
+    url.searchParams.append(key, value);
   }
-  if (method === 'DELETE' && !isDocumentedDelete(path)) {
-    throw new InvalidParamsError('api.write DELETE is not allowed for this path');
-  }
+  return url;
 }
 
 // Returns the Apple error code of an error body, if it has one.
@@ -84,10 +102,7 @@ function readAppleCode(text: string): string | undefined {
 // Sends a validated write. Returns the response JSON, or `null` for an empty body.
 export async function sendWrite(context: WriteContext, request: ApiWriteRequest): Promise<unknown> {
   validateWrite(request);
-  const url = new URL(request.path, API_ORIGIN);
-  for (const [key, value] of Object.entries(request.query)) {
-    url.searchParams.append(key, value);
-  }
+  const url = buildUrl(request);
   const headers: Record<string, string> = {
     Authorization: `Bearer ${context.developerToken}`,
     'Music-User-Token': context.musicUserToken,

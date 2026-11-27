@@ -12,6 +12,8 @@ workspace = true
 [features]
 # Write functions. Only the UI crate enables them (decision L4).
 write = []
+# Adds `FixtureTransport`, a transport that answers from recorded files, for tests.
+fixture = []
 
 [dependencies]
 async-trait.workspace = true
@@ -21,4 +23,6 @@ thiserror.workspace = true
 tracing.workspace = true
 
 [dev-dependencies]
+# Enables the `fixture` feature for the integration tests.
+ringo-am-api = { path = ".", features = ["fixture"] }
 tokio.workspace = true

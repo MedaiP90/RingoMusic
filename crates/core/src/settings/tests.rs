@@ -26,6 +26,7 @@ fn defaults_match_the_schema_table() {
     assert!((settings.volume() - 1.0).abs() < f64::EPSILON);
     assert!(!settings.quit_on_close());
     assert!(settings.show_notifications());
+    assert!(settings.mini_player());
     assert!(!settings.background_denied());
     assert!(settings.check_updates());
     assert_eq!(settings.last_update_check(), 0);

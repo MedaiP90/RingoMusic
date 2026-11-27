@@ -130,6 +130,8 @@ fn current_track(state: &AppState) -> Option<Track<'_>> {
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use ringo_core::queue::QueueItem;
     use ringo_core::state::NowPlaying;
     use ringo_engine::ItemId;
@@ -149,8 +151,7 @@ mod tests {
 
     fn state_with_queue() -> AppState {
         let mut state = AppState::new();
-        let _ = state
-            .queue
+        let _ = Arc::make_mut(&mut state.queue)
             .replace(vec![item("1", "First"), item("2", "Second")], 1);
         state
     }

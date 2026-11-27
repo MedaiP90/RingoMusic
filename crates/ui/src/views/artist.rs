@@ -196,7 +196,7 @@ impl ArtistView {
             task.abort();
         }
         self.set_phase(Phase::Loading, false);
-        let storefront = detail::storefront(&self.core.subscribe().borrow()).unwrap_or_default();
+        let storefront = self.core.storefront().unwrap_or_default();
         let (api, id) = (Arc::clone(&self.api), self.id.clone());
         let input = sender.input_sender().clone();
         self.pending = Some(relm4::spawn(async move {
@@ -213,7 +213,7 @@ impl ArtistView {
 
     /// Shows the page of `phase`. The Play action works only when the page
     /// has top songs.
-    fn set_phase(&mut self, phase: Phase, can_play: bool) {
+    fn set_phase(&self, phase: Phase, can_play: bool) {
         self.frame.show(phase);
         self.actions.set_enabled(can_play);
     }

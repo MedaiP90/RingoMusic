@@ -7,6 +7,7 @@
 //! differ.
 
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use gettextrs::{gettext, ngettext};
 use relm4::adw;
@@ -71,9 +72,8 @@ impl Snapshot {
         for (index, item) in items.iter().enumerate() {
             index_of.entry(&item.id).or_insert(index);
         }
-        let played: Vec<&ItemId> = queue.history().collect();
-        let history = played
-            .into_iter()
+        let history = queue
+            .history()
             .rev()
             .filter_map(|id| index_of.get(id).copied())
             .map(|index| Entry {
@@ -527,12 +527,17 @@ fn forward_queue(core: &CoreHandle, sender: &ComponentSender<QueueView>) {
     let mut state = core.subscribe();
     let input = sender.input_sender().clone();
     relm4::spawn(async move {
-        let mut last: Option<Queue> = None;
+        let mut last: Option<Arc<Queue>> = None;
         loop {
             let snapshot = {
                 let current = state.borrow_and_update();
-                (last.as_ref() != Some(&current.queue)).then(|| {
-                    last = Some(current.queue.clone());
+                // The core copies the queue only when it changes, so the same
+                // pointer means the same queue.
+                let unchanged = last
+                    .as_ref()
+                    .is_some_and(|last| Arc::ptr_eq(last, &current.queue));
+                (!unchanged).then(|| {
+                    last = Some(Arc::clone(&current.queue));
                     Snapshot::of(&current.queue)
                 })
             };

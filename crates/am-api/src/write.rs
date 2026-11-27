@@ -17,7 +17,7 @@ use crate::models::{
     AlbumId, ApiPage, ArtistId, LibraryPlaylist, LibraryPlaylistId, LibrarySongId, PlaylistId,
     Relationship, ResourceRef, SongId,
 };
-use crate::{ApiTransport, Error, Result, TransportError, WriteMethod, WriteRequest};
+use crate::{ApiTransport, Error, Result, WriteMethod, WriteRequest};
 
 /// Catalog item that a write function accepts. The variant fixes the kind, so the kind and the
 /// ID cannot be mixed.
@@ -80,23 +80,9 @@ impl Track {
     }
 }
 
-/// Rating that Apple supports. Apple has no other values.
-#[derive(Copy, Clone, Debug, Eq, Hash, PartialEq)]
-pub enum Rating {
-    /// Love. For Apple, this is the same state as a favorite (decision L7).
-    Love,
-    /// Dislike. It clears the favorite.
-    Dislike,
-}
-
-impl Rating {
-    fn value(self) -> i8 {
-        match self {
-            Self::Love => 1,
-            Self::Dislike => -1,
-        }
-    }
-}
+/// Rating value of a dislike ("Suggest Less" in the UI). It clears the favorite. The app does
+/// not send the other value (`1`, love): a favorite uses [`add_to_favorites`] (decision L7).
+const DISLIKE_VALUE: i64 = -1;
 
 /// Creates a playlist in the library. `tracks` can be empty. Apple adds the tracks in the given
 /// order.
@@ -210,35 +196,6 @@ pub async fn add_to_favorites(transport: &impl ApiTransport, item: &CatalogItem)
     Ok(())
 }
 
-/// Removes one item from the favorites. Apple has no remove-favorite endpoint, but it removes the
-/// favorite when the rating goes away (decision L14).
-///
-/// For a song, an album, and a playlist this is [`remove_rating`]. For an artist it is an
-/// undocumented call (decision L19). That call also stores a dislike on the artist.
-///
-/// Documentation: see [`remove_rating`].
-///
-/// # Errors
-///
-/// Returns an error if the request fails.
-pub async fn remove_from_favorites(
-    transport: &impl ApiTransport,
-    item: &CatalogItem,
-) -> Result<()> {
-    match item {
-        CatalogItem::Artist(id) => {
-            // Exception L19 to the documented-endpoints rule, accepted by the user. Apple has no
-            // artist rating page. This call is the only way to clear an artist favorite, and it
-            // can stop working at any time.
-            let path = format!("/v1/me/ratings/artists/{}", segment("ID", id.as_str())?);
-            put_rating(transport, &path, Rating::Dislike).await
-        }
-        CatalogItem::Song(_) | CatalogItem::Album(_) | CatalogItem::Playlist(_) => {
-            remove_rating(transport, item).await
-        }
-    }
-}
-
 /// Reads if each item is a favorite. The request is live and never uses the cache (decision L18).
 /// The result has one entry for each item. An item that Apple does not return is not a favorite.
 ///
@@ -278,41 +235,6 @@ pub async fn favorite_status(
     Ok(status)
 }
 
-/// Reads the rating of an item. Returns `None` if the item has no rating.
-///
-/// Apple answers `404` when there is no rating, and `400` for an album. So an album always gives
-/// `None`, without a request. Use [`favorite_status`] for the star of an album.
-///
-/// Documentation:
-/// <https://developer.apple.com/documentation/applemusicapi/get-a-personal-content-rating-4k9c0>
-/// (songs) and
-/// <https://developer.apple.com/documentation/applemusicapi/get-a-personal-content-rating-6wib7>
-/// (playlists).
-///
-/// # Errors
-///
-/// Returns [`Error::InvalidInput`] for an artist. Returns an error if the request fails or the
-/// response is not valid.
-pub async fn rating(transport: &impl ApiTransport, item: &CatalogItem) -> Result<Option<Rating>> {
-    match item {
-        CatalogItem::Album(_) => return Ok(None),
-        CatalogItem::Artist(_) => return item.reject_artist("reading a rating").map(|()| None),
-        CatalogItem::Song(_) | CatalogItem::Playlist(_) => {}
-    }
-    let path = rating_path(item)?;
-    let value = match transport.get(&path, &[]).await {
-        Ok(value) => value,
-        Err(Error::Transport(TransportError::NotFound { .. })) => return Ok(None),
-        Err(error) => return Err(error),
-    };
-    let entry: RatingEntry = first(parse(value)?)?;
-    Ok(match entry.attributes.value {
-        1 => Some(Rating::Love),
-        -1 => Some(Rating::Dislike),
-        _ => None,
-    })
-}
-
 /// Reads which songs have a dislike. The request is live and never uses the cache. The result has
 /// one entry for each song. A song that Apple does not return has no rating, so it is not
 /// disliked. Items that are not songs are ignored.
@@ -347,7 +269,7 @@ pub async fn dislike_status(
     let disliked: Vec<String> = page
         .data
         .into_iter()
-        .filter(|entry| entry.attributes.value == i64::from(Rating::Dislike.value()))
+        .filter(|entry| entry.attributes.value == DISLIKE_VALUE)
         .map(|entry| entry.id)
         .collect();
     for item in songs {
@@ -356,31 +278,37 @@ pub async fn dislike_status(
     Ok(status)
 }
 
-/// Sets the rating of a song, an album, or a playlist. A new rating replaces the old one.
-///
-/// `Love` is the same state as a favorite (decision L7).
+/// Sets a dislike on a song ("Suggest Less" in the UI). It replaces the old rating, so it also
+/// removes the favorite.
 ///
 /// Documentation:
 /// <https://developer.apple.com/documentation/applemusicapi/add-a-personal-content-rating-33dop>
-/// (songs),
-/// <https://developer.apple.com/documentation/applemusicapi/add-a-personal-content-rating-4zesn>
-/// (albums), and
-/// <https://developer.apple.com/documentation/applemusicapi/add-a-personal-content-rating-76n4r>
-/// (playlists).
 ///
 /// # Errors
 ///
-/// Returns [`Error::InvalidInput`] for an artist. Returns an error if the request fails.
-pub async fn set_rating(
-    transport: &impl ApiTransport,
-    item: &CatalogItem,
-    rating: Rating,
-) -> Result<()> {
-    item.reject_artist("setting a rating")?;
-    put_rating(transport, &rating_path(item)?, rating).await
+/// Returns [`Error::InvalidInput`] if `item` is not a song. Returns an error if the request fails.
+pub async fn set_dislike(transport: &impl ApiTransport, item: &CatalogItem) -> Result<()> {
+    if !matches!(item, CatalogItem::Song(_)) {
+        return Err(invalid(format!(
+            "a dislike is only for songs, not for {}",
+            item.kind()
+        )));
+    }
+    let body = json!({ "type": "rating", "attributes": { "value": DISLIKE_VALUE } });
+    send(
+        transport,
+        WriteMethod::Put,
+        &rating_path(item)?,
+        &[],
+        Some(&body),
+    )
+    .await?;
+    Ok(())
 }
 
-/// Removes the rating of a song, an album, or a playlist. This also removes the favorite.
+/// Removes the rating of a song, an album, or a playlist. This also removes the favorite: Apple
+/// has no remove-favorite endpoint (decision L14). Apple has no artist rating endpoint, so an
+/// artist favorite can only be removed in Apple's apps.
 ///
 /// Documentation:
 /// <https://developer.apple.com/documentation/applemusicapi/delete-a-personal-content-rating-3a3a2>
@@ -484,13 +412,6 @@ async fn send(
             body,
         })
         .await
-}
-
-/// Sends a `PUT` that sets a rating.
-async fn put_rating(transport: &impl ApiTransport, path: &str, rating: Rating) -> Result<()> {
-    let body = json!({ "type": "rating", "attributes": { "value": rating.value() } });
-    send(transport, WriteMethod::Put, path, &[], Some(&body)).await?;
-    Ok(())
 }
 
 fn rating_path(item: &CatalogItem) -> Result<String> {

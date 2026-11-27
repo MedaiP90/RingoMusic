@@ -89,6 +89,10 @@ impl SimpleComponent for Preferences {
                     add = &adw::SwitchRow {
                         set_title: &gettext("Quit when the window is closed"),
                     },
+                    #[name = "mini_player_row"]
+                    add = &adw::SwitchRow {
+                        set_title: &gettext("Show a mini player when the window is closed"),
+                    },
                     #[name = "notifications_row"]
                     add = &adw::SwitchRow {
                         set_title: &gettext("Show notifications for new songs"),
@@ -109,7 +113,7 @@ impl SimpleComponent for Preferences {
                     add = &adw::ComboRow {
                         set_title: &gettext("Theme"),
                         set_model: Some(&labels(&theme::IDS, theme::label)),
-                        set_selected: theme::position(&model.services.settings().color_scheme()),
+                        set_selected: position_in(&theme::IDS, &model.services.settings().color_scheme()),
                         connect_selected_notify[sender] => move |row| {
                             sender.input(Input::ThemeSelected(row.selected()));
                         },
@@ -117,7 +121,7 @@ impl SimpleComponent for Preferences {
                     add = &adw::ComboRow {
                         set_title: &gettext("Accent color"),
                         set_model: Some(&labels(&accent::IDS, accent::label)),
-                        set_selected: accent::position(&model.services.settings().accent_color()),
+                        set_selected: position_in(&accent::IDS, &model.services.settings().accent_color()),
                         connect_selected_notify[sender] => move |row| {
                             sender.input(Input::AccentSelected(row.selected()));
                         },
@@ -411,6 +415,15 @@ fn bind_settings(services: &AppServices, widgets: &PreferencesWidgets) {
         .bind("quit-on-close", &widgets.quit_row, "active")
         .build();
     settings
+        .bind("mini-player", &widgets.mini_player_row, "active")
+        .build();
+    // The mini player needs the application to stay alive after the close.
+    settings
+        .bind("quit-on-close", &widgets.mini_player_row, "sensitive")
+        .get()
+        .invert_boolean()
+        .build();
+    settings
         .bind("show-notifications", &widgets.notifications_row, "active")
         .build();
     settings
@@ -449,6 +462,15 @@ fn labels(ids: &[&str], name: fn(&str) -> String) -> gtk::StringList {
         list.append(&name(id));
     }
     list
+}
+
+/// Returns the position of `id` in `ids`. An unknown value gives the first entry, the
+/// system entry.
+fn position_in(ids: &[&str], id: &str) -> u32 {
+    ids.iter()
+        .position(|candidate| *candidate == id)
+        .and_then(|index| u32::try_from(index).ok())
+        .unwrap_or(0)
 }
 
 /// Makes the adjustment of a cache limit row, from 16 to 4096 MiB.

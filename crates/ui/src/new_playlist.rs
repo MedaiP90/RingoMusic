@@ -72,7 +72,7 @@ fn present_dialog(
 ) {
     let (window_for_open, playlists) = (window.clone(), playlists.clone());
     NewPlaylistDialog::present(window, services, tracks, move |playlist| {
-        let id = playlist.id.clone();
+        let id = playlist.id;
         playlists.emit(LibraryInput::Invalidate);
         open_playlist(&window_for_open, &id);
     });

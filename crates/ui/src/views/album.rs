@@ -170,7 +170,7 @@ impl AlbumView {
             task.abort();
         }
         self.set_phase(Phase::Loading);
-        let storefront = detail::storefront(&self.core.subscribe().borrow()).unwrap_or_default();
+        let storefront = self.core.storefront().unwrap_or_default();
         let (api, id) = (Arc::clone(&self.api), self.id.clone());
         let input = sender.input_sender().clone();
         self.pending = Some(relm4::spawn(async move {

@@ -267,7 +267,7 @@ impl SimpleComponent for MoreView {
             kind,
         } = init;
         let title = format!("{name} - {}", kind.title());
-        let list = kind.build_list(catalog.clone(), sender.input_sender().clone());
+        let list = kind.build_list(catalog, sender.input_sender().clone());
         let list_widget = list.widget();
         let scrolled = gtk::ScrolledWindow::builder()
             .hscrollbar_policy(gtk::PolicyType::Never)
@@ -346,7 +346,7 @@ impl MoreView {
         };
         self.more_spinner.set_visible(self.phase == Phase::Content);
         let (api, subject, kind) = (Arc::clone(&self.api), self.subject.clone(), self.kind);
-        let storefront = detail::storefront(&self.core.subscribe().borrow()).unwrap_or_default();
+        let storefront = self.core.storefront().unwrap_or_default();
         let input = sender.input_sender().clone();
         self.pending = Some(relm4::spawn(async move {
             let page = match kind.load(&api, &storefront, &subject, offset).await {
@@ -383,8 +383,9 @@ impl MoreView {
     }
 }
 
-/// Builds the spinner that tells the user that more items are loading.
-fn build_more_spinner() -> adw::Spinner {
+/// Builds the spinner that tells the user that more items are loading. The
+/// playlist page uses it too.
+pub(crate) fn build_more_spinner() -> adw::Spinner {
     adw::Spinner::builder()
         .halign(gtk::Align::Center)
         .width_request(MORE_SPINNER_SIZE)

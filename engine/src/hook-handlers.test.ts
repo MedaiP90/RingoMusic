@@ -144,7 +144,7 @@ function writeRequest(id: number, params: unknown): { id: number; method: string
 void test('api.write / body and JSON response / should send the request and return the JSON', async () => {
   const { fetchFn, calls } = stubFetch(200, '{"data":[{"id":"1"}]}');
   const handlers = createHandlers(fakeMusic(TOKENS), fetchFn);
-  const body = { type: 'rating', attributes: { value: 1 } };
+  const body = { type: 'rating', attributes: { value: -1 } };
   const response = await dispatchRequest(
     handlers,
     writeRequest(6, { method: 'PUT', path: '/v1/me/ratings/songs/1', query: {}, body }),
@@ -171,26 +171,65 @@ void test('api.write / empty response body / should return null', async () => {
   assert.equal(calls[0]?.init.body, undefined);
 });
 
-void test('api.write / path outside /v1/me/ / should return invalid_params without a request', async () => {
+// Sends each request and checks that all give invalid_params and that no fetch happens.
+async function assertAllRejected(requests: readonly (readonly [string, string])[]): Promise<void> {
   const { fetchFn, calls } = stubFetch(200, '{}');
   const handlers = createHandlers(fakeMusic(TOKENS), fetchFn);
-  const paths = ['/v1/catalog/it/songs', '/v1/me', '/v1/me/../catalog/it', '/v1/me/library?x=1'];
-  for (const path of paths) {
-    const response = await dispatchRequest(handlers, writeRequest(8, { method: 'POST', path, query: {} }));
-    assert.ok('error' in response && response.error.code === ErrorCode.InvalidParams, path);
+  for (const [method, path] of requests) {
+    const response = await dispatchRequest(handlers, writeRequest(8, { method, path, query: {} }));
+    assert.ok('error' in response && response.error.code === ErrorCode.InvalidParams, `${method} ${path}`);
   }
   assert.equal(calls.length, 0);
-});
+}
 
-void test('api.write / DELETE on an undocumented path / should return invalid_params without a request', async () => {
+void test('api.write / each permitted write / should send the request', async () => {
   const { fetchFn, calls } = stubFetch(204, '');
   const handlers = createHandlers(fakeMusic(TOKENS), fetchFn);
-  const paths = ['/v1/me/library/playlists/p.1', '/v1/me/ratings/artists/1', '/v1/me/ratings/songs'];
-  for (const path of paths) {
-    const response = await dispatchRequest(handlers, writeRequest(9, { method: 'DELETE', path, query: {} }));
-    assert.ok('error' in response && response.error.code === ErrorCode.InvalidParams, path);
+  const permitted = [
+    ['POST', '/v1/me/library'],
+    ['POST', '/v1/me/library/playlists'],
+    ['POST', '/v1/me/library/playlists/p.TestPlaylist0001/tracks'],
+    ['POST', '/v1/me/favorites'],
+    ['PUT', '/v1/me/ratings/songs/123'],
+    ['DELETE', '/v1/me/ratings/songs/123'],
+    ['DELETE', '/v1/me/ratings/albums/456'],
+    ['DELETE', '/v1/me/ratings/playlists/pl.u-abc_1'],
+  ];
+  for (const [method, path] of permitted) {
+    const response = await dispatchRequest(handlers, writeRequest(8, { method, path, query: {} }));
+    assert.ok('result' in response, `${method} ${path}`);
   }
-  assert.equal(calls.length, 0);
+  assert.equal(calls.length, permitted.length);
+});
+
+void test('api.write / path outside the patterns / should return invalid_params without a request', async () => {
+  await assertAllRejected([
+    ['POST', '/v1/catalog/it/songs'],
+    ['POST', '/v1/me'],
+    ['POST', '/v1/me/'],
+    ['POST', '/v1/me/library/'],
+    ['POST', '/v1/me/library/playlist-folders'],
+    ['POST', '/v1/me/../catalog/it'],
+    ['POST', '/v1/me/library?x=1'],
+    ['DELETE', '/v1/me/ratings/songs'],
+    ['DELETE', '/v1/me/ratings/songs/1/extra'],
+  ]);
+});
+
+void test('api.write / method that the pattern does not permit / should return invalid_params without a request', async () => {
+  await assertAllRejected([
+    ['PUT', '/v1/me/library'],
+    ['PUT', '/v1/me/ratings/albums/1'],
+    ['PUT', '/v1/me/ratings/artists/1'],
+    ['DELETE', '/v1/me/ratings/artists/1'],
+    ['DELETE', '/v1/me/ratings/library-songs/i.1'],
+    ['DELETE', '/v1/me/library/playlists/p.1'],
+  ]);
+});
+
+void test('api.write / ID that can change the URL path / should return invalid_params without a request', async () => {
+  const ids = ['', '.', '..', '%2e%2e', '%2e%2e/%2e%2e/%2e%2e/catalog/us', '..\\..\\catalog', 'a\tb', 'a b'];
+  await assertAllRejected(ids.map((id) => ['DELETE', `/v1/me/ratings/songs/${id}`] as const));
 });
 
 void test('api.write / DELETE on a rating path / should send the request', async () => {

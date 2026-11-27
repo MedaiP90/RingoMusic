@@ -30,7 +30,7 @@ use crate::dislike::{self, DislikeControl};
 use crate::favorite::FavoriteControl;
 use crate::library_write;
 use crate::name_filter::NameFilter;
-use crate::services::{ApiClient, AppServices};
+use crate::services::{self, ApiClient, AppServices};
 
 /// Width of the popover, in pixels.
 const POPOVER_WIDTH: i32 = 300;
@@ -60,22 +60,6 @@ pub const RELOAD_PLAYLIST_ACTION: &str = "win.reload-playlist";
 const MENU_GROUP: &str = "item-menu";
 const MENU_ACTION: &str = "add";
 const LIBRARY_ACTION: &str = "add-to-library";
-
-thread_local! {
-    // A song row is set up without any context, so the popover gets the services here.
-    static SERVICES: RefCell<Option<AppServices>> = const { RefCell::new(None) };
-}
-
-/// Sets the services that [`present`] and the library items use. Call it once, at start-up, on
-/// the main thread.
-pub fn install(services: AppServices) {
-    SERVICES.with_borrow_mut(|installed| *installed = Some(services));
-}
-
-/// The services that [`install`] set. `None` before the start-up ends.
-pub fn services() -> Option<AppServices> {
-    SERVICES.with_borrow(Clone::clone)
-}
 
 /// Makes the tracks of songs. A library ID gives a library song. Any other ID gives a catalog
 /// song. The order of `song_ids` stays.
@@ -228,7 +212,7 @@ pub fn present(
     pointing_to: Option<&Rectangle>,
     song_ids: Vec<String>,
 ) {
-    let Some(services) = services() else {
+    let Some(services) = services::installed() else {
         warn!("the add to playlist popover has no services");
         return;
     };
@@ -279,11 +263,8 @@ fn build_popover(anchor: &gtk::Widget, picker: &Rc<Picker>, song_ids: &[String])
         let popover = popover.clone();
         glib::idle_add_local_once(move || popover.unparent());
     });
-    popover.connect_map({
-        let entry = entry.clone();
-        move |_| {
-            entry.grab_focus();
-        }
+    popover.connect_map(move |_| {
+        entry.grab_focus();
     });
 
     let (anchor, song_ids) = (anchor.clone(), song_ids.to_vec());
@@ -381,7 +362,7 @@ fn load(picker: &Rc<Picker>, services: &AppServices) {
 
 /// A menu button for a header or a bar. It has the items "Add to Playlist…" (set the songs with
 /// [`Self::set_songs`]) and "Add to Library" (set the item with [`Self::set_library_item`]).
-/// An item is hidden while it is off. The button is hidden while both are off. The "Dislike"
+/// An item is hidden while it is off. The button is hidden while both are off. The "Suggest Less"
 /// item (set the item with [`Self::set_dislike_item`]) is off until the rating is known, and it
 /// also shows the button.
 pub struct ItemMenu {
@@ -400,7 +381,7 @@ pub struct ItemMenu {
 
 impl ItemMenu {
     /// Makes the button. It has no songs and no library item yet, so it is hidden. With
-    /// `favorite`, the star of the same song, the menu also has a "Dislike" item. The item and the
+    /// `favorite`, the star of the same song, the menu also has a "Suggest Less" item. The item and the
     /// star exclude each other.
     pub fn new(favorite: Option<&FavoriteControl>) -> Self {
         let menu = Menu::new();
@@ -408,7 +389,7 @@ impl ItemMenu {
         menu.append_item(&hidden_when_off(&gettext("Add to Library"), LIBRARY_ACTION));
         if favorite.is_some() {
             menu.append_item(&MenuItem::new(
-                Some(&gettext("Dislike")),
+                Some(&gettext("Suggest Less")),
                 Some(&format!("{MENU_GROUP}.{}", dislike::ACTION_NAME)),
             ));
         }
@@ -470,7 +451,7 @@ impl ItemMenu {
         }
     }
 
-    /// Sets the catalog item that "Dislike" rates. `None` turns the item off. The rating is read
+    /// Sets the catalog item that "Suggest Less" rates. `None` turns the item off. The rating is read
     /// when the menu opens.
     pub fn set_dislike_item(&self, item: Option<CatalogItem>) {
         let Some(dislike) = &self.dislike else {

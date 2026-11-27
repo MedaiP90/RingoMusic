@@ -26,12 +26,10 @@ use crate::item_actions::{self, SongCatalog};
 use crate::paged::{self, PageCursor};
 use crate::services::{ApiClient, AppServices};
 use crate::views::detail_frame::DetailFrame;
+use crate::views::more::build_more_spinner;
 use crate::views::phase::Phase;
 use crate::widgets::detail_header::{ArtworkShape, DetailHeader, PlayActions};
 use crate::widgets::song_row::{self, SongRow};
-
-/// Size of the spinner below the list, in pixels.
-const MORE_SPINNER_SIZE: i32 = 24;
 
 /// What a playlist page needs to start.
 pub struct PlaylistInit {
@@ -221,7 +219,7 @@ impl PlaylistView {
     }
 
     fn storefront(&self) -> String {
-        detail::storefront(&self.core.subscribe().borrow()).unwrap_or_default()
+        self.core.storefront().unwrap_or_default()
     }
 
     fn set_phase(&mut self, phase: Phase) {
@@ -348,18 +346,6 @@ fn build_list(
         .connect_activate(move |_, position| input.emit(PlaylistInput::PlaySong(position)));
     song_row::connect_menu_key(&list.view);
     list
-}
-
-/// Builds the spinner that tells the user that more songs are loading.
-fn build_more_spinner() -> adw::Spinner {
-    adw::Spinner::builder()
-        .halign(gtk::Align::Center)
-        .width_request(MORE_SPINNER_SIZE)
-        .height_request(MORE_SPINNER_SIZE)
-        .margin_top(12)
-        .margin_bottom(12)
-        .visible(false)
-        .build()
 }
 
 /// Builds the content: the header above the scrolling song list.

@@ -63,7 +63,7 @@ pub struct BarState {
 }
 
 impl BarState {
-    fn of(state: &AppState) -> Self {
+    pub(crate) fn of(state: &AppState) -> Self {
         // Before the engine plays, the queue knows the current song.
         let (title, artist, artwork, duration) = match (&state.now_playing, state.queue.current()) {
             (Some(track), _) => (
@@ -101,8 +101,21 @@ impl BarState {
             shuffle: state.queue.shuffle_enabled(),
             repeat: state.queue.repeat(),
             has_queue: !state.queue.items().is_empty(),
-            storefront: detail::storefront(state),
+            storefront: state.storefront().map(str::to_owned),
         }
+    }
+
+    pub(crate) fn title(&self) -> &str {
+        &self.title
+    }
+
+    pub(crate) fn artist(&self) -> &str {
+        &self.artist
+    }
+
+    /// Template of the artwork URL.
+    pub(crate) fn artwork(&self) -> Option<&str> {
+        self.artwork.as_deref()
     }
 
     /// Takes the album and the artist from the catalog. The engine sends only
@@ -151,9 +164,19 @@ pub struct PlayerBarInit {
     pub catalog: SongCatalog,
     /// Finds the album and the artist of a song that no view showed.
     pub api: Arc<ApiClient>,
-    /// Breakpoints for narrow windows. The bar adds its own setters. The
-    /// window owner adds the breakpoints to the window.
-    pub compact: Vec<adw::Breakpoint>,
+    pub layout: BarLayout,
+}
+
+/// Where the bar is and how it looks there.
+pub enum BarLayout {
+    /// At the bottom of the main window. The bar becomes compact when one of the breakpoints
+    /// applies. The window owner adds the breakpoints to the window.
+    Docked(Vec<adw::Breakpoint>),
+    /// In the mini player. The bar is always compact, and it shows only the controls: the mini
+    /// player shows the cover and the song text. It has no queue button and no item menu. The
+    /// docked bar saves the volume. The buttons go into the revealer, and the bar keeps only the
+    /// seek bar. The mini player puts the revealer over the cover and shows it on hover.
+    Mini(gtk::Revealer),
 }
 
 /// Player bar model.
@@ -180,6 +203,8 @@ pub struct PlayerBar {
     seek_target: Option<Duration>,
     /// The queue panel is open.
     queue_open: bool,
+    /// The bar is in the main window. Only there does it save the volume.
+    docked: bool,
 }
 
 /// Input of the player bar.
@@ -469,13 +494,16 @@ impl SimpleComponent for PlayerBar {
             window,
             catalog,
             api,
-            compact,
+            layout,
         } = init;
         let actions = PlaybackActions::register(&window, &core);
         let mut state = BarState::of(&core.subscribe().borrow());
         state.fill_links(&catalog);
         actions.sync(state.action_state());
-        restore_volume(&core, &settings);
+        let docked = matches!(layout, BarLayout::Docked(_));
+        if docked {
+            restore_volume(&core, &settings);
+        }
         forward_state(&core, &sender);
 
         let artwork = ArtworkImage::new(artwork);
@@ -503,12 +531,19 @@ impl SimpleComponent for PlayerBar {
             dragging: false,
             seek_target: None,
             queue_open: false,
+            docked,
         };
         model.ask_links(&sender);
         model.refresh_favorite();
         let widgets = view_output!();
         show_elapsed_time(&widgets.seek_scale, &widgets.elapsed_label);
-        CompactMode::install(&compact, &root, &widgets);
+        match layout {
+            BarLayout::Docked(breakpoints) => CompactMode::install(&breakpoints, &root, &widgets),
+            BarLayout::Mini(buttons) => {
+                CompactMode::apply(&root, &widgets);
+                show_mini(&widgets, &add_menu_widget, &buttons);
+            }
+        }
         ComponentParts { model, widgets }
     }
 
@@ -556,7 +591,7 @@ impl PlayerBar {
         if self.dragging {
             state.position = self.state.position;
         }
-        if state.volume.total_cmp(&self.state.volume).is_ne() {
+        if self.docked && state.volume.total_cmp(&self.state.volume).is_ne() {
             self.save_volume(state.volume);
         }
         self.artwork
@@ -573,7 +608,7 @@ impl PlayerBar {
     /// song gets its catalog ID only after its links load.
     fn refresh_favorite(&mut self) {
         let item = self.state.catalog_song(&self.catalog);
-        let storefront = detail::storefront(&self.core.subscribe().borrow());
+        let storefront = self.core.storefront();
         let shown = (item, storefront);
         if shown == self.shown_favorite {
             return;
@@ -609,7 +644,7 @@ impl PlayerBar {
             return;
         };
         // The storefront is unknown until the sign-in ends. Ask again after it, not before.
-        let Some(storefront) = detail::storefront(&self.core.subscribe().borrow()) else {
+        let Some(storefront) = self.core.storefront() else {
             return;
         };
         if !self.asked_links.insert(song_id.clone()) {
@@ -678,19 +713,74 @@ struct CompactMode;
 impl CompactMode {
     /// Adds the setters of the compact layout to each of `breakpoints`.
     fn install(breakpoints: &[adw::Breakpoint], bar: &gtk::Box, widgets: &PlayerBarWidgets) {
-        let vertical = gtk::Orientation::Vertical.to_value();
-        let center = gtk::Align::Center.to_value();
+        let setters = Self::setters(bar, widgets);
         for breakpoint in breakpoints {
-            breakpoint.add_setter(bar, "orientation", Some(&vertical));
-            breakpoint.add_setter(&widgets.controls, "orientation", Some(&vertical));
-            breakpoint.add_setter(&widgets.controls, "spacing", Some(&8.to_value()));
-            breakpoint.add_setter(&widgets.transport_box, "halign", Some(&center));
-            breakpoint.add_setter(&widgets.extras_box, "halign", Some(&center));
-            breakpoint.add_setter(&widgets.info_box, "width-request", Some(&(-1).to_value()));
-            breakpoint.add_setter(&widgets.info_box, "hexpand", Some(&true.to_value()));
-            breakpoint.add_setter(&widgets.song_box, "hexpand", Some(&true.to_value()));
+            for (widget, property, value) in &setters {
+                breakpoint.add_setter(widget, property, Some(value));
+            }
         }
     }
+
+    /// Sets the compact layout now, for all time.
+    fn apply(bar: &gtk::Box, widgets: &PlayerBarWidgets) {
+        for (widget, property, value) in Self::setters(bar, widgets) {
+            widget.set_property_from_value(property, &value);
+        }
+    }
+
+    /// The widget properties that the compact layout changes, with their values.
+    fn setters(
+        bar: &gtk::Box,
+        widgets: &PlayerBarWidgets,
+    ) -> [(gtk::Widget, &'static str, glib::Value); 8] {
+        let vertical = gtk::Orientation::Vertical.to_value();
+        let center = gtk::Align::Center.to_value();
+        [
+            (bar.clone().upcast(), "orientation", vertical.clone()),
+            (widgets.controls.clone().upcast(), "orientation", vertical),
+            (widgets.controls.clone().upcast(), "spacing", 8.to_value()),
+            (
+                widgets.transport_box.clone().upcast(),
+                "halign",
+                center.clone(),
+            ),
+            (widgets.extras_box.clone().upcast(), "halign", center),
+            (
+                widgets.info_box.clone().upcast(),
+                "width-request",
+                (-1).to_value(),
+            ),
+            (
+                widgets.info_box.clone().upcast(),
+                "hexpand",
+                true.to_value(),
+            ),
+            (
+                widgets.song_box.clone().upcast(),
+                "hexpand",
+                true.to_value(),
+            ),
+        ]
+    }
+}
+
+/// Changes the compact bar for the mini player: the cover, the song text, the queue button, and
+/// the item menu are hidden. The mini player shows its own cover and song text. The buttons move
+/// into `buttons`, with the backdrop of the bar.
+fn show_mini(widgets: &PlayerBarWidgets, add_menu: &gtk::MenuButton, buttons: &gtk::Revealer) {
+    widgets.song_box.set_visible(false);
+    widgets.queue_button.set_visible(false);
+    add_menu.set_visible(false);
+    let rows = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .spacing(8)
+        .css_classes(["player-bar", "cover-tint"])
+        .build();
+    for row in [&widgets.transport_box, &widgets.extras_box] {
+        widgets.controls.remove(row);
+        rows.append(row);
+    }
+    buttons.set_child(Some(&rows));
 }
 
 /// Sends the saved volume to the core. The engine does not know it at start.
@@ -838,7 +928,7 @@ mod tests {
             duration: Duration::from_secs(90),
             artwork_template: None,
         };
-        let _ = state.queue.replace(vec![item], 0);
+        let _ = Arc::make_mut(&mut state.queue).replace(vec![item], 0);
         let bar = BarState::of(&state);
         assert_eq!(
             (bar.title.as_str(), bar.duration, bar.has_queue),

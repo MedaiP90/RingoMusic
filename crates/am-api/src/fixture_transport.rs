@@ -209,7 +209,7 @@ mod tests {
         let transport = FixtureTransport::new().with_write(
             WriteMethod::Put,
             "/v1/me/ratings/songs/724515236",
-            "write/rating_put_like.json",
+            "write/rating_put_dislike.json",
         );
         let body = serde_json::json!({"type": "rating"});
 

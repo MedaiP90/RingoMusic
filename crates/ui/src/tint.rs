@@ -89,11 +89,9 @@ impl Variable {
     }
 }
 
-/// The colors that the window shows.
+/// The colors that the windows show.
 struct Tint {
     provider: gtk::CssProvider,
-    /// The window that gets the slot classes.
-    window: glib::WeakRef<gtk::Widget>,
     playing: Option<Rgb>,
     /// The album page on screen: its ID and its color.
     viewed: Option<(String, Rgb)>,
@@ -111,7 +109,7 @@ thread_local! {
 
 /// Follows the cover that `image` shows. The playing song sets the cover tint.
 pub fn follow_playing(image: &gtk::Image) {
-    let update = |image: &gtk::Image| update_tint(image, |tint| tint.playing = color_of(image));
+    let update = |image: &gtk::Image| update_tint(|tint| tint.playing = color_of(image));
     image.connect_paintable_notify(update);
     image.connect_icon_name_notify(update);
 }
@@ -127,7 +125,7 @@ pub fn follow_viewed(image: &gtk::Image, page: &adw::NavigationPage, owner: &str
         let (shown, owner) = (Rc::clone(&shown), owner.to_owned());
         move |image: &gtk::Image| {
             let color = color_of(image).filter(|_| shown.get());
-            update_tint(image, |tint| tint.set_viewed(&owner, color));
+            update_tint(|tint| tint.set_viewed(&owner, color));
         }
     });
     image.connect_paintable_notify(glib::clone!(
@@ -168,7 +166,6 @@ impl Tint {
         );
         Self {
             provider,
-            window: glib::WeakRef::new(),
             playing: None,
             viewed: None,
             cover: Variable::new("cover-tint"),
@@ -186,8 +183,8 @@ impl Tint {
         }
     }
 
-    /// Loads the new colors into the free slots, then selects them on the
-    /// window. The class change runs the transition.
+    /// Loads the new colors into the free slots, then selects them on each
+    /// window: the main window and the mini player. The class change runs the transition.
     fn apply(&mut self) {
         self.cover.set(self.playing);
         self.album
@@ -197,20 +194,17 @@ impl Tint {
             self.provider.load_from_string(&css);
             self.loaded = css;
         }
-        if let Some(window) = self.window.upgrade() {
+        for window in gtk::Window::list_toplevels() {
             self.cover.select_on(&window);
             self.album.select_on(&window);
         }
     }
 }
 
-/// Changes the tint with `change`, then shows it on the window of `image`.
-fn update_tint(image: &gtk::Image, change: impl FnOnce(&mut Tint)) {
+/// Changes the tint with `change`, then shows it on the windows.
+fn update_tint(change: impl FnOnce(&mut Tint)) {
     TINT.with_borrow_mut(|slot| {
         let tint = slot.get_or_insert_with(Tint::new);
-        if let Some(root) = image.root() {
-            tint.window.set(Some(root.upcast_ref()));
-        }
         change(tint);
         tint.apply();
     });

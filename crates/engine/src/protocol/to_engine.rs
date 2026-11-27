@@ -136,26 +136,28 @@ pub struct AuthStatus {
     pub storefront: String,
 }
 
-/// Documented `DELETE` path patterns. A pattern is `(prefix, types)`: the path is
-/// `prefix`, one of `types`, and an ID. Source:
-/// `plan/04_library-management/apple-music-writes.md` (the ratings table).
-const DELETE_PATTERNS: &[(&str, &[&str])] = &[(
-    "/v1/me/ratings/",
-    &[
-        "songs",
-        "albums",
-        "playlists",
-        "music-videos",
-        "stations",
-        "library-songs",
-        "library-albums",
-        "library-playlists",
-        "library-music-videos",
-    ],
-)];
+/// The only write requests that the app sends. Each one is documented by Apple
+/// (`plan/04_library-management/apple-music-writes.md`) and used by `ringo-am-api::write`.
+/// CONTRIBUTING.md rule 3: add a pattern only for a documented endpoint.
+///
+/// In a pattern, `{id}` is one ID segment (see [`is_id_segment`]) and `a|b` is one of
+/// the literal segments `a` and `b`.
+///
+/// Keep this list equal to `WRITE_PATTERNS` in `engine/src/api-write.ts`.
+const WRITE_PATTERNS: &[(WriteMethod, &str)] = &[
+    (WriteMethod::Post, "/v1/me/library"),
+    (WriteMethod::Post, "/v1/me/library/playlists"),
+    (WriteMethod::Post, "/v1/me/library/playlists/{id}/tracks"),
+    (WriteMethod::Post, "/v1/me/favorites"),
+    (WriteMethod::Put, "/v1/me/ratings/songs/{id}"),
+    (
+        WriteMethod::Delete,
+        "/v1/me/ratings/songs|albums|playlists/{id}",
+    ),
+];
 
-/// Path prefix that every write request must have.
-const WRITE_PREFIX: &str = "/v1/me/";
+/// Placeholder for one ID segment in [`WRITE_PATTERNS`].
+const ID_PLACEHOLDER: &str = "{id}";
 
 /// HTTP method of a write request.
 #[derive(
@@ -192,33 +194,47 @@ impl ApiWriteRequest {
     ///
     /// # Errors
     ///
-    /// Returns [`Error::InvalidParams`] if the path is not under `/v1/me/`,
-    /// if it has a `.` or `..` segment, or if the method is `DELETE` and the
-    /// path is not a documented delete path.
+    /// Returns [`Error::InvalidParams`] if the method and the path do not match a pattern
+    /// of [`WRITE_PATTERNS`].
     pub fn validate(&self) -> Result<()> {
-        let invalid = |detail: &str| Error::InvalidParams {
-            detail: detail.to_owned(),
-        };
-        let Some(rest) = self.path.strip_prefix(WRITE_PREFIX) else {
-            return Err(invalid("api.write path must start with /v1/me/"));
-        };
-        if rest.is_empty() || rest.split('/').any(|part| matches!(part, "" | "." | "..")) {
-            return Err(invalid("api.write path has an empty or relative segment"));
-        }
-        if self.method == WriteMethod::Delete && !is_documented_delete(&self.path) {
-            return Err(invalid("api.write DELETE is not allowed for this path"));
+        let is_permitted = WRITE_PATTERNS.iter().any(|&(method, pattern)| {
+            method == self.method && matches_pattern(&self.path, pattern)
+        });
+        if !is_permitted {
+            return Err(Error::InvalidParams {
+                detail: "api.write is not allowed for this method and path".to_owned(),
+            });
         }
         Ok(())
     }
 }
 
-/// Returns whether `path` matches a pattern of [`DELETE_PATTERNS`].
-fn is_documented_delete(path: &str) -> bool {
-    DELETE_PATTERNS.iter().any(|(prefix, types)| {
-        path.strip_prefix(prefix)
-            .and_then(|rest| rest.split_once('/'))
-            .is_some_and(|(kind, id)| types.contains(&kind) && !id.contains('/'))
-    })
+/// Returns whether `path` matches `pattern`, one segment at a time.
+fn matches_pattern(path: &str, pattern: &str) -> bool {
+    let path_segments: Vec<&str> = path.split('/').collect();
+    let pattern_segments: Vec<&str> = pattern.split('/').collect();
+    path_segments.len() == pattern_segments.len()
+        && path_segments
+            .iter()
+            .zip(&pattern_segments)
+            .all(|(&segment, &expected)| matches_segment(segment, expected))
+}
+
+fn matches_segment(segment: &str, expected: &str) -> bool {
+    if expected == ID_PLACEHOLDER {
+        is_id_segment(segment)
+    } else {
+        expected.split('|').any(|literal| literal == segment)
+    }
+}
+
+/// Returns whether `segment` is a safe ID: ASCII letters, digits, `.`, `_`, and `-`, and
+/// not a relative segment. The same rule as `segment()` in `ringo-am-api`. Other
+/// characters can change the path when the engine builds the URL (`%2e`, `\`, a tab).
+fn is_id_segment(segment: &str) -> bool {
+    let is_permitted =
+        |character: char| character.is_ascii_alphanumeric() || matches!(character, '.' | '_' | '-');
+    !matches!(segment, "" | "." | "..") && segment.chars().all(is_permitted)
 }
 
 #[cfg(test)]
@@ -239,51 +255,69 @@ mod tests {
     }
 
     #[test]
-    fn validate_accepts_post_on_a_me_path() {
-        assert!(
-            request(WriteMethod::Post, "/v1/me/library")
-                .validate()
-                .is_ok()
-        );
+    fn validate_accepts_each_permitted_write() {
+        let permitted = [
+            (WriteMethod::Post, "/v1/me/library"),
+            (WriteMethod::Post, "/v1/me/library/playlists"),
+            (
+                WriteMethod::Post,
+                "/v1/me/library/playlists/p.TestPlaylist0001/tracks",
+            ),
+            (WriteMethod::Post, "/v1/me/favorites"),
+            (WriteMethod::Put, "/v1/me/ratings/songs/123"),
+            (WriteMethod::Delete, "/v1/me/ratings/songs/123"),
+            (WriteMethod::Delete, "/v1/me/ratings/albums/456"),
+            (WriteMethod::Delete, "/v1/me/ratings/playlists/pl.u-abc_1"),
+        ];
+        for (method, path) in permitted {
+            assert!(
+                request(method, path).validate().is_ok(),
+                "{method:?} {path}"
+            );
+        }
     }
 
     #[test]
-    fn validate_accepts_put_on_a_rating_path() {
-        let put = request(WriteMethod::Put, "/v1/me/ratings/songs/123");
-        assert!(put.validate().is_ok());
+    fn validate_rejects_a_path_outside_the_patterns() {
+        let rejected = [
+            (WriteMethod::Post, "/v1/catalog/us/songs"),
+            (WriteMethod::Post, "/v1/me"),
+            (WriteMethod::Post, "/v1/me/"),
+            (WriteMethod::Post, "/v1/me/library/"),
+            (WriteMethod::Post, "/v1/me/library/playlist-folders"),
+            (WriteMethod::Post, "/v1/me/library?ids[songs]=1"),
+            (WriteMethod::Delete, "/v1/me/ratings/songs"),
+            (WriteMethod::Delete, "/v1/me/ratings/songs/1/extra"),
+        ];
+        for (method, path) in rejected {
+            let result = request(method, path).validate();
+            assert!(is_invalid_params(&result), "{method:?} {path}");
+        }
     }
 
     #[test]
-    fn validate_accepts_delete_on_a_rating_path() {
-        let delete = request(WriteMethod::Delete, "/v1/me/ratings/library-albums/l.abc");
-        assert!(delete.validate().is_ok());
+    fn validate_rejects_a_method_that_the_pattern_does_not_permit() {
+        let rejected = [
+            (WriteMethod::Put, "/v1/me/library"),
+            (WriteMethod::Put, "/v1/me/ratings/albums/1"),
+            (WriteMethod::Put, "/v1/me/ratings/artists/1"),
+            (WriteMethod::Delete, "/v1/me/ratings/artists/1"),
+            (WriteMethod::Delete, "/v1/me/ratings/library-songs/i.1"),
+            (WriteMethod::Delete, "/v1/me/library/playlists/p.1"),
+        ];
+        for (method, path) in rejected {
+            let result = request(method, path).validate();
+            assert!(is_invalid_params(&result), "{method:?} {path}");
+        }
     }
 
     #[test]
-    fn validate_rejects_a_path_outside_me() {
-        let result = request(WriteMethod::Post, "/v1/catalog/us/songs").validate();
-        assert!(is_invalid_params(&result));
-        assert!(is_invalid_params(
-            &request(WriteMethod::Post, "/v1/me").validate()
-        ));
-    }
-
-    #[test]
-    fn validate_rejects_a_relative_segment() {
-        let result = request(WriteMethod::Post, "/v1/me/../catalog/us").validate();
-        assert!(is_invalid_params(&result));
-    }
-
-    #[test]
-    fn validate_rejects_delete_on_an_undocumented_path() {
-        for path in [
-            "/v1/me/library/playlists/p.1",
-            "/v1/me/ratings/artists/1",
-            "/v1/me/ratings/songs",
-            "/v1/me/ratings/songs/1/extra",
-        ] {
-            let result = request(WriteMethod::Delete, path).validate();
-            assert!(is_invalid_params(&result), "{path}");
+    fn validate_rejects_an_id_that_can_change_the_path() {
+        let ids = ["", ".", "..", "%2e%2e", "..\\..", "a\tb", "a b"];
+        for id in ids {
+            let path = format!("/v1/me/ratings/songs/{id}");
+            let result = request(WriteMethod::Delete, &path).validate();
+            assert!(is_invalid_params(&result), "{path:?}");
         }
     }
 }

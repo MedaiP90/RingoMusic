@@ -180,10 +180,10 @@ async fn serve(socket_path: &std::path::Path) {
 /// Answers `api.write`: the path decides the reply.
 fn write_reply(params: &Value) -> Value {
     match params["path"].as_str() {
-        Some("/v1/me/denied") => {
+        Some("/v1/me/library/playlists") => {
             json!({"error": {"code": -32001, "message": "not authorized"}})
         }
-        Some("/v1/me/empty") => json!({"result": null}),
+        Some("/v1/me/favorites") => json!({"result": null}),
         _ => json!({"result": {"echo": params}}),
     }
 }
@@ -426,7 +426,7 @@ async fn transport_write_returns_the_response() {
 async fn transport_write_returns_none_for_an_empty_response() {
     let (_dir, engine, transport) = ready_transport("write-empty").await;
 
-    let response = transport.write(post("/v1/me/empty")).await;
+    let response = transport.write(post("/v1/me/favorites")).await;
 
     assert_eq!(response.expect("write works"), None);
     engine.shutdown().await.expect("shutdown works");
@@ -436,7 +436,7 @@ async fn transport_write_returns_none_for_an_empty_response() {
 async fn transport_write_maps_an_engine_error() {
     let (_dir, engine, transport) = ready_transport("write-error").await;
 
-    let response = transport.write(post("/v1/me/denied")).await;
+    let response = transport.write(post("/v1/me/library/playlists")).await;
 
     assert!(matches!(
         response,

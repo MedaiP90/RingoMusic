@@ -29,6 +29,13 @@ impl CoreHandle {
         self.inbox.clone()
     }
 
+    /// Returns the storefront of the signed-in user, from the last snapshot.
+    /// `None` when nobody is signed in.
+    #[must_use]
+    pub fn storefront(&self) -> Option<String> {
+        self.snapshots.borrow().storefront().map(str::to_owned)
+    }
+
     /// Returns a receiver of state snapshots.
     #[must_use]
     pub fn subscribe(&self) -> watch::Receiver<AppState> {

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
+use std::sync::Arc;
 use std::time::Duration;
 
 use ringo_engine::protocol::{AuthStatus, ErrorCode, PlaybackState, RepeatMode};
@@ -490,7 +491,7 @@ fn restore_queue_waits_for_the_engine_and_does_not_play() {
         },
     );
     let message = Message::RestoreQueue {
-        queue: saved.queue.clone(),
+        queue: (*saved.queue).clone(),
         position: Duration::from_secs(7),
     };
     let mut state = AppState::new();
@@ -528,7 +529,7 @@ fn restore_queue_goes_to_a_ready_engine_at_once() {
     let commands = update(
         &mut state,
         Message::RestoreQueue {
-            queue: saved.queue,
+            queue: Arc::unwrap_or_clone(saved.queue),
             position: Duration::from_secs(3),
         },
     );
@@ -693,4 +694,53 @@ fn failed_sign_in_sets_the_flag_and_a_new_attempt_clears_it() {
     let failed = state.sign_in_failed;
     let _ = update(&mut state, Message::SignIn);
     assert_eq!((failed, state.sign_in_failed), (true, false));
+}
+
+#[test]
+fn position_and_same_index_now_playing_keep_the_shared_queue() {
+    let mut state = state_with(&["a", "b"], 0);
+    let before = Arc::clone(&state.queue);
+    let _ = event(
+        &mut state,
+        EngineEvent::Position {
+            position: Duration::from_secs(5),
+        },
+    );
+    let _ = event(
+        &mut state,
+        EngineEvent::NowPlaying {
+            id: ItemId::new("a"),
+            title: "title a".to_owned(),
+            artist: "artist".to_owned(),
+            album: "album".to_owned(),
+            duration: Duration::from_secs(180),
+            artwork_url: None,
+            album_id: None,
+            queue_index: 0,
+        },
+    );
+    assert!(
+        Arc::ptr_eq(&before, &state.queue),
+        "the queue was copied without a change"
+    );
+}
+
+#[test]
+fn storefront_is_none_when_signed_out() {
+    let state = AppState {
+        auth: AuthState::SignedOut,
+        ..AppState::default()
+    };
+    assert_eq!(state.storefront(), None);
+}
+
+#[test]
+fn storefront_is_the_one_of_the_signed_in_user() {
+    let state = AppState {
+        auth: AuthState::SignedIn {
+            storefront: "it".to_owned(),
+        },
+        ..AppState::default()
+    };
+    assert_eq!(state.storefront(), Some("it"));
 }

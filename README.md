@@ -95,7 +95,7 @@ RSS counts shared pages more than one time for each process, so PSS is the real 
 
 ## Library functions
 
-RingoMusic respects Apple's terms of use. It uses the functions that Apple makes available to other apps, with one exception that is described below.
+RingoMusic respects Apple's terms of use. It uses only the functions that Apple makes available to other apps.
 
 These functions are not available in RingoMusic:
 
@@ -104,10 +104,9 @@ These functions are not available in RingoMusic:
 - Remove songs from a playlist
 - Change the order of songs in a playlist
 - Remove items from your library
+- Remove artists from your favorites
 
 To do these actions, use the Apple Music app or [music.apple.com](https://music.apple.com). RingoMusic shows the changes the next time it loads your library.
-
-Removing an artist from your favorites uses a function that Apple does not document. It can stop working without notice, and it also marks the artist as disliked.
 
 RingoMusic shows this list after the first sign-in. The Account page in Preferences shows it again.
 

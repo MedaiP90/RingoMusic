@@ -75,7 +75,7 @@ pub struct SongRowWidgets {
     menu: gtk::PopoverMenu,
     /// The star before the duration. It shows for a favorite, and while the pointer is over the row.
     favorite: FavoriteButton,
-    /// The "Dislike" item of the menu. It reads its status when the menu opens.
+    /// The "Suggest Less" item of the menu. It reads its status when the menu opens.
     dislike: DislikeControl,
 }
 
@@ -472,7 +472,7 @@ fn build_menu(item: &SongItem) -> Menu {
     }
     let rating = Menu::new();
     rating.append_item(&entry(
-        &gettext("Dislike"),
+        &gettext("Suggest Less"),
         &format!("{ROW_GROUP}.{}", dislike::ACTION_NAME),
         None,
     ));
