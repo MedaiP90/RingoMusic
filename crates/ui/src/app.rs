@@ -26,6 +26,7 @@ use crate::background::{self, BackgroundPlayback, CloseAction};
 use crate::detail_pages::{self, PageSources};
 use crate::gate::{self, Gate};
 use crate::item_actions::{self, SongCatalog};
+use crate::mini_player::{self, MiniPlayer};
 use crate::new_playlist;
 use crate::preferences::{Preferences, PreferencesInit};
 use crate::section::Section;
@@ -36,7 +37,9 @@ use crate::views::search::{SearchInit, SearchInput, SearchView};
 use crate::views::section_page;
 use crate::views::sections::{SectionsInit, SectionsInput, SectionsView};
 use crate::views::{home, made_for_you, new_releases};
-use crate::widgets::player_bar::{PlayerBar, PlayerBarInit, PlayerBarInput, TOGGLE_QUEUE};
+use crate::widgets::player_bar::{
+    BarLayout, PlayerBar, PlayerBarInit, PlayerBarInput, TOGGLE_QUEUE,
+};
 use crate::{
     about, accent, artwork, disclaimer, menu, network_banner, notification, sidebar, subscription,
     theme, update_notice,
@@ -89,6 +92,8 @@ pub struct App {
     services: AppServices,
     settings: Settings,
     background: BackgroundPlayback,
+    /// The small window that shows while the main window is hidden.
+    mini_player: MiniPlayer,
     sign_in_failed: bool,
     /// True after the disclaimer check of this run.
     disclaimer_checked: bool,
@@ -101,7 +106,7 @@ pub enum Input {
     SectionSelected(Section),
     /// The engine or the authorization changed.
     SummaryChanged(Summary),
-    /// A D-Bus client asks to show the window.
+    /// A D-Bus client, the mini player, or a new launch asks to show the window.
     Raise,
     /// The user or a D-Bus client asks to quit.
     QuitRequested,
@@ -239,13 +244,14 @@ impl SimpleComponent for App {
             window: root.clone(),
             catalog: catalog.clone(),
             api: Arc::clone(services.api()),
-            compact: vec![compact.clone(), narrow.clone()],
+            layout: BarLayout::Docked(vec![compact.clone(), narrow.clone()]),
         });
         let player_bar = bar.widget().clone();
         let bar_input = bar.sender().clone();
         // Like the gate, the bar lives as long as its widget.
         bar.detach_runtime();
         let background = BackgroundPlayback::new(settings.clone(), package);
+        let mini_player = MiniPlayer::new(&services, &catalog);
         let toast_overlay = adw::ToastOverlay::new();
         if let Some(message) = background.take_refusal_message() {
             sender.input(Input::ShowToast(message));
@@ -304,6 +310,7 @@ impl SimpleComponent for App {
             services,
             settings,
             background,
+            mini_player,
             sign_in_failed: false,
             disclaimer_checked: false,
         };
@@ -320,7 +327,7 @@ impl SimpleComponent for App {
         match message {
             Input::SectionSelected(section) => self.select(section),
             Input::SummaryChanged(summary) => self.follow(&summary),
-            Input::Raise => self.window.present(),
+            Input::Raise => self.raise(),
             Input::QuitRequested => self.quit(),
             Input::Refresh => self.refresh(),
             Input::ShowSearch => self.show_search(),
@@ -436,10 +443,20 @@ impl App {
         }
     }
 
-    /// Hides the window. The application stays alive and plays on.
+    /// Hides the window. The application stays alive and plays on, and the mini player opens if
+    /// the user wants it.
     fn hide(&mut self) {
         self.background.keep_alive(&relm4::main_application());
         self.window.set_visible(false);
+        if self.settings.mini_player() {
+            self.mini_player.show();
+        }
+    }
+
+    /// Shows the window in place of the mini player.
+    fn raise(&self) {
+        self.mini_player.hide();
+        self.window.present();
     }
 
     /// Opens the preferences dialog. Like the gate, it lives as long as its widget.
@@ -478,8 +495,19 @@ fn register_actions(sender: &ComponentSender<App>) {
     let preferences = ActionEntry::builder("preferences")
         .activate(move |_: &gtk::Application, _, _| preferences_input.emit(Input::ShowPreferences))
         .build();
+    let show_input = sender.input_sender().clone();
+    let show_main_window = ActionEntry::builder(
+        mini_player::SHOW_MAIN_WINDOW
+            .strip_prefix("app.")
+            .expect("internal error: the action is an application action"),
+    )
+    .activate(move |_: &gtk::Application, _, _| show_input.emit(Input::Raise))
+    .build();
     let app = relm4::main_application();
-    app.add_action_entries([quit, about, preferences]);
+    app.add_action_entries([quit, about, preferences, show_main_window]);
+    // A new launch shows the main window, also while the mini player is open.
+    let activate_input = sender.input_sender().clone();
+    app.connect_activate(move |_| activate_input.emit(Input::Raise));
     app.set_accels_for_action("app.quit", &["<Ctrl>q"]);
     app.set_accels_for_action("app.preferences", &["<Ctrl>comma"]);
 }

@@ -89,6 +89,10 @@ impl SimpleComponent for Preferences {
                     add = &adw::SwitchRow {
                         set_title: &gettext("Quit when the window is closed"),
                     },
+                    #[name = "mini_player_row"]
+                    add = &adw::SwitchRow {
+                        set_title: &gettext("Show a mini player when the window is closed"),
+                    },
                     #[name = "notifications_row"]
                     add = &adw::SwitchRow {
                         set_title: &gettext("Show notifications for new songs"),
@@ -409,6 +413,15 @@ fn bind_settings(services: &AppServices, widgets: &PreferencesWidgets) {
     let settings = services.settings().raw();
     settings
         .bind("quit-on-close", &widgets.quit_row, "active")
+        .build();
+    settings
+        .bind("mini-player", &widgets.mini_player_row, "active")
+        .build();
+    // The mini player needs the application to stay alive after the close.
+    settings
+        .bind("quit-on-close", &widgets.mini_player_row, "sensitive")
+        .get()
+        .invert_boolean()
         .build();
     settings
         .bind("show-notifications", &widgets.notifications_row, "active")

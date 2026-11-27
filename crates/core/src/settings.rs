@@ -16,6 +16,7 @@ const WINDOW_MAXIMIZED: &str = "window-maximized";
 const VOLUME: &str = "volume";
 const QUIT_ON_CLOSE: &str = "quit-on-close";
 const SHOW_NOTIFICATIONS: &str = "show-notifications";
+const MINI_PLAYER: &str = "mini-player";
 const BACKGROUND_DENIED: &str = "background-denied";
 const COLOR_SCHEME: &str = "color-scheme";
 const ACCENT_COLOR: &str = "accent-color";
@@ -130,6 +131,12 @@ impl Settings {
     #[must_use]
     pub fn show_notifications(&self) -> bool {
         self.inner.boolean(SHOW_NOTIFICATIONS)
+    }
+
+    /// Whether the mini player opens when the window closes and the application plays on.
+    #[must_use]
+    pub fn mini_player(&self) -> bool {
+        self.inner.boolean(MINI_PLAYER)
     }
 
     /// Whether the background portal refused the permission and the user was

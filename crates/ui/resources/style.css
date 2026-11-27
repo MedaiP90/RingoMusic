@@ -87,3 +87,24 @@ button.artwork-button { padding: 0; min-height: 0; min-width: 0; background: non
 .library-artist-list listview {
   background: none;
 }
+
+/* The menu button on the mini player cover has a solid background, so the cover does not show
+   through it. */
+menubutton.cover-menu > button {
+  background-color: var(--window-bg-color);
+}
+menubutton.cover-menu > button:hover {
+  background-color: color-mix(in srgb, var(--window-bg-color) 90%, var(--window-fg-color));
+}
+menubutton.cover-menu > button:active,
+menubutton.cover-menu > button:checked {
+  background-color: color-mix(in srgb, var(--window-bg-color) 80%, var(--window-fg-color));
+}
+
+/* The song text on the mini player cover. A faint backdrop with the cover tint keeps it readable. */
+.cover-caption {
+  padding: 6px 10px;
+  border-radius: 12px;
+  background-color: color-mix(in srgb, color-mix(in srgb, var(--cover-tint, var(--window-bg-color)) 25%, var(--window-bg-color)) 75%, transparent);
+  transition: background-color 600ms ease-in-out;
+}

@@ -36,6 +36,11 @@ Copyright (C) 2026 RingoMusic contributors
       <summary>Show notifications</summary>
       <description>If true, the application shows a notification when the track changes while the window is closed.</description>
     </key>
+    <key name="mini-player" type="b">
+      <default>true</default>
+      <summary>Show the mini player</summary>
+      <description>If true, a small player window opens when the user closes the main window and the application continues to play in the background. The key has no effect when quit-on-close is true.</description>
+    </key>
     <key name="background-denied" type="b">
       <default>false</default>
       <summary>Background permission was refused</summary>

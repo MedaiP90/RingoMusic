@@ -11,6 +11,7 @@ crates/ui/src/gate.rs
 crates/ui/src/library_write.rs
 crates/ui/src/main.rs
 crates/ui/src/menu.rs
+crates/ui/src/mini_player.rs
 crates/ui/src/network_banner.rs
 crates/ui/src/new_playlist.rs
 crates/ui/src/notification.rs

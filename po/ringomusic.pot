@@ -343,8 +343,20 @@ msgstr ""
 msgid "_Preferences"
 msgstr ""
 
-#: crates/ui/src/menu.rs
+#: crates/ui/src/menu.rs crates/ui/src/mini_player.rs
 msgid "_Quit"
+msgstr ""
+
+#: crates/ui/src/mini_player.rs
+msgid "Menu"
+msgstr ""
+
+#: crates/ui/src/mini_player.rs
+msgid "Right-click to pin"
+msgstr ""
+
+#: crates/ui/src/mini_player.rs
+msgid "_Open RingoMusic"
 msgstr ""
 
 #: crates/ui/src/network_banner.rs
@@ -441,6 +453,10 @@ msgstr ""
 
 #: crates/ui/src/preferences.rs
 msgid "Quit when the window is closed"
+msgstr ""
+
+#: crates/ui/src/preferences.rs
+msgid "Show a mini player when the window is closed"
 msgstr ""
 
 #: crates/ui/src/preferences.rs
@@ -946,8 +962,17 @@ msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
-"This release makes favorites and ratings follow Apple Music more closely, "
-"and it uses only the functions that Apple documents."
+"This release adds a mini player. It also makes favorites and ratings follow "
+"Apple Music more closely, and it uses only the functions that Apple "
+"documents."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"A mini player opens when you close the window and playback continues in the "
+"background. It shows the cover and the player controls. Drag the cover to "
+"move it, and right-click the cover to keep it above other windows. To turn "
+"it off, use Preferences."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

@@ -21,6 +21,7 @@ mod item;
 mod item_actions;
 mod library_write;
 mod menu;
+mod mini_player;
 mod name_filter;
 mod network_banner;
 mod new_playlist;
