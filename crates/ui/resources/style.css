@@ -88,23 +88,25 @@ button.artwork-button { padding: 0; min-height: 0; min-width: 0; background: non
   background: none;
 }
 
-/* The menu button on the mini player cover has a solid background, so the cover does not show
-   through it. */
+/* The menu button on the mini player cover has the solid, tinted background of the player bar, so
+   the cover does not show through it. */
 menubutton.cover-menu > button {
-  background-color: var(--window-bg-color);
+  --cover-menu-bg: color-mix(in srgb, var(--cover-tint, var(--headerbar-bg-color)) 15%, var(--headerbar-bg-color));
+  background-color: var(--cover-menu-bg);
+  transition: background-color 600ms ease-in-out;
 }
 menubutton.cover-menu > button:hover {
-  background-color: color-mix(in srgb, var(--window-bg-color) 90%, var(--window-fg-color));
+  background-color: color-mix(in srgb, var(--cover-menu-bg) 90%, var(--window-fg-color));
 }
 menubutton.cover-menu > button:active,
 menubutton.cover-menu > button:checked {
-  background-color: color-mix(in srgb, var(--window-bg-color) 80%, var(--window-fg-color));
+  background-color: color-mix(in srgb, var(--cover-menu-bg) 80%, var(--window-fg-color));
 }
 
-/* The song text on the mini player cover. A faint backdrop with the cover tint keeps it readable. */
+/* The song text on the mini player cover. It has the solid backdrop of the player bar. */
 .cover-caption {
   padding: 6px 10px;
   border-radius: 12px;
-  background-color: color-mix(in srgb, color-mix(in srgb, var(--cover-tint, var(--window-bg-color)) 25%, var(--window-bg-color)) 75%, transparent);
+  background-color: color-mix(in srgb, var(--cover-tint, var(--headerbar-bg-color)) 15%, var(--headerbar-bg-color));
   transition: background-color 600ms ease-in-out;
 }

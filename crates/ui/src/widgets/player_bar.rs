@@ -174,8 +174,9 @@ pub enum BarLayout {
     Docked(Vec<adw::Breakpoint>),
     /// In the mini player. The bar is always compact, and it shows only the controls: the mini
     /// player shows the cover and the song text. It has no queue button and no item menu. The
-    /// docked bar saves the volume.
-    Mini,
+    /// docked bar saves the volume. The buttons go into the revealer, and the bar keeps only the
+    /// seek bar. The mini player puts the revealer over the cover and shows it on hover.
+    Mini(gtk::Revealer),
 }
 
 /// Player bar model.
@@ -538,9 +539,9 @@ impl SimpleComponent for PlayerBar {
         show_elapsed_time(&widgets.seek_scale, &widgets.elapsed_label);
         match layout {
             BarLayout::Docked(breakpoints) => CompactMode::install(&breakpoints, &root, &widgets),
-            BarLayout::Mini => {
+            BarLayout::Mini(buttons) => {
                 CompactMode::apply(&root, &widgets);
-                show_mini(&widgets, &add_menu_widget);
+                show_mini(&widgets, &add_menu_widget, &buttons);
             }
         }
         ComponentParts { model, widgets }
@@ -764,11 +765,22 @@ impl CompactMode {
 }
 
 /// Changes the compact bar for the mini player: the cover, the song text, the queue button, and
-/// the item menu are hidden. The mini player shows its own cover and song text.
-fn show_mini(widgets: &PlayerBarWidgets, add_menu: &gtk::MenuButton) {
+/// the item menu are hidden. The mini player shows its own cover and song text. The buttons move
+/// into `buttons`, with the backdrop of the bar.
+fn show_mini(widgets: &PlayerBarWidgets, add_menu: &gtk::MenuButton, buttons: &gtk::Revealer) {
     widgets.song_box.set_visible(false);
     widgets.queue_button.set_visible(false);
     add_menu.set_visible(false);
+    let rows = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .spacing(8)
+        .css_classes(["player-bar", "cover-tint"])
+        .build();
+    for row in [&widgets.transport_box, &widgets.extras_box] {
+        widgets.controls.remove(row);
+        rows.append(row);
+    }
+    buttons.set_child(Some(&rows));
 }
 
 /// Sends the saved volume to the core. The engine does not know it at start.

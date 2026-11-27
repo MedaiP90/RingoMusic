@@ -60,7 +60,7 @@ Copyright (C) 2026 RingoMusic contributors
       <description>
         <p>This release adds a mini player. It also makes favorites and ratings follow Apple Music more closely, and it uses only the functions that Apple documents.</p>
         <ul>
-          <li>A mini player opens when you close the window and playback continues in the background. It shows the cover and the player controls. Drag the cover to move it, and right-click the cover to keep it above other windows. To turn it off, use Preferences.</li>
+          <li>A mini player opens when you close the window and playback continues in the background. It shows the cover and the seek bar. The player controls appear when you point at the cover. Drag the cover to move it, and right-click the cover to keep it above other windows. To turn it off, use Preferences.</li>
           <li>The "Dislike" menu item is now "Suggest Less", as in the Apple Music app.</li>
           <li>After each change, the star and "Suggest Less" show the state that Apple Music confirms. If Apple Music does not confirm the change, a message tells you.</li>
           <li>To remove an artist from your favorites, use the Apple Music app or music.apple.com. RingoMusic used a function that Apple does not document for this, and it also marked the artist as disliked.</li>

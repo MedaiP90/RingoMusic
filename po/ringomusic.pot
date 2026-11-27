@@ -970,9 +970,9 @@ msgstr ""
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
 "A mini player opens when you close the window and playback continues in the "
-"background. It shows the cover and the player controls. Drag the cover to "
-"move it, and right-click the cover to keep it above other windows. To turn "
-"it off, use Preferences."
+"background. It shows the cover and the seek bar. The player controls appear "
+"when you point at the cover. Drag the cover to move it, and right-click the "
+"cover to keep it above other windows. To turn it off, use Preferences."
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml

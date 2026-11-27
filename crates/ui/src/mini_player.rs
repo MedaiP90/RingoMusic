@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026 RingoMusic contributors
 
-//! The mini player: a small window with the cover and the compact player bar. It opens when the
+//! The mini player: a small window with the cover and the seek bar below it. It opens when the
 //! main window closes and the application plays on.
 
 use std::sync::Arc;
@@ -24,12 +24,12 @@ use crate::widgets::player_bar::{BarLayout, BarState, PlayerBar, PlayerBarInit};
 /// Size of the cover in logical pixels. It also sets the width of the window.
 const COVER_SIZE: i32 = 320;
 
-/// Space between the song text or the menu button and the corner of the cover, in logical pixels.
+/// Space between the menu button and the corner of the cover, and between the song text and the
+/// edges of the cover, in logical pixels.
 const CORNER_MARGIN: i32 = 12;
 
-/// Space at the right of the song text, in logical pixels. It keeps the text clear of the menu
-/// button.
-const CAPTION_END_MARGIN: i32 = 56;
+/// Space between the song text and the bottom of the cover or the buttons, in logical pixels.
+const CAPTION_BAR_SPACING: i32 = 8;
 
 /// Seconds that the hint stays on the cover.
 const HINT_SECONDS: u32 = 5;
@@ -38,7 +38,8 @@ const HINT_SECONDS: u32 = 5;
 pub const SHOW_MAIN_WINDOW: &str = "app.show-main-window";
 
 /// The mini player window. It has no window controls. The cover moves the window, and a right
-/// click on the cover opens the window menu, where the user can keep the window on top.
+/// click on the cover opens the window menu, where the user can keep the window on top. The seek
+/// bar is below the cover. The buttons show over the cover while the pointer is on the window.
 pub struct MiniPlayer {
     window: adw::ApplicationWindow,
     toasts: adw::ToastOverlay,
@@ -56,18 +57,8 @@ impl MiniPlayer {
             .hide_on_close(true)
             .build();
         let toasts = adw::ToastOverlay::new();
-        toasts.set_child(Some(&cover_area(services)));
-        let content = gtk::Box::new(gtk::Orientation::Vertical, 0);
-        content.add_css_class("cover-tint");
-        content.append(&toasts);
-        // The clamp keeps the bar, and so the window, as wide as the cover.
-        let bar = adw::Clamp::builder()
-            .maximum_size(COVER_SIZE)
-            .tightening_threshold(COVER_SIZE)
-            .child(&launch_bar(services, catalog, &window))
-            .build();
-        content.append(&bar);
-        window.set_content(Some(&content));
+        toasts.set_child(Some(&cover_area(services, catalog, &window)));
+        window.set_content(Some(&toasts));
         Self { window, toasts }
     }
 
@@ -95,6 +86,7 @@ fn launch_bar(
     services: &AppServices,
     catalog: &SongCatalog,
     window: &adw::ApplicationWindow,
+    buttons: &gtk::Revealer,
 ) -> gtk::Box {
     let mut bar = PlayerBar::builder().launch(PlayerBarInit {
         core: services.core().clone(),
@@ -103,22 +95,22 @@ fn launch_bar(
         window: window.clone(),
         catalog: catalog.clone(),
         api: Arc::clone(services.api()),
-        layout: BarLayout::Mini,
+        layout: BarLayout::Mini(buttons.clone()),
     });
     let widget = bar.widget().clone();
     bar.detach_runtime();
     widget
 }
 
-/// Builds the cover with the song text. The cover moves the window, and the menu button shows
-/// while the pointer is on it.
-fn cover_area(services: &AppServices) -> gtk::Overlay {
+/// Builds the cover with the song text over it and the seek bar below it. The window moves with
+/// a press that no button takes. The menu button and the bar buttons show on hover.
+fn cover_area(
+    services: &AppServices,
+    catalog: &SongCatalog,
+    window: &adw::ApplicationWindow,
+) -> gtk::WindowHandle {
     let song = SongView::new(services);
-    let handle = gtk::WindowHandle::builder()
-        .child(song.cover.widget())
-        .build();
     let caption = song.caption.clone();
-    follow_song(services.core(), song);
     let menu_button = gtk::MenuButton::builder()
         .icon_name("view-more-symbolic")
         .tooltip_text(gettext("Menu"))
@@ -133,11 +125,27 @@ fn cover_area(services: &AppServices) -> gtk::Overlay {
         .margin_end(CORNER_MARGIN)
         .child(&menu_button)
         .build();
-    let area = gtk::Overlay::builder().child(&handle).build();
-    area.add_overlay(&caption);
-    area.add_overlay(&revealer);
-    reveal_on_hover(&area, &revealer, &menu_button);
-    area
+    let buttons = gtk::Revealer::builder()
+        .transition_type(gtk::RevealerTransitionType::SlideUp)
+        .build();
+    let bar = launch_bar(services, catalog, window, &buttons);
+    // The song text sits on the buttons, so it moves up when they show.
+    let bottom = gtk::Box::builder()
+        .orientation(gtk::Orientation::Vertical)
+        .valign(gtk::Align::End)
+        .build();
+    bottom.append(&caption);
+    bottom.append(&buttons);
+    // The overlay takes its size from the cover only, so the buttons do not change the window.
+    let cover = gtk::Overlay::builder().child(song.cover.widget()).build();
+    follow_song(services.core(), song);
+    cover.add_overlay(&revealer);
+    cover.add_overlay(&bottom);
+    let area = gtk::Box::new(gtk::Orientation::Vertical, 0);
+    area.append(&cover);
+    area.append(&bar);
+    reveal_on_hover(&area, &[revealer, buttons], &menu_button);
+    gtk::WindowHandle::builder().child(&area).build()
 }
 
 /// The items of the cover menu.
@@ -148,10 +156,10 @@ fn menu() -> Menu {
     menu
 }
 
-/// The cover of the current song, with its title and artist over the top-left corner.
+/// The cover of the current song, and its title and artist.
 struct SongView {
     cover: ArtworkImage,
-    /// The box of the song text. A faint backdrop with the cover tint keeps it readable.
+    /// The box of the song text. A backdrop with the cover tint keeps it readable.
     caption: gtk::Box,
     title: gtk::Label,
     artist: gtk::Label,
@@ -166,11 +174,10 @@ impl SongView {
         // The text lets clicks through, so the whole cover still moves the window.
         let caption = gtk::Box::builder()
             .orientation(gtk::Orientation::Vertical)
-            .halign(gtk::Align::Start)
-            .valign(gtk::Align::Start)
-            .margin_top(CORNER_MARGIN)
+            .halign(gtk::Align::Center)
             .margin_start(CORNER_MARGIN)
-            .margin_end(CAPTION_END_MARGIN)
+            .margin_end(CORNER_MARGIN)
+            .margin_bottom(CAPTION_BAR_SPACING)
             .can_target(false)
             .css_classes(["cover-caption"])
             .build();
@@ -197,7 +204,7 @@ impl SongView {
 /// A line of the song text. A long text ends with an ellipsis.
 fn caption_label(css_class: &str) -> gtk::Label {
     gtk::Label::builder()
-        .xalign(0.0)
+        .justify(gtk::Justification::Center)
         .ellipsize(EllipsizeMode::End)
         .css_classes([css_class])
         .build()
@@ -217,27 +224,30 @@ fn follow_song(core: &CoreHandle, view: SongView) {
     });
 }
 
-/// Shows `revealer` while the pointer is on `area` or while the menu of `button` is open.
-fn reveal_on_hover(area: &gtk::Overlay, revealer: &gtk::Revealer, button: &gtk::MenuButton) {
+/// Shows `revealers` while the pointer is on `area` or while the menu of `button` is open.
+fn reveal_on_hover(area: &gtk::Box, revealers: &[gtk::Revealer], button: &gtk::MenuButton) {
+    let reveal = {
+        let revealers: Vec<glib::WeakRef<gtk::Revealer>> =
+            revealers.iter().map(ObjectExt::downgrade).collect();
+        move |shown: bool| {
+            for revealer in revealers.iter().filter_map(glib::WeakRef::upgrade) {
+                revealer.set_reveal_child(shown);
+            }
+        }
+    };
     let motion = gtk::EventControllerMotion::new();
-    motion.connect_enter(glib::clone!(
-        #[weak]
-        revealer,
-        move |_, _, _| revealer.set_reveal_child(true)
-    ));
+    let on_enter = reveal.clone();
+    motion.connect_enter(move |_, _, _| on_enter(true));
+    let on_leave = reveal.clone();
     motion.connect_leave(glib::clone!(
         #[weak]
-        revealer,
-        #[weak]
         button,
-        move |_| revealer.set_reveal_child(button.is_active())
+        move |_| on_leave(button.is_active())
     ));
     button.connect_active_notify(glib::clone!(
         #[weak]
-        revealer,
-        #[weak]
         motion,
-        move |button| revealer.set_reveal_child(button.is_active() || motion.contains_pointer())
+        move |button| reveal(button.is_active() || motion.contains_pointer())
     ));
     area.add_controller(motion);
 }
