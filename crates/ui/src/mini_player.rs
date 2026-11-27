@@ -4,6 +4,7 @@
 //! The mini player: a small window with the cover and the seek bar below it. It opens when the
 //! main window closes and the application plays on.
 
+use std::cell::Cell;
 use std::sync::Arc;
 
 use gettextrs::gettext;
@@ -34,6 +35,9 @@ const CAPTION_BAR_SPACING: i32 = 8;
 /// Seconds that the hint stays on the cover.
 const HINT_SECONDS: u32 = 5;
 
+/// Number of times that the mini player shows the hint in one run. After that, the hint is noise.
+const HINT_SHOW_LIMIT: u32 = 2;
+
 /// The application action that shows the main window again.
 pub const SHOW_MAIN_WINDOW: &str = "app.show-main-window";
 
@@ -43,6 +47,8 @@ pub const SHOW_MAIN_WINDOW: &str = "app.show-main-window";
 pub struct MiniPlayer {
     window: adw::ApplicationWindow,
     toasts: adw::ToastOverlay,
+    /// Number of times that the hint showed since the application started.
+    hint_count: Cell<u32>,
 }
 
 impl MiniPlayer {
@@ -59,12 +65,27 @@ impl MiniPlayer {
         let toasts = adw::ToastOverlay::new();
         toasts.set_child(Some(&cover_area(services, catalog, &window)));
         window.set_content(Some(&toasts));
-        Self { window, toasts }
+        Self {
+            window,
+            toasts,
+            hint_count: Cell::new(0),
+        }
     }
 
-    /// Shows the window and the hint about the window menu.
+    /// Shows the window. The first times after the start, it also shows the hint about the window
+    /// menu.
     pub fn show(&self) {
         self.window.present();
+        let hint_count = self.hint_count.get();
+        if hint_count >= HINT_SHOW_LIMIT {
+            return;
+        }
+        self.hint_count.set(hint_count + 1);
+        self.show_hint();
+    }
+
+    /// Shows the hint about the window menu on the cover for a short time.
+    fn show_hint(&self) {
         // A toast timeout stops while the window is inactive, and the new window often has no
         // focus. So a timer closes the hint.
         let hint = adw::Toast::builder()

@@ -143,7 +143,8 @@ pub struct AuthStatus {
 /// In a pattern, `{id}` is one ID segment (see [`is_id_segment`]) and `a|b` is one of
 /// the literal segments `a` and `b`.
 ///
-/// Keep this list equal to `WRITE_PATTERNS` in `engine/src/api-write.ts`.
+/// Keep this list equal to `WRITE_PATTERNS` in `engine/src/api-write.ts`. A unit test compares
+/// the two lists.
 const WRITE_PATTERNS: &[(WriteMethod, &str)] = &[
     (WriteMethod::Post, "/v1/me/library"),
     (WriteMethod::Post, "/v1/me/library/playlists"),
@@ -252,6 +253,42 @@ mod tests {
 
     fn is_invalid_params(result: &Result<()>) -> bool {
         matches!(*result, Err(Error::InvalidParams { .. }))
+    }
+
+    /// Reads the `WRITE_PATTERNS` entries of the TypeScript engine as `(method, pattern)` pairs.
+    fn typescript_write_patterns() -> Vec<(String, String)> {
+        let source = include_str!(concat!(
+            env!("CARGO_MANIFEST_DIR"),
+            "/../../engine/src/api-write.ts"
+        ));
+        let (_, list) = source
+            .split_once("const WRITE_PATTERNS")
+            .expect("api-write.ts declares WRITE_PATTERNS");
+        let (list, _) = list
+            .split_once("\n];")
+            .expect("WRITE_PATTERNS ends with `];`");
+        list.lines()
+            .filter_map(|line| line.trim().strip_prefix("['")?.strip_suffix("'],"))
+            .map(|entry| {
+                let (method, pattern) = entry
+                    .split_once("', '")
+                    .expect("each entry is ['METHOD', 'pattern']");
+                (method.to_owned(), pattern.to_owned())
+            })
+            .collect()
+    }
+
+    #[test]
+    fn write_patterns_are_equal_to_the_typescript_engine() {
+        let rust_patterns: Vec<(String, String)> = WRITE_PATTERNS
+            .iter()
+            .map(|&(method, pattern)| {
+                let method = serde_json::to_value(method).expect("method serializes");
+                let method = method.as_str().expect("method is a string").to_owned();
+                (method, pattern.to_owned())
+            })
+            .collect();
+        assert_eq!(rust_patterns, typescript_write_patterns());
     }
 
     #[test]

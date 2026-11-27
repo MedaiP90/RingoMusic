@@ -961,6 +961,22 @@ msgid "The narrow layout"
 msgstr ""
 
 #: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid "This release makes the mini player less intrusive."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"The mini player shows the hint about how to keep it above other windows only "
+"the first two times it opens after the start."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
+msgid ""
+"An automatic check makes sure that the two lists of permitted library "
+"changes stay the same."
+msgstr ""
+
+#: data/io.github.MedaiP90.RingoMusic.metainfo.xml
 msgid ""
 "This release adds a mini player. It also makes favorites and ratings follow "
 "Apple Music more closely, and it uses only the functions that Apple "
