@@ -84,14 +84,14 @@ Rust owns all state. The engine plays audio and sends Apple Music API requests. 
 
 ## Memory use
 
-The player is a Chromium engine with several processes, so it uses more memory than a native player. Measured values (CastLabs Electron `v45.2.1+wvcus`, Manjaro, during playback):
+The player is a Chromium engine with several processes, so it uses more memory than a native player. Measured values (RingoMusic 1.3.1 Flatpak, CastLabs Electron `v45.2.1+wvcus`, Manjaro, 45 minutes of playback without UI navigation):
 
-| Measure | Engine processes (sum) |
-|---|---|
-| RSS | about 2590 MB |
-| PSS | about 1265 MB |
+| Measure | Engine processes (sum) | `ringomusic` process |
+|---|---|---|
+| RSS | about 1550 MB | about 336 MB |
+| PSS | about 870 MB | about 222 MB |
 
-RSS counts shared pages more than one time for each process, so PSS is the real cost. RSS stayed flat over 75 minutes (2588 to 2591 MB), so there is no sign of a leak. No 8-hour measurement exists, and the memory of the `ringomusic` process was not measured.
+RSS counts shared pages more than one time for each process, so PSS is the real cost. Engine PSS increased from 836 MB to 869 MB in the first 20 minutes, then stayed almost flat (874 MB at the end). The `ringomusic` process stayed flat. UI navigation increases the memory of the `ringomusic` process.
 
 ## Library functions
 
