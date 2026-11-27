@@ -11,7 +11,9 @@ const API_ORIGIN = 'https://api.music.apple.com';
 // The only write requests that RingoMusic sends. Each one is documented by Apple
 // (plan/04_library-management/apple-music-writes.md). In a pattern, `{id}` is one ID segment and
 // `a|b` is one of the literal segments `a` and `b`.
-// Keep this list equal to `WRITE_PATTERNS` in crates/engine/src/protocol/to_engine.rs.
+// Keep this list equal to `WRITE_PATTERNS` in crates/engine/src/protocol/to_engine.rs. A Rust
+// unit test there reads this list and compares the two. Keep one `['METHOD', 'pattern'],` entry
+// on each line, so that the test can read it.
 const WRITE_PATTERNS: readonly (readonly [ApiWriteRequest['method'], string])[] = [
   ['POST', '/v1/me/library'],
   ['POST', '/v1/me/library/playlists'],
